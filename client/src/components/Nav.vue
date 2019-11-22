@@ -1,17 +1,10 @@
 <template>
-  <div>
-  <b-navbar type="dark" variant="dark">
-    <b-navbar-nav>
-      <b-nav-item href="#">Home</b-nav-item>
-
-      <!-- Navbar dropdowns -->
-      <b-nav-item onclick="openNav()">Add Data</b-nav-item>
-      <button onclick="openNav()">Add Data</button>
-      <b-nav-item-dropdown text="User" right>
-        <b-dropdown-item href="#">Account</b-dropdown-item>
-        <b-dropdown-item href="#">Settings</b-dropdown-item>
-      </b-nav-item-dropdown>
-    </b-navbar-nav>
-  </b-navbar>
-</div>
+    <div>
+      <h2>Nav Bar</h2>
+      <nav>
+        <router-link to="/">Home</router-link>
+        <router-link to="/add_data">Add Data</router-link>
+        <router-link to="/user">User</router-link>
+      </nav>
+    </div>
 </template>

@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="container">
     <button type="button" class="btn btn-primary">{{ msg }}</button>
@@ -18,7 +16,7 @@ export default {
   },
   methods: {
     getMessage() {
-      const path = 'http://localhost:5000/ping';
+      const path = 'http://localhost:5000/api/persona_table';
       axios.get(path)
         .then((res) => {
           this.msg = res.data;
