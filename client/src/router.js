@@ -3,7 +3,6 @@ import Vue from 'vue';
 import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
 import Table from './components/Table.vue';
-import Ping from './components/Ping.vue';
 import InputForm from './components/InputForm.vue';
 
 

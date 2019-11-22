@@ -79,14 +79,15 @@ def persona_table_by_id(id):
 ## POST NEW
 @app.route("/api/persona-table" , methods = ['POST'])
 def persona_post():
-    return request.data , 201
-    # with sqlite3.connect('server/data/data.db') as conn:
-    #     data = request
-    #     c = conn.cursor()
-    #     last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
-    #     data = [last_id+1,form.name.data , form.title.data ,form.quote.data ,form.jobFunction.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),1 ]
-    #     c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-    #     return jsonify(data)
+    app.logger.info(request.json['name'])
+
+    with sqlite3.connect('server/data/data.db') as conn:
+        data = request
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
+        data = [last_id+1,request.json['name'] , request.json['title'] ,request.json['quote'],request.json['jobFunction'] ,request.json['needs'] ,request.json['wants'] ,request.json['pain_point'] , request.json['persona_file'], datetime.datetime.now(),1 ]
+        c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
+        return request.json, 201
 
 # @app.route("/edit-form/<int:id>" , methods=('GET', 'POST'))
 # def create_new():

@@ -95,7 +95,7 @@ export default {
        axios({
            method: 'post',
            url: 'http://localhost:5000/api/persona-table',
-           data: JSON.stringify(this.form),
+           data: this.form,
        })
        .then(function (response) {
            console.log(response);
