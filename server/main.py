@@ -13,9 +13,10 @@ from src.forms import Persona_Input
 
 app = Flask(__name__)
 app.config['SECRET_KEY']  = r'_5#y2L"F4Q8z\n\xec]/'
+app.config['CORS_HEADERS'] = 'Content-Type'
 ext = SSO(app=app)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 
 SSO_ATTRIBUTE_MAP = {
     'ADFS_AUTHLEVEL': (False, 'authlevel'),
@@ -55,23 +56,10 @@ def create_table():
 ##--------------------------
 
 ###
-@app.route("/home")
-def home():
-    return render_template("table.html")
-
-
-@app.route("/table")
-def table():
-    return "<h1>Table View</h1>"
-
-
-@app.route("/view")
-def view():
-        return "<h1>View Details</h1>"
 
 ## GET ALL
 @app.route("/")
-@app.route("/api/persona_table", methods = ['GET'])
+@app.route("/api/persona-table", methods = ['GET'])
 def persona_table():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -80,7 +68,7 @@ def persona_table():
         return json.dumps(data)
 
 ## GET BY ID
-@app.route("/api/persona_table/<int:id>" , methods = ['GET'])
+@app.route("/api/persona-table/<int:id>" , methods = ['GET'])
 def persona_table_by_id(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -89,30 +77,16 @@ def persona_table_by_id(id):
         return json.dumps(data)
 
 ## POST NEW
-@app.route("/api/persona_table" , methods = ['GET'])
+@app.route("/api/persona-table" , methods = ['POST'])
 def persona_post():
-    with sqlite3.connect('server/data/data.db') as conn:
-        data = request
-        c = conn.cursor()
-        c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-
-@app.route("/api/input-form" , methods=('GET', 'POST'))
-def create_new():
-    form = Persona_Input(request.form)
-    if form.validate_on_submit():
-        with sqlite3.connect('server/data/data.db') as conn:
-            c = conn.cursor()
-##            result = c.execute("SELECT id FROM PERSONA")
-            last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
-            data = [last_id+1,form.name.data , form.title.data ,form.quote.data ,form.function.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),1 ]
-            c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-            conn.commit()
-##          return redirect('/')
-            return redirect("/home")
-    return render_template("input-form.html", form = form )
+    return request.data , 201
+    # with sqlite3.connect('server/data/data.db') as conn:
+    #     data = request
+    #     c = conn.cursor()
+    #     last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
+    #     data = [last_id+1,form.name.data , form.title.data ,form.quote.data ,form.jobFunction.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),1 ]
+    #     c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
+    #     return jsonify(data)
 
 # @app.route("/edit-form/<int:id>" , methods=('GET', 'POST'))
 # def create_new():
