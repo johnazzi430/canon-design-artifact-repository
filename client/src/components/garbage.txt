@@ -1,0 +1,98 @@
+<!-- <template>
+  <div style="height: 100%">
+              <div class="test-container">
+                  <div class="test-header">
+                      Selection:
+                      <span id="selectedRows"></span>
+                  </div>
+                    <ag-grid-vue style="width: 100%; height: 100%;"
+                            class="ag-theme-balham" id="myGrid"
+                             :gridOptions="gridOptions"
+                             @grid-ready="onGridReady"
+                             :columnDefs="columnDefs"
+                            :rowSelection="rowSelection"
+                            :modules="modules"
+                            :rowData="rowData"
+                            @selection-changed="onSelectionChanged">
+                    </ag-grid-vue>
+              </div>
+    </div>
+</template> -->
+
+
+<!--
+
+<script>
+/*eslint-disable */
+import { AgGridVue } from "@ag-grid-community/vue";
+import { AllCommunityModules } from "@ag-grid-community/all-modules";
+import "@ag-grid-community/all-modules/dist/styles/ag-grid.css";
+import "@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
+
+export default {
+  name: 'App',
+  data: function() {
+    return {
+      gridOptions: null,
+      gridApi: null,
+      columnApi: null,
+      columnDefs: null,
+      rowSelection: null,
+      modules: AllCommunityModules,
+      rowData: null
+    };
+  },
+  components: {
+    AgGridVue
+  },
+  beforeMount() {
+    this.gridOptions = {};
+    this.columnDefs = [
+      {headerName: "Name", field: "name"},
+      {headerName: "Title", field: "title"},
+      {headerName: "Quote", field: "quote"},
+      {headerName: "Function", field: "function"},
+      {headerName: "Qty", field: "qty"},
+      {headerName: "Internal or External", field: "External"}
+    ];
+    this.rowSelection = "single";
+
+    fetch('http://localhost:5000/api/persona_table')
+                    .then(result => result.json())
+                    .then(rowData => this.rowData = rowData);
+
+  },
+  mounted() {
+    this.gridApi = this.gridOptions.api;
+    this.gridColumnApi = this.gridOptions.columnApi;
+  },
+  methods: {
+    onSelectionChanged() {
+      var selectedRows = this.gridApi.getSelectedRows();
+      var selectedRowsString = "";
+      selectedRows.forEach(function(selectedRow, index) {
+        if (index !== 0) {
+          selectedRowsString += ", ";
+        }
+        selectedRowsString += selectedRow.name;
+      });
+      document.querySelector("#selectedRows").innerHTML = selectedRowsString;
+    },
+    onGridReady(params) {
+      const httpRequest = new XMLHttpRequest();
+      const updateData = data => {
+        this.rowData = data;
+      };
+
+      httpRequest.open(  "GET",  "http://localhost:5000/api/persona_table"  );
+      httpRequest.send();
+      httpRequest.onreadystatechange = () => {
+        if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+          updateData(JSON.parse(httpRequest.responseText));
+        }
+      };
+    },
+  },
+};
+
+</script> -->

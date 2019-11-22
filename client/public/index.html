@@ -6,17 +6,62 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <link rel="stylesheet" href="src/styles.css">
     <title>PW User Personas</title>
   </head>
   <body>
     <noscript>
       <strong>We're sorry but client doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <div id="navigation"></div>
     <div id="app"></div>
     <my-component></my-component>
     <!-- built files will be auto injected -->
+
+
+    <div class="container demo">
+
+    	<div class="text-center">
+    		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
+    			Right Sidebar Modal
+    		</button>
+    	</div>
+
+    	<!-- Modal -->
+    	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+    		<div class="modal-dialog" role="document">
+    			<div class="modal-content">
+
+    				<div class="modal-header">
+    					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    					<h4 class="modal-title" id="myModalLabel2">Right Sidebar</h4>
+    				</div>
+
+    				<div class="modal-body">
+    					<p>Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+    					</p>
+    				</div>
+    			</div><!-- modal-content -->
+    		</div><!-- modal-dialog -->
+    	</div><!-- modal -->
+    </div><!-- container -->
+
+    <div id="mySidepanel" class="sidepanel">
+      <a href="javascript:void(0)" class = "closebtn" onclick="closeNav()">&times;</a>
+      <div id="side_panel_content" class = "containe-fluid"></div>
+    </div>
+
   </body>
 
   <script src="https://unpkg.com/systemjs@0.19.39/dist/system.src.js"></script>
+  <script type="text/javascript">
+    function closeNav() {
+        document.getElementById('mySidepanel').style.width = '0';
+        document.getElementById('detailPanel').style.width = '0';
+    }
+
+    function openNav() {
+      document.getElementById('mySidepanel').style.width = '500px';
+    }
+  </script>
+      <link rel="stylesheet" href="src/styles.css">
 </html>
