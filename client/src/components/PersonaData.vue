@@ -2,7 +2,7 @@
 <template>
   <div id="persona_panel" @close="closeNav()">
     <div >
-      <b-button v-b-modal.my-modal>Add Data</b-button>
+      <b-button v-b-modal.my-modal pill variant="outline-secondary" >Add Data</b-button>
       <b-modal id="my-modal">
         <persona-add></persona-add>
       </b-modal>
@@ -10,7 +10,9 @@
     </div>
     <div id="mySidepanel" class="sidepanel">
         <a href="javascript:void(0)" class="closebtn" @click="closeNav()">&times;</a>
+      <div id = "side-panel-switcher">
         <persona-detail></persona-detail>
+      </div>
     </div>
   </div>
 </template>

@@ -10,6 +10,10 @@
     margin-bottom: 5px;
 }
 
+.navbar {
+  background-color: #a378ff !important; /* Black*/
+}
+
 .sidepanel {
   height: 250px; /* Specify a height */
   width: 0; /* 0 width - change this with JavaScript */
@@ -17,7 +21,7 @@
   z-index: 1; /* Stay on top */
   top: 0;
   right: 0;
-  background-color: #111; /* Black*/
+  background-color: #111
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 60px; /* Place content 60px from the top */
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */

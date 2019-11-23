@@ -34,22 +34,29 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 
 conn = sqlite3.connect('server/data/data.db')
 c = conn.cursor()
-
+# TODO:
 def create_table():
     c.execute("""CREATE TABLE PERSONA (
             id integer,
             name text,
             title text,
+            external integer,           NEW
             quote text,
-            function text,
+            jobFunction text,           NEW
             needs text,
             wants text,
             pain_point text,
+            buss_val integer,           NEW
             persona_file blob,
             record_date text,
+            archived integer,           NEW
+            creator_id text,            NEW
+            access_group text,          NEW
             revision integer
+
             ) """)
     return
+
 
 #TODO: Add in QTY field in table
 
@@ -67,15 +74,6 @@ def persona_table():
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
-## GET BY ID
-@app.route("/api/persona-table/<int:id>" , methods = ['GET'])
-def persona_table_by_id(id):
-    with sqlite3.connect('server/data/data.db') as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
 ## POST NEW
 @app.route("/api/persona-table" , methods = ['POST'])
 def persona_post():
@@ -89,24 +87,34 @@ def persona_post():
         c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
         return request.json, 201
 
-# @app.route("/edit-form/<int:id>" , methods=('GET', 'POST'))
-# def create_new():
-#     c.execute("SELECT * as last_id FROM PERSONA WHERE id = :id ", {'id' : id})).fetchall()[-1][0]
-#     data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-#     form = Persona_Input(obj=data)
-#     if form.validate_on_submit():
-#         with sqlite3.connect('server/data/data.db') as conn:
-#             c = conn.cursor()
-#             last_rev = c.execute("SELECT MAX(revision) as last_id FROM PERSONA WHERE id = :id ", {'id' : id})).fetchall()[0][0]
-#             data = [id,form.name.data , form.title.data ,form.quote.data ,form.function.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),last_rev ]
-#             c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-#             conn.commit()
-# ##          return redirect('/')
-#             return redirect("/home")
-#     return render_template("edit-form.html", form = form )
+## GET BY ID
+@app.route("/api/persona-table/<int:id>" , methods = ['GET'])
+def persona_table_by_id(id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+## Update values
+@app.route("/api/persona-table/<int:id>?<attribute>=<value>" , methods = ['PUT'])
+def persona_table_put_by_id(id):
+    return 201
+
+    # app.logger.info(id)
+    # app.logger.info(request.json)
+    # with sqlite3.connect('server/data/data.db') as conn:
+    #     c = conn.cursor()
+    #     result = c.execute( """UPDATE PERSONA
+    #                             SET :attribute = :value
+    #                             WHERE id = :id""", { 'attribute' : attribute ,
+    #                                                  'value' : value,
+    #                                                  'id' : id })
+    #     data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+    #     return request.json, 201
 
 ##--------------------------------------
- 
+
 
 if __name__ == '__main__':
     app.run(host= '0.0.0.0', port=5000 , debug=True)
