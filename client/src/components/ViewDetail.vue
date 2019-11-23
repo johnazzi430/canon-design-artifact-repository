@@ -2,9 +2,6 @@
 
 <template>
   <div class="conatainer-fluid">
-    <b-card class="mt-3" header="Form Data Result">
-      <pre class="m-0">{{ form }}</pre>
-    </b-card>
     <h1>Detail</h1>
     <b-form id='personaDetails'
     @edit="onEdit">
@@ -99,8 +96,14 @@ export default {
 
         axios.get(get_url)
         .then(response => {
-            self.form = response.data[0];
+            //self.form = response.data[0];
             self.form.name = response.data[0].name;
+            self.form.title= response.data[0].title;
+            self.form.quote = response.data[0].quote;
+            self.form.needs = response.data[0].needs;
+            self.form.wants = response.data[0].wants;
+            self.form.pain_point= response.data[0].pain_point;
+            
             console.log(response.data[0]);
           }
         )
