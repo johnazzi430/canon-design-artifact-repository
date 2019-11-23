@@ -9,3 +9,15 @@
     font-size: 13px;
     margin-bottom: 5px;
 }
+
+.sidepanel {
+    width: 0px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 999;
+    background: #7386D5;
+    color: #fff;
+    transition: all 0.3s;
+}

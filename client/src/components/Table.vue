@@ -3,6 +3,7 @@
       <div class="test-header">
             Selection:
               <span id="selectedRows"></span>
+              <span :selectedRow = "selectedRow"></span>
       </div>
       <ag-grid-vue style="width: 100%; height: 500px;"
                    class="ag-theme-balham"
@@ -20,8 +21,10 @@
 /*eslint-disable */
     import {AgGridVue} from "@ag-grid-community/vue";
     import {AllCommunityModules} from '@ag-grid-community/all-modules';
+    import {EventBus} from "../event-bus.js";
+
     export default {
-        name: 'App',
+        name: 'PersonaTable',
         data() {
             return {
                 columnDefs: null,
@@ -29,7 +32,8 @@
                 rowSelection: null,
                 gridApi: null,
                 gridOptions: null,
-                modules: AllCommunityModules
+                modules: AllCommunityModules,
+                selectedRow:null
             }
         },
         components: {
@@ -43,13 +47,17 @@
                     onSelectionChanged() {
                           var selectedRows = this.gridApi.getSelectedRows();
                           var selectedRowsString = "";
+                          var selectedRowsid =""
                           selectedRows.forEach(function(selectedRow, index) {
                             if (index !== 0) {
                               selectedRowsString += ", ";
                             }
                             selectedRowsString += selectedRow.name;
+                            selectedRowsid = selectedRow.id
                           });
+
                           document.querySelector("#selectedRows").innerHTML = selectedRowsString;
+                          EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
                         },
                 },
         beforeMount() {
