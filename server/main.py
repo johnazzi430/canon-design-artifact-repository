@@ -32,34 +32,6 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 
 
 
-conn = sqlite3.connect('server/data/data.db')
-c = conn.cursor()
-# TODO:
-def create_table():
-    c.execute("""CREATE TABLE PERSONA (
-            id integer,
-            name text,
-            title text,
-            external integer,           NEW
-            quote text,
-            jobFunction text,           NEW
-            needs text,
-            wants text,
-            pain_point text,
-            buss_val integer,           NEW
-            persona_file blob,
-            record_date text,
-            archived integer,           NEW
-            creator_id text,            NEW
-            access_group text,          NEW
-            revision integer
-
-            ) """)
-    return
-
-
-#TODO: Add in QTY field in table
-
 ##--------------------------
 
 ###
@@ -78,13 +50,47 @@ def persona_table():
 @app.route("/api/persona-table" , methods = ['POST'])
 def persona_post():
     app.logger.info(request.json['name'])
-
     with sqlite3.connect('server/data/data.db') as conn:
-        data = request
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
-        data = [last_id+1,request.json['name'] , request.json['title'] ,request.json['quote'],request.json['jobFunction'] ,request.json['needs'] ,request.json['wants'] ,request.json['pain_point'] , request.json['persona_file'], datetime.datetime.now(),1 ]
-        c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
+        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PERSONA where name=?", [request.json['name']]).fetchall()[0][0]
+        data = [last_id+1,                              ## SET ID
+                request.json['name'],
+                request.json['title'] ,
+                request.json['quote'],
+                request.json['jobFunction'] ,
+                request.json['needs'] ,
+                request.json['wants'] ,
+                request.json['pain_point'] ,
+                request.json['external'] ,
+                request.json['market_size'] ,
+                request.json['buss_val'] ,
+                datetime.datetime.now(),               # Record Date
+                last_revision,                          # Revision
+                None,                                # creator_id   TODO
+                None,                                # access_group TODO
+                0,                                     # archived
+                request.json['persona_file']]
+
+        c.execute("""INSERT INTO PERSONA
+        (id,
+        name,
+        title,
+        quote,
+        job_function,
+        needs,
+        wants,
+        pain_point,
+        external,
+        market_size,
+        buss_val,
+        record_date,
+        revision,
+        creator_id,
+        access_group,
+        archived,
+        persona_file)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
         return request.json, 201
 
 ## GET BY ID
@@ -97,21 +103,18 @@ def persona_table_by_id(id):
         return json.dumps(data)
 
 ## Update values
-@app.route("/api/persona-table/<int:id>?<attribute>=<value>" , methods = ['PUT'])
+## TODO: MAKE DETANGLE HARD CODING
+@app.route("/api/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
-    return 201
-
-    # app.logger.info(id)
-    # app.logger.info(request.json)
-    # with sqlite3.connect('server/data/data.db') as conn:
-    #     c = conn.cursor()
-    #     result = c.execute( """UPDATE PERSONA
-    #                             SET :attribute = :value
-    #                             WHERE id = :id""", { 'attribute' : attribute ,
-    #                                                  'value' : value,
-    #                                                  'id' : id })
-    #     data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-    #     return request.json, 201
+    app.logger.info(request.json)
+    attribute = "archived"
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute( """ UPDATE PERSONA
+                                SET archived = ?
+                                WHERE id = ? """, (request.json['archived'],id ))
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return request.json, 201
 
 ##--------------------------------------
 

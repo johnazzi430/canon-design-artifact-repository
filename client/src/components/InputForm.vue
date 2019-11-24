@@ -23,7 +23,7 @@ Title
       </div>
       <div>
         <label for="qty">Number people who fit this persona</label>
-        <b-form-input type="number" v-model="form.qty" id="qty" name="qty" />
+        <b-form-input type="number" v-model="form.market_size" id="qty" name="qty" />
       </div>
       <div>
         <label for="quote">Persona Quote</label>
@@ -78,7 +78,7 @@ export default {
           name: '',
           title: '',
           external: '',
-          qty: '',
+          market_size: '',
           quote: '',
           jobFunction: '',
           needs: '',

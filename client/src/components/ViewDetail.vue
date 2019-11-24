@@ -27,7 +27,7 @@ TODO: fix switching
       </div>
       <div>
         <label for="qty">Number people who fit this persona</label>
-        <p> {{form.qty}} </p>
+        <p> {{form.market_size}} </p>
       </div>
       <div>
         <label for="quote">Persona Quote</label>
@@ -79,7 +79,7 @@ TODO: fix switching
         </div>
         <div>
           <label for="qty">Number people who fit this persona</label>
-          <b-form-input type="number" v-model="form.qty" id="qty" name="qty" />
+          <b-form-input type="number" v-model="form.market_size" id="qty" name="qty" />
         </div>
         <div>
           <label for="quote">Persona Quote</label>
@@ -135,7 +135,7 @@ export default {
         name: '',
         title: '',
         external: '',
-        qty: '',
+        market_size: '',
         quote: '',
         jobFunction: '',
         needs: '',
@@ -199,14 +199,18 @@ export default {
 
        onDelete(evt) {
 
-         var get_url = "http://localhost:5000/api/persona-table/";
-         get_url += this.form.id;
-         get_url += '?name=frank';
+         evt.preventDefault()
+         var get_url = 'http://localhost:5000/api/persona-table/';
+         get_url += this.form.id ;
+         //get_url += '?name=frank';
+
+         var archive_set = { archived: 1};
 
          console.log(get_url)
          axios({
-             method: 'put',
-             url: 'get_url',
+             method: 'PUT',
+             url: get_url,
+             data: archive_set,
             })
          .then(function (response) {
              console.log(response);})
