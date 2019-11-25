@@ -42,7 +42,7 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 def persona_table():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA ")
+        result = c.execute("SELECT * FROM PERSONA") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -58,7 +58,7 @@ def persona_post():
                 request.json['name'],
                 request.json['title'] ,
                 request.json['quote'],
-                request.json['jobFunction'] ,
+                request.json['job_function'] ,
                 request.json['needs'] ,
                 request.json['wants'] ,
                 request.json['pain_point'] ,
@@ -102,18 +102,27 @@ def persona_table_by_id(id):
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
-## Update values
-## TODO: MAKE DETANGLE HARD CODING
+
 @app.route("/api/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
     app.logger.info(request.json)
-    attribute = "archived"
+
+    SQL = "UPDATE PERSONA SET "
+    data_values = []
+    # Iterate through JSON object nad build SQL query
+    for item in request.json:
+        attribute = item
+        value = request.json[item]
+        SQL = SQL +" "+ attribute + " = " + "?" +" "
+        data_values.append(value)
+
+    SQL = SQL + " WHERE id = ?"
+    data_values.append(id)
+    app.logger.info(SQL)
+    app.logger.info(data_values)
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute( """ UPDATE PERSONA
-                                SET archived = ?
-                                WHERE id = ? """, (request.json['archived'],id ))
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        c.execute( SQL, data_values)
         return request.json, 201
 
 ##--------------------------------------

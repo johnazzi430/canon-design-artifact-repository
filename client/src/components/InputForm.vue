@@ -31,7 +31,7 @@ Title
       </div>
       <div>
         <label for="function">Job Function</label>
-        <b-form-textarea v-model="form.jobFunction" id="function" name="function" />
+        <b-form-textarea v-model="form.job_function" id="function" name="function" />
       </div>
       <div>
         <label for="needs">Needs</label>
@@ -80,7 +80,7 @@ export default {
           external: '',
           market_size: '',
           quote: '',
-          jobFunction: '',
+          job_function: '',
           needs: '',
           wants: '',
           pain_point: '',
@@ -114,7 +114,7 @@ export default {
        this.form.external = ''
        this.form.qty = ''
        this.form.quote = ''
-       this.form.jobFunction = ''
+       this.form.job_function= ''
        this.form.needs = ''
        this.form.wants = ''
        this.form.pain_point = ''

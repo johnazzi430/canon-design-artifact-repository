@@ -6,10 +6,10 @@ TODO: fix switching
     <b-form id='persona-detail'
         @submit="onSubmit"
         @reset="onReset"
-        @delete="onDelete">
+        @archive="onArchive">
       <div class="container" id='persona-detail-show' v-if='editing === false'>
       <h1>Detail</h1>
-      <span> User ID: {{form.id}} </span>
+      <span> User ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div>
         <label for="Name">Name</label>
         <p> {{form.name}} </p>
@@ -35,7 +35,7 @@ TODO: fix switching
       </div>
       <div>
         <label for="function">Job Function</label>
-        <p> {{form.jobFunction}} </p>
+        <p> {{form.job_function}} </p>
       </div>
       <div>
         <label for="needs">Needs</label>
@@ -87,7 +87,7 @@ TODO: fix switching
         </div>
         <div>
           <label for="function">Job Function</label>
-          <b-form-textarea v-model="form.jobFunction" id="function" name="function" />
+          <b-form-textarea v-model="form.job_function" id="function" name="function" />
         </div>
         <div>
           <label for="needs">Needs</label>
@@ -114,7 +114,7 @@ TODO: fix switching
           drop-placeholder="Drop file here..."></b-form-file>
         </div>
         <br>
-        <b-button type="button" variant="danger"  v-on:click='onDelete'> Delete</b-button>
+        <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
         <b-button type="reset" variant="secondary">Reset</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
       </div>
@@ -137,11 +137,12 @@ export default {
         external: '',
         market_size: '',
         quote: '',
-        jobFunction: '',
+        job_function: '',
         needs: '',
         wants: '',
         pain_point: '',
         buss_val: '',
+        revision: '',
         persona_file: null},
       editing: false
       }
@@ -158,10 +159,14 @@ export default {
             self.form.id = selection;
             self.form.name = response.data[0].name;
             self.form.title= response.data[0].title;
+            self.form.market_size= response.data[0].market_size;
             self.form.quote = response.data[0].quote;
+            self.form.job_function = response.data[0].job_function;
             self.form.needs = response.data[0].needs;
             self.form.wants = response.data[0].wants;
             self.form.pain_point= response.data[0].pain_point;
+            self.form.buss_val= response.data[0].buss_val;
+            self.form.revision= response.data[0].revision;
             self.editing = false;
           }
         )
@@ -189,7 +194,7 @@ export default {
          this.form.external = ''
          this.form.qty = ''
          this.form.quote = ''
-         this.form.jobFunction = ''
+         this.form.job_function = ''
          this.form.needs = ''
          this.form.wants = ''
          this.form.pain_point = ''
@@ -197,14 +202,14 @@ export default {
          this.form.persona_file = null
        },
 
-       onDelete(evt) {
+       onArchive(evt) {
 
          evt.preventDefault()
          var get_url = 'http://localhost:5000/api/persona-table/';
          get_url += this.form.id ;
          //get_url += '?name=frank';
 
-         var archive_set = { archived: 1};
+         var archive_set = { 'archived': 1};
 
          console.log(get_url)
          axios({
