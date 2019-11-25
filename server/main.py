@@ -13,9 +13,10 @@ from src.forms import Persona_Input
 
 app = Flask(__name__)
 app.config['SECRET_KEY']  = r'_5#y2L"F4Q8z\n\xec]/'
+app.config['CORS_HEADERS'] = 'Content-Type'
 ext = SSO(app=app)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 
 SSO_ATTRIBUTE_MAP = {
     'ADFS_AUTHLEVEL': (False, 'authlevel'),
@@ -31,47 +32,13 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 
 
 
-conn = sqlite3.connect('server/data/data.db')
-c = conn.cursor()
-
-def create_table():
-    c.execute("""CREATE TABLE PERSONA (
-            id integer,
-            name text,
-            title text,
-            quote text,
-            function text,
-            needs text,
-            wants text,
-            pain_point text,
-            persona_file blob,
-            record_date text,
-            revision integer
-            ) """)
-    return
-
-#TODO: Add in QTY field in table
-
 ##--------------------------
 
 ###
-@app.route("/home")
-def home():
-    return render_template("table.html")
-
-
-@app.route("/table")
-def table():
-    return "<h1>Table View</h1>"
-
-
-@app.route("/view")
-def view():
-        return "<h1>View Details</h1>"
 
 ## GET ALL
 @app.route("/")
-@app.route("/api/persona_table", methods = ['GET'])
+@app.route("/api/persona-table", methods = ['GET'])
 def persona_table():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -79,8 +46,55 @@ def persona_table():
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
+## POST NEW
+@app.route("/api/persona-table" , methods = ['POST'])
+def persona_post():
+    app.logger.info(request.json['name'])
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
+        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PERSONA where name=?", [request.json['name']]).fetchall()[0][0]
+        data = [last_id+1,                              ## SET ID
+                request.json['name'],
+                request.json['title'] ,
+                request.json['quote'],
+                request.json['jobFunction'] ,
+                request.json['needs'] ,
+                request.json['wants'] ,
+                request.json['pain_point'] ,
+                request.json['external'] ,
+                request.json['market_size'] ,
+                request.json['buss_val'] ,
+                datetime.datetime.now(),               # Record Date
+                last_revision,                          # Revision
+                None,                                # creator_id   TODO
+                None,                                # access_group TODO
+                0,                                     # archived
+                request.json['persona_file']]
+
+        c.execute("""INSERT INTO PERSONA
+        (id,
+        name,
+        title,
+        quote,
+        job_function,
+        needs,
+        wants,
+        pain_point,
+        external,
+        market_size,
+        buss_val,
+        record_date,
+        revision,
+        creator_id,
+        access_group,
+        archived,
+        persona_file)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
+        return request.json, 201
+
 ## GET BY ID
-@app.route("/api/persona_table/<int:id>" , methods = ['GET'])
+@app.route("/api/persona-table/<int:id>" , methods = ['GET'])
 def persona_table_by_id(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -88,47 +102,19 @@ def persona_table_by_id(id):
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
-## POST NEW
-@app.route("/api/persona_table" , methods = ['GET'])
-def persona_post():
+## Update values
+## TODO: MAKE DETANGLE HARD CODING
+@app.route("/api/persona-table/<int:id>" , methods = ['PUT'])
+def persona_table_put_by_id(id):
+    app.logger.info(request.json)
+    attribute = "archived"
     with sqlite3.connect('server/data/data.db') as conn:
-        data = request
         c = conn.cursor()
-        c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
+        result = c.execute( """ UPDATE PERSONA
+                                SET archived = ?
+                                WHERE id = ? """, (request.json['archived'],id ))
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-
-@app.route("/api/input-form" , methods=('GET', 'POST'))
-def create_new():
-    form = Persona_Input(request.form)
-    if form.validate_on_submit():
-        with sqlite3.connect('server/data/data.db') as conn:
-            c = conn.cursor()
-##            result = c.execute("SELECT id FROM PERSONA")
-            last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
-            data = [last_id+1,form.name.data , form.title.data ,form.quote.data ,form.function.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),1 ]
-            c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-            conn.commit()
-##          return redirect('/')
-            return redirect("/home")
-    return render_template("input-form.html", form = form )
-
-# @app.route("/edit-form/<int:id>" , methods=('GET', 'POST'))
-# def create_new():
-#     c.execute("SELECT * as last_id FROM PERSONA WHERE id = :id ", {'id' : id})).fetchall()[-1][0]
-#     data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-#     form = Persona_Input(obj=data)
-#     if form.validate_on_submit():
-#         with sqlite3.connect('server/data/data.db') as conn:
-#             c = conn.cursor()
-#             last_rev = c.execute("SELECT MAX(revision) as last_id FROM PERSONA WHERE id = :id ", {'id' : id})).fetchall()[0][0]
-#             data = [id,form.name.data , form.title.data ,form.quote.data ,form.function.data ,form.needs.data ,form.wants.data ,form.pain_point.data , form.persona_file.data, datetime.datetime.now(),last_rev ]
-#             c.execute("""INSERT INTO PERSONA VALUES (?,?,?,?,?,?,?,?,?,?,?)""",data)
-#             conn.commit()
-# ##          return redirect('/')
-#             return redirect("/home")
-#     return render_template("edit-form.html", form = form )
+        return request.json, 201
 
 ##--------------------------------------
 

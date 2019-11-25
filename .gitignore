@@ -1,0 +1,10 @@
+bin
+include
+lib
+.DS_Store
+
+
+node_modules/
+/dist/
+env/
+__pycache__

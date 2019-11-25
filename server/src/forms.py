@@ -5,7 +5,7 @@ class Persona_Input(FlaskForm):
     name = StringField('Name', validators =[validators.DataRequired()])
     title = StringField('Title')
     quote = StringField('Quote')
-    function = StringField('Job Function')
+    jobFunction = StringField('Job Function')
     needs = StringField('User Needs')
     wants = StringField('User Wants')
     pain_point = StringField('Pain Points')
