@@ -62,12 +62,12 @@
                 },
         beforeMount() {
           this.columnDefs = [
-            {headerName: "Name", field: "name", filter:"True", width: 200},
-            {headerName: "Title", field: "title", filter:"True", width: 200},
-            {headerName: "Quote", field: "quote", filter: "True", width: 200},
-            {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter:"True"},
-            {headerName: "Function", field: "job_function", filter:"True", width: 200},
-            {headerName: "Market Size", field: "market_size", filter:"True" , width: 50},
+            {headerName: "Name", field: "name", filter: 'agTextColumnFilter', width: 200},
+            {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
+            {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 200},
+            {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
+            {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 200},
+            {headerName: "Market Size", field: "market_size", filter: true, width: 50},
 
           ];
           this.rowSelection = "single";
