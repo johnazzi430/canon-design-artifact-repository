@@ -40,11 +40,33 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 @app.route("/")
 @app.route("/api/persona-table", methods = ['GET'])
 def persona_table():
-    with sqlite3.connect('server/data/data.db') as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA") # TODO: WHERE archived = 0
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    if request.args.get('filter') == "False" :
+        with sqlite3.connect('server/data/data.db') as conn:
+            c = conn.cursor()
+            result = c.execute("SELECT * FROM PERSONA") # TODO: WHERE archived = 0
+            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+            return json.dumps(data)
+    else :
+        with sqlite3.connect('server/data/data.db') as conn:
+            c = conn.cursor()
+            ## ONLY GET THE LAST REVISION WHERE NOT ARCHIVED
+            result = c.execute("""SELECT
+                                PERSONA.*
+                            FROM
+                                ( SELECT
+                                    name,
+                                    MAX(revision) as last_revision
+                                FROM PERSONA
+                                GROUP BY name) AS LAST
+                            INNER JOIN
+                                PERSONA
+                            ON
+                                PERSONA.name = LAST.name AND
+                                PERSONA.revision = LAST.last_revision
+                            WHERE
+                                PERSONA.archived = 0""")
+            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+            return json.dumps(data)
 
 ## POST NEW
 @app.route("/api/persona-table" , methods = ['POST'])

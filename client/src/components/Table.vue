@@ -62,12 +62,13 @@
                 },
         beforeMount() {
           this.columnDefs = [
-            {headerName: "Name", field: "name"},
-            {headerName: "Title", field: "title"},
-            {headerName: "Quote", field: "quote"},
-            {headerName: "Function", field: "function"},
-            {headerName: "Qty", field: "qty"},
-            {headerName: "Internal or External", field: "External"}
+            {headerName: "Name", field: "name", filter:"True", width: 200},
+            {headerName: "Title", field: "title", filter:"True", width: 200},
+            {headerName: "Quote", field: "quote", filter: "True", width: 200},
+            {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter:"True"},
+            {headerName: "Function", field: "job_function", filter:"True", width: 200},
+            {headerName: "Market Size", field: "market_size", filter:"True" , width: 50},
+
           ];
           this.rowSelection = "single";
           fetch('http://localhost:5000/api/persona-table')
@@ -75,6 +76,11 @@
                           .then(rowData => this.rowData = rowData);
         },
     }
+
+    var externalCellRender = function(params) {
+        return '<span style="color: '+params.color+'">' + params.value + '</span>';
+    }
+
 </script>
 
 <style>

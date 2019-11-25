@@ -1,6 +1,6 @@
 
 <template>
-  <div id="persona_panel" @close="closeNav()">
+  <div id="persona_panel" class="container-fluid" @close="closeNav()">
     <div >
       <b-button v-b-modal.my-modal pill variant="outline-secondary" >Add Data</b-button>
       <b-modal id="my-modal">
