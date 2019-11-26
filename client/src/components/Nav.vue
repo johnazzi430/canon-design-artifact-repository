@@ -1,13 +1,15 @@
+
+
 <template>
     <div>
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
+      <b-navbar class="navbar navbar-expand-md navbar-light bg-light">
         <div class="navbar-nav">
-          <h2>Nav Bar</h2>
-          <router-link class="nav-item nav-link" to="/">Home</router-link>
-          <router-link class="nav-item nav-link" to="/add_data">Add Data</router-link>
-          <router-link class="nav-item nav-link" to="/user">User</router-link>
+          <b-navbar-brand>UTC User Personas</b-navbar-brand>
+          <b-nav-item href="/">Home</b-nav-item>
+          <b-nav-item href="/add_data">Add Data</b-nav-item>
+          <b-nav-item href="/user">User</b-nav-item>
         </div>
-      </nav>
+      </b-navbar>
     </div>
 </template>
 <!--
