@@ -1,9 +1,16 @@
 <template>
     <div>
-      <div class="test-header">
+      <div class="test-header row">
             Selection:
+            <div class="col-2">
               <span id="selectedRows"></span>
               <span :selectedRow = "selectedRow"></span>
+            </div>
+            <div class="col-2">
+              <span> Search: </span>
+              <input type="text" id="filter-text-box"
+              placeholder="Filter..." oninput="onFilterTextBoxChanged()"/>
+            </div>
       </div>
       <ag-grid-vue style="width: 100%; height: 500px;"
                    class="ag-theme-balham"
@@ -24,57 +31,88 @@
     import {EventBus} from "../event-bus.js";
 
     export default {
-        name: 'PersonaTable',
-        data() {
-            return {
-                columnDefs: null,
-                rowData: null,
-                rowSelection: null,
-                gridApi: null,
-                gridOptions: null,
-                modules: AllCommunityModules,
-                selectedRow:null
-            }
+      name: 'PersonaTable',
+      data() {
+        return {
+          columnDefs: null,
+          rowData: null,
+          rowSelection: null,
+          gridApi: null,
+          gridOptions: null,
+          modules: AllCommunityModules,
+          selectedRow: null,
+          defaultColDef: null
+        }
+      },
+      components: {
+        AgGridVue
+      },
+      methods: {
+        onGridReady(params) {
+          this.gridApi = params.api;
+          this.columnApi = params.columnApi;
         },
-        components: {
-            AgGridVue
-        },
-        methods: {
-                    onGridReady(params) {
-                        this.gridApi = params.api;
-                        this.columnApi = params.columnApi;
-                    },
-                    onSelectionChanged() {
-                          var selectedRows = this.gridApi.getSelectedRows();
-                          var selectedRowsString = "";
-                          var selectedRowsid =""
-                          selectedRows.forEach(function(selectedRow, index) {
-                            if (index !== 0) {
-                              selectedRowsString += ", ";
-                            }
-                            selectedRowsString += selectedRow.name;
-                            selectedRowsid = selectedRow.id
-                          });
 
-                          document.querySelector("#selectedRows").innerHTML = selectedRowsString;
-                          EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
-                        },
-                },
-        beforeMount() {
-          this.columnDefs = [
-            {headerName: "Name", field: "name"},
-            {headerName: "Title", field: "title"},
-            {headerName: "Quote", field: "quote"},
-            {headerName: "Function", field: "function"},
-            {headerName: "Qty", field: "qty"},
-            {headerName: "Internal or External", field: "External"}
-          ];
-          this.rowSelection = "single";
-          fetch('http://localhost:5000/api/persona-table')
-                          .then(result => result.json())
-                          .then(rowData => this.rowData = rowData);
+        onSelectionChanged() {
+          var selectedRows = this.gridApi.getSelectedRows();
+          var selectedRowsString = "";
+          var selectedRowsid =""
+          selectedRows.forEach(function(selectedRow, index) {
+            if (index !== 0) {
+              selectedRowsString += ", ";
+            }
+            selectedRowsString += selectedRow.name;
+            selectedRowsid = selectedRow.id
+          });
+
+          document.querySelector("#selectedRows").innerHTML = selectedRowsString;
+          EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
         },
+
+        onFilterTextBoxChanged() {
+        gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);
+      },
+
+      },
+      beforeMount() {
+        this.columnDefs = [
+          {headerName: "Name", field: "name", width: 200},
+          {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
+          {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
+          {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
+          {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400},
+          {headerName: "Market Size", field: "market_size", filter: true, width: 50},
+        ];
+
+        this.defaultColDef = {
+            sortable: true,
+            resizable: true,
+            filter: true,
+            getQuickFilterText: function(params) {
+            return params.value.name;
+            }
+         };
+
+
+        this.gridOptions = {};
+        this.rowSelection = "single";
+        this.gridOptions.rowHeight = 100;
+        fetch('http://localhost:5000/api/persona-table')
+        .then(result => result.json())
+        .then(rowData => this.rowData = rowData);
+      },
+      mounted() {
+        EventBus.$on('persona-table-changed',function() {
+          this.gridApi.redrawRows()
+        });
+      },
+    };
+
+
+    var externalCellRender = function(params) {
+        return '<span style="color: '+params.color+'">' + params.value + '</span>';
     }
+
 </script>
 
 <style>

@@ -22,6 +22,11 @@ export default new Router({
       component: PersonaData,
     },
     {
+      path: '/PersonaData',
+      name: 'PersonaData',
+      component: PersonaData,
+    },
+    {
       path: '/table',
       name: 'table',
       component: Table,

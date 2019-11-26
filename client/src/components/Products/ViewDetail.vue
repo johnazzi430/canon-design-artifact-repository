@@ -2,25 +2,28 @@
 TODO: fix switching
 
 <template>
-<div>
+<div class="conatainer-fluid">
     <b-form id='persona-detail'
         @submit="onSubmit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='persona-detail-show' v-if='editing === false'>
+      <div class="container" id='persona-detail-show' v-if='editing === false'>
       <h1>Detail</h1>
       <span> User ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div>
         <label for="Name">Name</label>
-        <div class="panel-group"> {{form.name}} </div>
+        <p> {{form.name}} </p>
       </div>
       <div>
         <label for="Title">Title</label>
-        <p class="text-wrap"> {{form.title}} </p>
+        <p> {{form.title}} </p>
       </div>
       <div>
         <label for="external">Internal or External?</label>
-        <p class="text-wrap"> {{form.external}} </p>
+        <b-form-radio v-model="form.external" name="some-radios"
+        value="1">External</b-form-radio>
+        <b-form-radio v-model="form.external" name="some-radios"
+        value="0">Internal</b-form-radio>
       </div>
       <div>
         <label for="qty">Number people who fit this persona</label>
@@ -32,14 +35,14 @@ TODO: fix switching
       </div>
       <div>
         <label for="function">Job Function</label>
-        <p class="text-wrap"> {{form.job_function}} </p>
+        <p> {{form.job_function}} </p>
       </div>
       <div>
-        <label for="needs" style="white-space: pre-line;">Needs</label>
+        <label for="needs">Needs</label>
         <p> {{form.needs}} </p>
       </div>
       <div>
-        <label for="wants" style="white-space: pre-line;">Wants</label>
+        <label for="wants">Wants</label>
         <p> {{form.wants}} </p>
       </div>
       <div>
@@ -49,7 +52,6 @@ TODO: fix switching
       <div>
         <label for="buss_val">value to business</label>
         <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
-        <div class="mt-2">Value: {{ form.buss_val }}</div>
       </div>
       <div>
         <label for="persona_file">Add File</label>
@@ -57,7 +59,8 @@ TODO: fix switching
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
     </div>
-      <div  id='persona-detail-edit' v-else>
+      <div class="container" id='persona-detail-edit' v-else>
+
         <h1>Edit</h1>
         <div>
           <label for="Name">Name</label>
@@ -101,7 +104,6 @@ TODO: fix switching
         <div>
           <label for="buss_val">value to business</label>
           <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
-          <div class="mt-2">Value: {{ form.buss_val }}</div>
         </div>
         <div>
           <label for="persona_file">Add File</label>
@@ -112,9 +114,9 @@ TODO: fix switching
           drop-placeholder="Drop file here..."></b-form-file>
         </div>
         <br>
-        <b-button type="reset" variant="secondary">Return</b-button>
         <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-        <b-button type="submit" variant="primary">Submit Changes</b-button>
+        <b-button type="reset" variant="secondary">Reset</b-button>
+        <b-button type="submit" variant="primary">Submit</b-button>
       </div>
   </b-form>
 </div>
@@ -147,32 +149,9 @@ export default {
     },
     beforeMount() {
       const self = this;
-      EventBus.$on('selection-changed', function(selection){
-
-        var get_url = "http://localhost:5000/api/persona-table/";
-        get_url += selection;
-
-        axios.get(get_url)
-        .then(response => {
-            self.form.id = selection;
-            self.form.name = response.data[0].name;
-            self.form.title= response.data[0].title;
-            self.form.external= response.data[0].external;
-            self.form.market_size= response.data[0].market_size;
-            self.form.quote = response.data[0].quote;
-            self.form.job_function = response.data[0].job_function;
-            self.form.needs = response.data[0].needs;
-            self.form.wants = response.data[0].wants;
-            self.form.pain_point= response.data[0].pain_point;
-            self.form.buss_val= response.data[0].buss_val;
-            self.form.revision= response.data[0].revision;
-            self.editing = false;
-          }
-        )
-        .catch(error => console.log(error))
-        });
+      EventBus.$on('selection-changed', getDataById(id) );
       },
-      methods: {
+    methods: {
        onSubmit(evt) {
          evt.preventDefault()
          axios({
@@ -183,18 +162,26 @@ export default {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
-
-         EventBus.$emit('persona-table-changed','item-updated')
-         document.getElementById("mySidepanel").style.width = "0px";
        },
 
        onReset(evt) {
          evt.preventDefault()
          // Reset our form values
-         this.editing = false;
+         this.form.name = ''
+         this.form.title = ''
+         this.form.external = ''
+         this.form.qty = ''
+         this.form.quote = ''
+         this.form.job_function = ''
+         this.form.needs = ''
+         this.form.wants = ''
+         this.form.pain_point = ''
+         this.form.buss_val = ''
+         this.form.persona_file = null
        },
 
        onArchive(evt) {
+
          evt.preventDefault()
          var get_url = 'http://localhost:5000/api/persona-table/';
          get_url += this.form.id ;
@@ -214,17 +201,32 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('persona-table-changed' , archive_set )
-         document.getElementById("mySidepanel").style.width = "0px";
       },
      },
   };
 
+function getDataById(id) {
+
+  var get_url = "http://localhost:5000/api/persona-table/";
+  get_url += id;
+
+  axios.get(get_url)
+  .then(response => {
+      self.form.id = id;
+      self.form.name = response.data[0].name;
+      self.form.title= response.data[0].title;
+      self.form.market_size= response.data[0].market_size;
+      self.form.quote = response.data[0].quote;
+      self.form.job_function = response.data[0].job_function;
+      self.form.needs = response.data[0].needs;
+      self.form.wants = response.data[0].wants;
+      self.form.pain_point= response.data[0].pain_point;
+      self.form.buss_val= response.data[0].buss_val;
+      self.form.revision= response.data[0].revision;
+      self.editing = false;
+    }
+  )
+  .catch(error => console.log(error))
+  }
+
 </script>
-
-
-<style media="screen">
-p {
-  white-space: pre-line;
-}
-</style>

@@ -1,8 +1,9 @@
+Title
 
 <template>
-  <div class="container-fluid">
+  <div class="col-6">
 
-    <h1>Add Persona </h1>
+    <h1>Add </h1>"
     <b-form
               @submit="onSubmit"
               @reset="onReset"
@@ -68,8 +69,7 @@
 
 <script>
 /*eslint-disable */
-import axios from 'axios';
-import {EventBus} from "../event-bus.js";
+import axios from 'axios'
 
 export default {
     data() {
@@ -104,8 +104,6 @@ export default {
            console.log(error);
        })
       alert("form submitted" + JSON.stringify(this.form))
-      EventBus.$emit('persona-table-changed' , this.form)
-      this.$router.push("/PersonaData")
      },
 
      onReset(evt) {
