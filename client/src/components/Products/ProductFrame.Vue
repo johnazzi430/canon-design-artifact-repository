@@ -1,4 +1,3 @@
-
 <template>
   <div id="persona_panel" class="container-fluid" @close="closeNav()">
     <div >
