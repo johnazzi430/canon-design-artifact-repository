@@ -32,9 +32,7 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 
 
 
-##--------------------------
-
-###
+##-------------------------- PERSONA API
 
 ## GET ALL
 @app.route("/")
@@ -146,6 +144,121 @@ def persona_table_put_by_id(id):
         c = conn.cursor()
         c.execute( SQL, data_values)
         return request.json, 201
+
+
+##-------------------------- PRODUCT API
+
+## GET ALL
+@app.route("/api/product-table", methods = ['GET'])
+def product_table():
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM PRODUCT") # TODO: WHERE archived = 0
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+## POST NEW
+@app.route("/api/product-table" , methods = ['POST'])
+def product_post():
+    app.logger.info(request.json['name'])
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT ").fetchall()[0][0]
+        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PRODUCT where name=?", [request.json['name']]).fetchall()[0][0]
+        data = [last_id+1,                              ## SET ID
+                request.json['name'],
+                request.json['title'] ,
+                request.json['quote'],
+                request.json['job_function'] ,
+                request.json['needs'] ,
+                request.json['wants'] ,
+                request.json['pain_point'] ,
+                request.json['external'] ,
+                request.json['market_size'] ,
+                request.json['buss_val'] ,
+                datetime.datetime.now(),               # Record Date
+                datetime.datetime.now(),               # Record Date
+                last_revision,                          # Revision
+                None,                                # creator_id   TODO
+                None,                                # access_group TODO
+                0,                                     # archived
+                request.json['persona_file'],
+                request.json['persona_picture']]
+
+        c.execute("""INSERT INTO PRODUCT
+        (id,
+        name,
+        title,
+        quote,
+        job_function,
+        needs,
+        wants,
+        pain_point,
+        external,
+        market_size,
+        buss_val,
+        create_date,
+        last_update_date
+        revision,
+        creator_id,
+        access_group,
+        archived,
+        persona_file,
+        persona_picture)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?.?)""",data)
+        return request.json, 201
+
+## GET BY ID
+@app.route("/api/product-table/<int:id>" , methods = ['GET'])
+def product_table_by_id(id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM PRODUCT WHERE id = :id ", {'id' : id})
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
+@app.route("/api/product-table/<int:id>" , methods = ['PUT'])
+def product_table_put_by_id(id):
+    app.logger.info(request.json)
+
+    SQL = "UPDATE PRODUCT SET "
+    data_values = []
+    # Iterate through JSON object nad build SQL query
+    for item in request.json:
+        attribute = item
+        value = request.json[item]
+        SQL = SQL +" "+ attribute + " = " + "?" +" "
+        data_values.append(value)
+
+    SQL = SQL + " WHERE id = ?"
+    data_values.append(id)
+    app.logger.info(SQL)
+    app.logger.info(data_values)
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        c.execute( SQL, data_values)
+        return request.json, 201
+
+
+@app.route("/api/comments/<table>/<int:id>" , methods = ['GET'])
+def comments_by_table_and_item(table,id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM COMMENTS WHERE source_id = ? AND source_table = ? ", [ id , table])
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+# TODO: Make this work
+@app.route("/api/comments/<table>/<int:id>" , methods = ['POST'])
+def comments_create_by_table_and_item(table,id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM COMMENTS WHERE source_id = ? AND source_table = ? ", [ id , table])
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
 
 ##--------------------------------------
 

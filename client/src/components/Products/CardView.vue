@@ -14,29 +14,26 @@
 
     <b-card-group columns>
       <b-card class="card" v-for="card in cards" v-bind:key="card.id">
-        <div class="">
-                  <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
-        </div>
         <b-card-text>
-          <span> {{card.name}} the {{card.title}}
+          <span> {{card.name}}
           </span>
           <p class="well">
-            {{card.quote}}
+            {{card.description}}
           </p>
           <b-button v-b-toggle="'collapse-'+card.id"
             variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
           <b-button href="javascript:void(0)"
-              variant="outline-secondary">Open Persona</b-button>
+              variant="outline-secondary">Open Detail View</b-button>
           <b-collapse :id="'collapse-'+card.id" class="mt-2">
-              <label for="function">Job Function</label>
-              <p class="text-wrap"> {{card.job_function}} </p>
-              <label for="needs" style="white-space: pre-line;">Needs</label>
-              <p> {{card.needs}} </p>
-              <label for="wants" style="white-space: pre-line;">Wants</label>
-              <p> {{card.wants}} </p>
-              <label for="pain_point">Pain Points</label>
-                <p> {{card.pain_point}} </p>
+              <label>Product Goals</label>
+              <p class="text-wrap"> {{card.goals}} </p>
+              <label>Features</label>
+              <p> {{card.features}} </p>
+              <label>Owner</label>
+              <p> {{card.owner}} </p>
+              <label>Product Home Page</label>
+              <p> {{card.product_homepage}} </p>
           </b-collapse>
         </b-card-text>
       </b-card>
@@ -53,7 +50,7 @@ export default {
   data() {return { cards : {} } },
   beforeMount() {
     const self = this;
-    var get_url = "http://localhost:5000/api/persona-table";
+    var get_url = "http://localhost:5000/api/product-table";
 
     axios.get(get_url)
     .then(response => {

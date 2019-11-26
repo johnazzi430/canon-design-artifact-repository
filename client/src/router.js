@@ -2,11 +2,12 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
-import PersonaData from './components/PersonaData.vue';
-import Table from './components/Table.vue';
-import InputForm from './components/InputForm.vue';
-
-
+import PersonaPage from './components/PersonaPage.vue';
+import ProductPage from './components/ProductPage.vue';
+import Table from './components/Personas/Table.vue';
+import InputForm from './components/Personas/InputForm.vue';
+import CardView from './components/Personas/CardView.vue';
+import CommentView from './components/CommentView.vue';
 
 Vue.use(Router);
 //Vue.use(BootstrapVue)
@@ -18,23 +19,38 @@ export default new Router({
 
     {
       path: '/',
-      name: 'PersonaData',
-      component: PersonaData,
+      name: 'home',
+      component: PersonaPage,
     },
     {
-      path: '/PersonaData',
-      name: 'PersonaData',
-      component: PersonaData,
+      path: '/persona',
+      name: 'persona default',
+      component: PersonaPage,
     },
     {
-      path: '/table',
-      name: 'table',
+      path: '/product',
+      name: 'product default',
+      component: ProductPage,
+    },
+    {
+      path: '/persona/cards',
+      name: 'persona cards',
+      component: CardView,
+    },
+    {
+      path: '/persona/table',
+      name: 'persona table',
       component: Table,
     },
     {
       path: '/add_data',
       name: 'add_data',
       component: InputForm,
+    },
+    {
+      path: '/comments',
+      name: 'comments',
+      component: CommentView,
     },
 
   ],
