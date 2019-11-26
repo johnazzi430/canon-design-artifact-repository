@@ -2,8 +2,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
-import PersonaPage from './components/PersonaPage.vue';
-import CardView from './components/Personas/CardView.vue';
+import PersonaData from './components/PersonaData.vue';
 import Table from './components/Table.vue';
 import InputForm from './components/InputForm.vue';
 
@@ -19,18 +18,13 @@ export default new Router({
 
     {
       path: '/',
-      name: 'PersonaPage',
-      component: PersonaPage,
+      name: 'PersonaData',
+      component: PersonaData,
     },
     {
-      path: '/personas/cards',
-      name: 'persona_cards',
-      component: CardView,
-    },
-    {
-      path: '/personas/:id',
-      name: 'persona_detail',
-      component: CardView,
+      path: '/PersonaData',
+      name: 'PersonaData',
+      component: PersonaData,
     },
     {
       path: '/table',
