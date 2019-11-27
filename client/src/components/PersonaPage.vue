@@ -11,7 +11,7 @@
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i> Table</a>
       <a href="javascript:void(0)" id="Detail"
-        class="nav-link active" v-on:click="changeView('detail'); closeNav()">
+        class="nav-link active" v-on:click="expandDetail()">
         <i class="fa fa-align-left"></i> Detail</a>
     </div>
       <!-- MAIN -->
@@ -74,6 +74,10 @@ export default {
   methods: {
     closeNav() {
     document.getElementById("right-sidepanel").style.width = "0px";
+    },
+
+    expandDetail() {
+      document.getElementById("right-sidepanel").style.width = "100%";
     },
 
     changeView(view) { this.view = view},

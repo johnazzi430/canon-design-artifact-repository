@@ -30,7 +30,7 @@ TODO: fix switching
 
       <hr>
       <h4>Comments</h4>
-      <comment-view></comment-view>
+      <comment-view source_table='PRODUCT' item_id="form.id"></comment-view>
 
     </div>
       <div  id='product-detail-edit' v-else>
