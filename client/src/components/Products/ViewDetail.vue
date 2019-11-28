@@ -88,7 +88,7 @@ import {EventBus} from "../../event-bus.js";
 export default {
   name: "product-details",
   components : {'comment-view': CommentView },
-  data() {
+  data() { 
     return {
       form: {
         name: '',

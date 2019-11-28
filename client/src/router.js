@@ -7,7 +7,6 @@ import ProductPage from './components/ProductPage.vue';
 import Table from './components/Personas/Table.vue';
 import InputForm from './components/Personas/InputForm.vue';
 import CardView from './components/Personas/CardView.vue';
-import CommentView from './components/CommentView.vue';
 
 Vue.use(Router);
 //Vue.use(BootstrapVue)
@@ -47,11 +46,5 @@ export default new Router({
       name: 'add_data',
       component: InputForm,
     },
-    {
-      path: '/comments',
-      name: 'comments',
-      component: CommentView,
-    },
-
   ],
 });

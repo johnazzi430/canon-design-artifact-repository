@@ -96,7 +96,7 @@ export default {
 
     this.gridOptions = {};
     this.rowSelection = "single";
-    this.gridOptions.rowHeight = 100;
+    this.gridOptions.rowHeight = 200;
     fetch('http://localhost:5000/api/persona-table')
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);

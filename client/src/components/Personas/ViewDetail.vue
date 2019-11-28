@@ -1,6 +1,4 @@
 
-TODO: fix switching
-
 <template>
 <div>
     <b-form id='persona-detail'
@@ -62,7 +60,9 @@ TODO: fix switching
 
       <hr>
       <h4>Comments</h4>
-      <comment-view source_table="PERSONA" v-bind:item_id='form.id'></comment-view>
+      <comment-view :key='form.id'
+                    v-bind:sourceTable="source"
+                    v-bind:itemId='form.id'></comment-view>
 
 
     </div>
@@ -168,6 +168,7 @@ export default {
         persona_photo: '',
         persona_file: null},
       editing: false,
+      source: 'PERSONA',
       options: [
           { value: 'EngineWise', text: 'EngineWise' },
           { value: 'PWX', text: 'PWX' },
