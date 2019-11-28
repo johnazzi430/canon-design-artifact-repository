@@ -1,8 +1,7 @@
 
 
 <template lang="html">
-  <div class="container">
-    {{sourceTable}} {{itemId}}
+  <div class="container" :key='componentKey'>
     <div class="col-5" v-for="comment in comments" v-bind:key="comment.id">
       <div class="" v-if="comment.action === null">
         <span> {{comment.creator_id}} commented on {{comment.create_date}}
@@ -18,7 +17,11 @@
         </span>
       </div>
     </div>
-    <b-button href="javascript:void(0)" variant="success">Add Comment</b-button>
+    <b-button v-b-toggle="'collapse-add-comment'" variant="success">Add Comment</b-button>
+    <b-collapse :id="'collapse-add-comment'">
+      <b-form-textarea v-model="form.comment"></b-form-textarea>
+      <b-button v-on:click="addComment()" variant="success">Submit</b-button>
+    </b-collapse>
   </div>
 </template>
 
@@ -28,9 +31,17 @@ import axios from 'axios'
 import {EventBus} from "../event-bus.js";
 
 export default {
-  data() {return { comments : {} } },
+  data() {
+    return {
+      componentKey: 0,
+      comments : {},
+      form :{
+        comment:''
+      }
+    }
+  },
   props: ["sourceTable" , "itemId"],
-  mounted(){
+  mounted() {
       var get_url = "http://localhost:5000/api/comments/" + this.sourceTable + '/' + this.itemId
 
       axios
@@ -38,16 +49,36 @@ export default {
       .then(response => {this.comments = response.data})
       .catch(error => console.log(error))
     },
-  // mounted () {
-  //
-  //   var get_url = "http://localhost:5000/api/comments/" + this.source_table + '/' + this.item_id
-  //
-  //   console.log(get_url)
-  //   axios
-  //   .get(get_url)
-  //   .then(response => {this.comments = response.data})
-  //   .catch(error => console.log(error))
-  // },
+  methods:{
+    addComment() {
+
+      var None = null
+      var comment_data = {
+        source_id : this.itemId,
+        source_table : this.sourceTable,
+        comment_body : this.form.comment,
+        action : None,
+        downchange : None,
+        upchange : None,
+      };
+
+      var set_url = "http://localhost:5000/api/comments/" + this.sourceTable + '/' + this.itemId
+
+      axios({
+          method: 'post',
+          url: set_url,
+          data: comment_data })
+      .then(function (response) {
+          console.log(response);
+          EventBus.$emit('comments-added', comment_data );
+          this.$forceUpdate();
+          this.componentKey += 1;
+        })
+      .catch(function (error) {
+          console.log(error);})
+
+    }
+  }
 };
 
 </script>

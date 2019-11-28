@@ -64,7 +64,6 @@
                     v-bind:sourceTable="source"
                     v-bind:itemId='form.id'></comment-view>
 
-
     </div>
       <div  id='persona-detail-edit' v-else>
         <h1>Edit</h1>

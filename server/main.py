@@ -34,6 +34,8 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 
 ##-------------------------- PERSONA API
 
+
+
 ## GET ALL
 @app.route("/")
 @app.route("/api/persona-table", methods = ['GET'])
@@ -65,6 +67,17 @@ def persona_table():
                                 PERSONA.archived = 0""")
             data = [dict(zip([key[0] for key in c.description], row)) for row in result]
             return json.dumps(data)
+
+## GET PERSONA LIST
+@app.route("/api/personas", methods = ['GET'])
+def persona_list():
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT id , name FROM PERSONA") # TODO: WHERE archived = 0
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
 
 ## POST NEW
 @app.route("/api/persona-table" , methods = ['POST'])
@@ -147,6 +160,16 @@ def persona_table_put_by_id(id):
 
 
 ##-------------------------- PRODUCT API
+
+## GET PRODUCT LIST
+@app.route("/api/products", methods = ['GET'])
+def product_list():
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT id , name FROM PRODUCT") # TODO: WHERE archived = 0
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
 
 ## GET ALL
 @app.route("/api/product-table", methods = ['GET'])
@@ -254,8 +277,29 @@ def comments_by_table_and_item(table,id):
 def comments_create_by_table_and_item(table,id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM COMMENTS WHERE source_id = ? AND source_table = ? ", [ id , table])
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        last_id = c.execute("SELECT MAX(id) as last_id FROM COMMENTS ").fetchall()[0][0]
+        data = [
+            last_id+1,
+            request.json['source_id'],
+            request.json['source_table'],
+            request.json['comment_body'],
+            None,       #creator id # TODO:
+            datetime.datetime.now(),
+            request.json['action'],
+            request.json['downchange'],
+            request.json['upchange']]
+        c.execute("""INSERT INTO COMMENTS
+        (id,
+        source_id,
+        source_table,
+        comment_body,
+        creator_id,
+        create_date,
+        action,
+        downchange,
+        upchange)
+        VALUES (?,?,?,?,?,?,?,?,?)""",data)
+        return request.json, 201
         return json.dumps(data)
 
 

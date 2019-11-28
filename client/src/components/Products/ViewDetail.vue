@@ -30,7 +30,9 @@ TODO: fix switching
 
       <hr>
       <h4>Comments</h4>
-      <comment-view source_table='PRODUCT' item_id="form.id"></comment-view>
+      <comment-view :key='form.id'
+                    v-bind:sourceTable="source"
+                    v-bind:itemId='form.id'></comment-view>
 
     </div>
       <div  id='product-detail-edit' v-else>
@@ -88,7 +90,7 @@ import {EventBus} from "../../event-bus.js";
 export default {
   name: "product-details",
   components : {'comment-view': CommentView },
-  data() { 
+  data() {
     return {
       form: {
         name: '',
@@ -106,6 +108,7 @@ export default {
         product_photo: '',
         product_file: null},
       editing: false,
+      source: 'PRODUCT',
       options: [
           { value: 'EngineWise', text: 'EngineWise' },
           { value: 'PWX', text: 'PWX' },
