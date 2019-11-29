@@ -1,19 +1,24 @@
 
 <template>
-  <div class="">
+  <div class="wrapper">
     <!-- LEFT SIDEPANEL -->
-    <div id="left-sidepanel" class="sidepanel-left">
+    <nav id="left-sidepanel" class="sidepanel-left">
       <a href="#" id="Cards"
         class="nav-link active" v-on:click="changeView('card'); closeNav()">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-fw fa-user"></i> Cards</a>
+        <i class="fa fa-user"></i></a>
       <a href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
-        <i class="fa fa-list"></i> Table</a>
+        <i class="fa fa-list"></i></a>
       <a href="javascript:void(0)" id="Detail"
         class="nav-link active" v-on:click="expandDetail()">
-        <i class="fa fa-align-left"></i> Detail</a>
-    </div>
+        <i class="fa fa-align-left"></i></a>
+      <a href="javascript:void(0)" id="Add"
+          class="nav-link active" v-on:click=" refreshData(); expandDetail()"
+          data-toggle="tooltip" title="Add">
+      <i class="fa fa-plus"></i>
+      </a>
+    </nav>
       <!-- MAIN -->
     <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
@@ -37,9 +42,10 @@
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
-      <a href="javascript:void(0)" class="closebtn" @click="closeNav()">&times;</a>
+      <a href="javascript:void(0)"
+        class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
       <div id = "side-panel-switcher">
-        <product-detail></product-detail>
+        <product-detail :key="componentKey"></product-detail>
       </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -68,6 +74,7 @@ export default {
   },
   data() {
     return {
+     componentKey: 0,
      view:'card'
    }
   },
@@ -77,7 +84,16 @@ export default {
     },
 
     expandDetail() {
-      document.getElementById("right-sidepanel").style.width = "100%";
+    document.getElementById("right-sidepanel").style.width = "80%";
+    },
+
+    closeDetail() {
+    document.getElementById("right-sidepanel").style.width = "0px";
+    },
+
+    refreshData() {
+      this.componentKey += 1;
+      EventBus.$emit('selection-changed',this.selectedRow = '0')
     },
 
     changeView(view) { this.view = view},
@@ -95,12 +111,12 @@ function closeNav() {
 
 </script>
 
-<style>
+<style scoped>
 
 .sidepanel-right{
   height: 100%; /* Specify a height */
   width: 0; /* 0 width - change this with JavaScript */
-  position: fixed; /* Stay in place */
+  /* position: fixed; /* Stay in place */
   z-index: 1; /* Stay on top */
   top: 0;
   right: -16px;
@@ -114,8 +130,8 @@ function closeNav() {
 /* Style the links inside the sidenav */
 .sidepanel-left{
   height: 100%;
-  position: fixed;  /* Position them relative to the browser window */
-  z-index: 1;
+/*   position: fixed;  /* Position them relative to the browser window */
+  z-index: 2;
   top: 0;
   left: -115px; /* Position them outside of the screen */
   transition: 0.3s; /* Add transition on hover */

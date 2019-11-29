@@ -16,9 +16,7 @@
 </template>
 <!--
 <style>
-
 .navbar {
-  background-color:#522663 !important; /* Black*/
-  color: white
+  z-index: 100;
 }
 </style> -->

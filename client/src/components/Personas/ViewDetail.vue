@@ -1,58 +1,64 @@
 
 <template>
-<div>
+<div style="padding-right:15px; margin-left:15px">
+
+  <!-- <div role="tablist">
+          <b-button block href="#" v-b-toggle.accordion-1
+          variant="btn-outline-secondary">Wants</b-button>
+        <b-collapse id="accordion-1" accordion="my-accordion" >
+          <b-form-textarea v-model="form.wants" id="quote" name="quote" />
+        </b-collapse>
+
+          <b-button block href="#" v-b-toggle.accordion-2
+          variant="btn-outline-secondary">Quote</b-button>
+        <b-collapse id="accordion-2" accordion="my-accordion" >
+          <b-form-textarea v-model="form.quote" id="quote" name="quote" />
+        </b-collapse>
+
+          <b-button block href="#" v-b-click.accordion-3
+          variant="btn-outline-secondary">Accordion 3</b-button>
+        <b-collapse id="accordion-3" v-model="visible" tag="link">
+            <div>{{ form.quote }}</div>
+        </b-collapse>
+    </div> -->
+<!--
+
+break
+break
+
+ -->
     <b-form id='persona-detail'
-        @submit="onSubmit"
+        @submit="onEdit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='persona-detail-show' v-if='editing === false'>
+      <div id='persona-detail-show' v-if='editing === false && form.id != null'>
       <h1>Detail</h1>
       <span> Persona ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div class="">
+        <div class="">
           <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
-      </div>
-      <div>
+        </div>
         <label for="Name">Name</label>
         <div class="panel-group"> {{form.name}} </div>
-      </div>
-      <div>
         <label for="Title">Title</label>
         <p class="text-wrap"> {{form.title}} </p>
-      </div>
-      <div>
         <label for="external">Internal or External?</label>
         <p class="text-wrap"> {{form.external}} </p>
-      </div>
-      <div>
         <label for="qty">Number people who fit this persona</label>
         <p> {{form.market_size}} </p>
-      </div>
-      <div>
         <label for="quote">Persona Quote</label>
         <p> {{form.quote}} </p>
-      </div>
-      <div>
         <label for="function">Job Function</label>
         <p class="text-wrap"> {{form.job_function}} </p>
-      </div>
-      <div>
         <label for="needs" style="white-space: pre-line;">Needs</label>
         <p> {{form.needs}} </p>
-      </div>
-      <div>
         <label for="wants" style="white-space: pre-line;">Wants</label>
         <p> {{form.wants}} </p>
-      </div>
-      <div>
         <label for="pain_point">Pain Points</label>
-          <p> {{form.pain_point}} </p>
-      </div>
-      <div>
+        <p> {{form.pain_point}} </p>
         <label for="buss_val">value to business</label>
         <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
         <div class="mt-2">Value: {{ form.buss_val }}</div>
-      </div>
-      <div>
         <label for="persona_file">Add File</label>
         <p> {{form.persona_file}} </p>
       </div>
@@ -66,62 +72,52 @@
 
     </div>
       <div  id='persona-detail-edit' v-else>
-        <h1>Edit</h1>
+        <h1 v-if='form.id != null'>Edit</h1>
+        <h1 v-else>Add</h1>
         <div>
           <label for="Name">Name</label>
           <b-form-input v-model="form.name"  name="Name" />
-        </div>
-        <div>
           <label for="Title">Title</label>
           <b-form-input v-model="form.title" id="Title" name="Title" />
-        </div>
-        <div>
-          <label for="external">Internal or External?</label>
-          <b-form-radio v-model="form.external" name="some-radios"
-          value="1">External</b-form-radio>
-          <b-form-radio v-model="form.external" name="some-radios"
-          value="0">Internal</b-form-radio>
-        </div>
-        <div>
+          <div class="">
+            <label for="external">Internal or External?</label>
+            <b-form-radio v-model="form.external" name="some-radios"
+            value="1">External</b-form-radio>
+            <b-form-radio v-model="form.external" name="some-radios"
+            value="0">Internal</b-form-radio>
+          </div>
           <label for="qty">Number people who fit this persona</label>
           <b-form-input type="number" v-model="form.market_size" id="qty" name="qty" />
-        </div>
-        <div>
           <label for="quote">Persona Quote</label>
           <b-form-textarea v-model="form.quote" id="quote" name="quote" />
-        </div>
-        <div>
           <label for="function">Job Function</label>
           <b-form-textarea v-model="form.job_function" id="function" name="function" />
-        </div>
-        <div>
           <label for="needs">Needs</label>
           <b-form-textarea v-model="form.needs" id="needs" name="needs" />
-        </div>
-        <div>
           <label for="wants">Wants</label>
           <b-form-textarea v-model="form.wants" id="wants" name="wants" />
-        </div>
-        <div>
           <label for="pain-point">Pain Points</label>
           <b-form-textarea v-model="form.pain_point" id="pain_point" name="pain_point" />
-        </div>
-        <div>
           <label for="buss-val">value to business</label>
           <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
           <div class="mt-2">Value: {{ form.buss_val }}</div>
-        </div>
-        <div>
+          <br>
           <label for="product-select">Add Product:    </label>
-          <b-dropdown text="product list" variant="info">
+          <br>
+          <b-dropdown text="product list" block variant="info"
+                      class="m-2" menu-class="w-100">
             <b-form-select v-model="form.product"
                            :options="options"
                            name="product-select"
-                           multiple :select-size="4">
+                           multiple :select-size="12"
+                           size="lg">
             </b-form-select>
-            <div >Selected: <strong>{{ form.product }}</strong></div>
           </b-dropdown>
+          <br>
+          <div >Selected: <strong>{{ form.product }}</strong></div>
+          <br>
         </div>
+        <br>
         <div>
           <label for="persona_file">Add File</label>
           <b-form-file v-model="form.persona_file"
@@ -130,10 +126,14 @@
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."></b-form-file>
         </div>
-        <br>
-        <b-button type="reset" variant="secondary">Return</b-button>
-        <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-        <b-button type="submit" variant="primary">Submit Changes</b-button>
+        <div id="button-if" v-if='form.id != null'>
+          <b-button type="reset" variant="secondary">Return</b-button>
+          <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
+          <b-button type="submit" variant="primary">Submit Changes</b-button>
+        </div>
+        <div class="" v-else>
+          <b-button type="submit" variant="primary">Add New Persona</b-button>
+        </div>
       </div>
   </b-form>
 
@@ -152,6 +152,7 @@ export default {
   data() {
     return {
       form: {
+        id : null,
         name: '',
         title: '',
         external: '',
@@ -177,6 +178,15 @@ export default {
     },
     beforeMount() {
       const self = this;
+
+      // SET OPTIONS
+      axios.get("http://localhost:5000/api/products")
+        .then(response => {
+          self.options = response.data;
+        })
+        .catch(error => console.log(error))
+
+      // UPDATE DATA ON CHANGES
       EventBus.$on('selection-changed', function(selection){
 
         var get_url = "http://localhost:5000/api/persona-table/";
@@ -203,7 +213,22 @@ export default {
         });
       },
       methods: {
-       onSubmit(evt) {
+       onEdit(evt) {
+         evt.preventDefault()
+         axios({
+             method: 'put',
+             url: 'http://localhost:5000/api/persona-table',
+             data: this.form, })
+         .then(function (response) {
+             console.log(response);})
+         .catch(function (error) {
+             console.log(error);})
+
+         EventBus.$emit('persona-table-changed','item-updated')
+         document.getElementById("mySidepanel").style.width = "0px";
+       },
+
+       onAdd(evt) {
          evt.preventDefault()
          axios({
              method: 'post',

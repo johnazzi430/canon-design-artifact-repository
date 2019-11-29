@@ -1,18 +1,28 @@
 
 <template>
-  <div class="">
+  <div class="wrapper">
     <!-- LEFT SIDEPANEL -->
     <div id="left-sidepanel" class="sidepanel-left">
       <a href="#" id="Cards"
-        class="nav-link active" v-on:click="changeView('card'); closeNav()">
-          <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-fw fa-user"></i> Cards</a>
+        class="nav-link active" v-on:click="changeView('card'); closeDetail()"
+        data-toggle="tooltip" title="Persona Cards">
+        <i class="fa fa-fw fa-user"></i>
+      </a>
       <a href="javascript:void(0)" id="Table"
-        class="nav-link active" v-on:click="changeView('table') ">
-        <i class="fa fa-list"></i> Table</a>
+        class="nav-link active" v-on:click="changeView('table')"
+        data-toggle="tooltip" title="Table">
+        <i class="fa fa-list"></i>
+      </a>
       <a href="javascript:void(0)" id="Detail"
-        class="nav-link active" v-on:click="expandDetail()">
-        <i class="fa fa-align-left"></i> Detail</a>
+        class="nav-link active" v-on:click="expandDetail()"
+        data-toggle="tooltip" title="Detail">
+        <i class="fa fa-align-left"></i>
+      </a>
+      <a href="javascript:void(0)" id="Add"
+        class="nav-link active" v-on:click=" refreshData(); expandDetail()"
+        data-toggle="tooltip" title="Add">
+        <i class="fa fa-plus"></i>
+      </a>
     </div>
       <!-- MAIN -->
     <div id="persona-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
@@ -37,9 +47,10 @@
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
-      <a href="javascript:void(0)" class="closebtn" @click="closeNav()">&times;</a>
+      <a href="javascript:void(0)"
+        class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
       <div id = "side-panel-switcher">
-        <persona-detail></persona-detail>
+        <persona-detail :key="componentKey"></persona-detail>
       </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -68,16 +79,26 @@ export default {
   },
   data() {
     return {
+     componentKey: 0,
      view:'card'
    }
   },
   methods: {
-    closeNav() {
+    closeDetail() {
     document.getElementById("right-sidepanel").style.width = "0px";
     },
 
+    closeNav() {
+    document.getElementById("left-sidepanel").style= "left: -115px"
+    },
+
     expandDetail() {
-      document.getElementById("right-sidepanel").style.width = "100%";
+    document.getElementById("right-sidepanel").style.width = "80%";
+    },
+
+    refreshData() {
+      this.componentKey += 1;
+      EventBus.$emit('selection-changed',this.selectedRow = '0')
     },
 
     changeView(view) { this.view = view},
@@ -97,7 +118,7 @@ function closeNav() {
 <style>
 
 .sidepanel-right{
-  height: 100%; /* Specify a height */
+  height: 100vh; /* Specify a height */
   width: 0; /* 0 width - change this with JavaScript */
   position: fixed; /* Stay in place */
   z-index: 1; /* Stay on top */
@@ -112,25 +133,25 @@ function closeNav() {
 
 /* Style the links inside the sidenav */
 .sidepanel-left{
-  height: 100%;
+
   position: fixed;  /* Position them relative to the browser window */
-  z-index: 1;
+  /* z-index: 1; */
   top: 0;
   left: -115px; /* Position them outside of the screen */
   transition: 0.3s; /* Add transition on hover */
   padding: 30px; /* 15px padding */
-  width: 130px; /* Set a specific width */
+  width: 130px;
   background-color: #f7f7f7;
   text-decoration: none; /* Remove underline */
   overflow: hidden;
+  height: 100vh;
   font-size: 20px; /* Increase font size */
   color: white; /* White text color */
   align-content: left;
-
 }
 
 .sidepanel-left:hover {
-  left: 0; /* On mouse-over, make the elements appear as they should */
+  margin-left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
 #persona_panel {
@@ -138,6 +159,12 @@ function closeNav() {
   margin-left:15px;
   padding-right:15px;
   margin-right:15px;
+}
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
 }
 
 </style>

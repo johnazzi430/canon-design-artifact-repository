@@ -1,13 +1,11 @@
 
-TODO: fix switching
-
 <template>
-<div>
+<div style="padding-right:15px; margin-left:15px">
     <b-form id='product-detail'
-        @submit="onSubmit"
+        @submit="onEdit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='product-detail-show' v-if='editing === false'>
+      <div id='product-detail-show' v-if='editing === false && form.id != null'>
       <h1>Detail</h1>
       <span> Product ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div>
@@ -36,7 +34,8 @@ TODO: fix switching
 
     </div>
       <div  id='product-detail-edit' v-else>
-        <h1>Edit</h1>
+        <h1 v-if='form.id != null'>Edit</h1>
+        <h1 v-else>Add</h1>
         <div>
           <label>Name</label>
           <b-form-input v-model="form.name"></b-form-input>
@@ -52,18 +51,20 @@ TODO: fix switching
           <b-form-input v-model="form.owner"></b-form-input>
           <label> Product Homepage</label>
           <b-form-input v-model="form.product_homepage"></b-form-input>
-
-
-          <b-dropdown text="persona list" variant="info">
+          <br>
+          <b-dropdown text="persona list" block variant="info"
+                      class="m-2" menu-class="w-100">
             <b-form-select v-model="form.persona"
                            :options="options"
                            name="product-select"
-                           multiple :select-size="4">
+                           multiple :select-size="4"
+                           size="lg">
             </b-form-select>
-            <div >Selected: <strong>{{ form.persona}}</strong></div>
           </b-dropdown>
+          <br>
+          <div >Selected: <strong>{{ form.persona}}</strong></div>
         </div>
-        <div>
+        <div >
           <label for="product_file">Add File</label>
           <b-form-file v-model="form.product_file"
           :state="Boolean(form.product_file)"
@@ -72,9 +73,14 @@ TODO: fix switching
           drop-placeholder="Drop file here..."></b-form-file>
         </div>
         <br>
-        <b-button type="reset" variant="secondary">Return</b-button>
-        <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-        <b-button type="submit" variant="primary">Submit Changes</b-button>
+        <div id="button-if" v-if='form.id != null'>
+          <b-button type="reset" variant="secondary">Return</b-button>
+          <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
+          <b-button type="submit" variant="primary">Submit Changes</b-button>
+        </div>
+        <div class="" v-else>
+          <b-button type="submit" variant="primary">Add New Persona</b-button>
+        </div>
       </div>
   </b-form>
 
@@ -93,6 +99,7 @@ export default {
   data() {
     return {
       form: {
+        id: null,
         name: '',
         title: '',
         external: '',
@@ -118,6 +125,15 @@ export default {
     },
     beforeMount() {
       const self = this;
+
+      // SET OPTIONS
+      axios.get("http://localhost:5000/api/personas")
+        .then(response => {
+          self.options = response.data;
+        })
+        .catch(error => console.log(error))
+
+      // GET ON DATA CHANGE
       EventBus.$on('selection-changed', function(selection){
 
         var get_url = "http://localhost:5000/api/product-table/";
@@ -141,7 +157,22 @@ export default {
         });
       },
       methods: {
-       onSubmit(evt) {
+       onEdit(evt) {
+         evt.preventDefault()
+         axios({
+             method: 'post',
+             url: 'http://localhost:5000/api/product-table',
+             data: this.form, })
+         .then(function (response) {
+             console.log(response);})
+         .catch(function (error) {
+             console.log(error);})
+
+         EventBus.$emit('product-table-changed','item-updated')
+         document.getElementById("mySidepanel").style.width = "0px";
+       },
+
+       onAdd(evt) {
          evt.preventDefault()
          axios({
              method: 'post',

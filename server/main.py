@@ -73,7 +73,7 @@ def persona_table():
 def persona_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id , name FROM PERSONA") # TODO: WHERE archived = 0
+        result = c.execute("SELECT id as value , title as text FROM PERSONA") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -166,7 +166,7 @@ def persona_table_put_by_id(id):
 def product_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id , name FROM PRODUCT") # TODO: WHERE archived = 0
+        result = c.execute("SELECT id as value, name as text FROM PRODUCT") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -303,11 +303,48 @@ def comments_create_by_table_and_item(table,id):
         return json.dumps(data)
 
 
-## PLACEHOLDER FOR NAMES API
+## PERSONA TO PRODUCT REL Table
+
+## TODO MAKE WORK
+@app.route("/api/persona-product-relationship/" , methods = ['GET'])
+def persona_product_relationship_get():
+    if request.args.get('persona_id') != None and request.args.get('product_id') == None:
+        SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id"
+        id = request.args.get('persona_id')
+    elif request.args.get('product_id') != None and request.args.get('persona_id') == None:
+        SQL = "SELECT * FROM PERS_PROD_REL WHERE product_id = :id"
+        id = request.args.get('product_id')
+    else:
+        SQL = "SELECT * FROM PERS_PROD_REL"
+        id = None
+
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM PERS_PROD_REL")
+        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
+@app.route("/api/persona-product-relationship" , methods = ['POST'])
+def persona_product_rel_post():
+    app.logger.info(request.json['name'])
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        data = [last_id+1,                              ## SET ID
+                request.json['name'],
+                request.json['title'] ,
+                request.json['quote']]
+#        c.execute("""INSERT INTO PRODUCT"""
+        return request.json, 201
+
+
+
+
+
 
 
 ##--------------------------------------
-
 
 if __name__ == '__main__':
     app.run(host= '0.0.0.0', port=5000 , debug=True)
