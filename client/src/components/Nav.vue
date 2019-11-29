@@ -3,7 +3,7 @@
 <template>
     <div>
       <b-navbar class="navbar navbar-expand-md navbar-light bg-light"
-          style="margin-left:30px">
+          style="padding-left:30px">
         <div class="navbar-nav">
           <b-navbar-brand>UTC User Personas</b-navbar-brand>
           <b-nav-item href="/">Home</b-nav-item>
@@ -14,9 +14,10 @@
       </b-navbar>
     </div>
 </template>
-<!--
+
 <style>
 .navbar {
   z-index: 100;
+  margin-bottom: 0px;
 }
-</style> -->
+</style>

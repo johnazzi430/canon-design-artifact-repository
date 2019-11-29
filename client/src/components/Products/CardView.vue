@@ -23,8 +23,8 @@
           <b-button v-b-toggle="'collapse-'+card.id"
             variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
-          <b-button href="javascript:void(0)"
-              variant="outline-secondary">Open Detail View</b-button>
+          <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
+              variant="outline-secondary">Open Product</b-button>
           <b-collapse :id="'collapse-'+card.id" class="mt-2">
               <label>Product Goals</label>
               <p class="text-wrap"> {{card.goals}} </p>
@@ -58,6 +58,11 @@ export default {
     }
     )
     .catch(error => console.log(error))
+  },
+  methods:{
+    OpenDetail(id) {
+      EventBus.$emit('selection-changed' ,this.selectedRow = id)
+    },
   },
 };
 

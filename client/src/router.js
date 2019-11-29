@@ -5,7 +5,6 @@ import Router from 'vue-router';
 import PersonaPage from './components/PersonaPage.vue';
 import ProductPage from './components/ProductPage.vue';
 import Table from './components/Personas/Table.vue';
-import InputForm from './components/Personas/InputForm.vue';
 import CardView from './components/Personas/CardView.vue';
 
 Vue.use(Router);
@@ -40,11 +39,6 @@ export default new Router({
       path: '/persona/table',
       name: 'persona table',
       component: Table,
-    },
-    {
-      path: '/add_data',
-      name: 'add_data',
-      component: InputForm,
-    },
+    }
   ],
 });

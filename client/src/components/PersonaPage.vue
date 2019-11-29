@@ -1,33 +1,27 @@
 
 <template>
-  <div class="wrapper">
+  <div class="wrapper"> -
     <!-- LEFT SIDEPANEL -->
-    <div id="left-sidepanel" class="sidepanel-left">
-      <a href="#" id="Cards"
-        class="nav-link active" v-on:click="changeView('card'); closeDetail()"
-        data-toggle="tooltip" title="Persona Cards">
-        <i class="fa fa-fw fa-user"></i>
-      </a>
+    <nav id="left-sidepanel" class="sidepanel-left">
+      <a href="javascript:void(0)" id="Cards"
+        class="nav-link active" v-on:click="changeView('card'); closeNav()">
+          <!-- class="nav-link active" v-on:click="changeView('card')"> -->
+        <i class="fa fa-user"></i></a>
       <a href="javascript:void(0)" id="Table"
-        class="nav-link active" v-on:click="changeView('table')"
-        data-toggle="tooltip" title="Table">
-        <i class="fa fa-list"></i>
-      </a>
+        class="nav-link active" v-on:click="changeView('table') ">
+        <i class="fa fa-list"></i></a>
       <a href="javascript:void(0)" id="Detail"
-        class="nav-link active" v-on:click="expandDetail()"
-        data-toggle="tooltip" title="Detail">
-        <i class="fa fa-align-left"></i>
-      </a>
+        class="nav-link active" v-on:click="expandDetail()">
+        <i class="fa fa-align-left"></i></a>
       <a href="javascript:void(0)" id="Add"
-        class="nav-link active" v-on:click=" refreshData(); expandDetail()"
-        data-toggle="tooltip" title="Add">
-        <i class="fa fa-plus"></i>
+          class="nav-link active" v-on:click=" refreshData(); expandDetail()"
+          data-toggle="tooltip" title="Add">
+      <i class="fa fa-plus"></i>
       </a>
-    </div>
+    </nav>
       <!-- MAIN -->
     <div id="persona-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
-        <b-button v-b-modal.my-modal pill variant="outline-secondary" >Add Data</b-button>
         <b-modal id="my-modal">
           <persona-add></persona-add>
         </b-modal>
@@ -36,14 +30,6 @@
     </div>
     <div class="" v-if="view === 'card'" v-bind:key="view">
       <persona-card></persona-card>
-    </div>
-    <div class="" v-if="view === 'detail'" v-bind:key="view">
-      <div class="container">
-              <persona-detail></persona-detail>
-      </div>
-    </div>
-    <div class="">
-
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
@@ -63,7 +49,6 @@
 /*eslint-disable */
 import axios from 'axios'
 import Table from './Personas/Table.vue';
-import InputForm from './Personas/InputForm.vue';
 import ViewDetail from './Personas/ViewDetail.vue';
 import CardView from './Personas/CardView.vue';
 import {EventBus} from "../event-bus.js";
@@ -73,7 +58,6 @@ export default {
   name: 'persona-panel',
   components: {
     'persona-data': Table,
-    'persona-add': InputForm,
     'persona-detail': ViewDetail,
     'persona-card': CardView,
   },
@@ -115,43 +99,44 @@ function closeNav() {
 
 </script>
 
-<style>
+<style scoped>
 
 .sidepanel-right{
-  height: 100vh; /* Specify a height */
+  height: 100%; /* Specify a height */
   width: 0; /* 0 width - change this with JavaScript */
   position: fixed; /* Stay in place */
+  top: 0 ;
   z-index: 1; /* Stay on top */
-  top: 0;
   right: -16px;
   background-color: #f7f7f7; /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 60px; /* Place content 60px from the top */
-  padding: 16px;
+  padding-top: 100px; /* Place content 60px from the top */
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 /* Style the links inside the sidenav */
 .sidepanel-left{
-
+  height: 100%;
   position: fixed;  /* Position them relative to the browser window */
-  /* z-index: 1; */
-  top: 0;
+  z-index: 2;
+  top: 0 ;
   left: -115px; /* Position them outside of the screen */
   transition: 0.3s; /* Add transition on hover */
-  padding: 30px; /* 15px padding */
-  width: 130px;
+  padding: 15px; /* 15px padding */
+  padding-top: 100px;
+  width: 130px; /* Set a specific width */
   background-color: #f7f7f7;
   text-decoration: none; /* Remove underline */
   overflow: hidden;
-  height: 100vh;
   font-size: 20px; /* Increase font size */
   color: white; /* White text color */
   align-content: left;
 }
 
+
 .sidepanel-left:hover {
-  margin-left: 0; /* On mouse-over, make the elements appear as they should */
+  left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
 #persona_panel {
@@ -159,6 +144,8 @@ function closeNav() {
   margin-left:15px;
   padding-right:15px;
   margin-right:15px;
+  margin-top:0px;
+  padding-top:0px;
 }
 
 .wrapper {
