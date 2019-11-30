@@ -3,33 +3,28 @@ import secrets
 import json
 import sqlite3
 import datetime
-from flask import Flask , flash, request , redirect, render_template, jsonify, session
-from flask_sso import SSO
+from flask import Flask , flash, redirect, render_template, session
+from flask import Blueprint, jsonify, request, current_app
 from flask_cors import CORS
 from sqlite3 import Error
-from src.models import Persona
-from src.forms import Persona_Input
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY']  = r'_5#y2L"F4Q8z\n\xec]/'
-app.config['CORS_HEADERS'] = 'Content-Type'
-ext = SSO(app=app)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
+# cors = CORS(app, resources={r"/*": {"origins": "http://localhost:8080"}})
 
-SSO_ATTRIBUTE_MAP = {
-    'ADFS_AUTHLEVEL': (False, 'authlevel'),
-    'ADFS_GROUP': (True, 'group'),
-    'ADFS_LOGIN': (True, 'nickname'),
-    'ADFS_ROLE': (False, 'role'),
-    'ADFS_EMAIL': (True, 'email'),
-    'ADFS_IDENTITYCLASS': (False, 'external'),
-    'HTTP_SHIB_AUTHENTICATION_METHOD': (False, 'authmethod'),
-}
 
-app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
+api = Blueprint('api', __name__)
 
+## ---------------- SERVE STATIC
+#
+# @api.route('/', defaults={'path': ''})
+# @api.route('/<path:path>')
+# def catch_all(path):
+#     if app.debug:
+#         return requests.get('http://localhost:8080/{}'.format(path)).text
+#     return render_template("index.html")
+#
+#
 
 
 ##-------------------------- PERSONA API
@@ -44,8 +39,7 @@ def convertToBinaryData(filename):
 
 
 ## GET ALL
-@app.route("/")
-@app.route("/api/persona-table", methods = ['GET'])
+@api.route("/persona-table", methods = ['GET'])
 def persona_table():
     if request.args.get('filter') == "False" :
         with sqlite3.connect('server/data/data.db') as conn:
@@ -76,7 +70,7 @@ def persona_table():
             return json.dumps(data)
 
 ## GET PERSONA LIST
-@app.route("/api/personas", methods = ['GET'])
+@api.route("/personas", methods = ['GET'])
 def persona_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -87,7 +81,7 @@ def persona_list():
 
 
 ## POST NEW
-@app.route("/api/persona-table" , methods = ['POST'])
+@api.route("/persona-table" , methods = ['POST'])
 def persona_post():
     app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
@@ -134,7 +128,7 @@ def persona_post():
         return request.json, 201
 
 ## GET BY ID
-@app.route("/api/persona-table/<int:id>" , methods = ['GET'])
+@api.route("/persona-table/<int:id>" , methods = ['GET'])
 def persona_table_by_id(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -147,14 +141,12 @@ def persona_table_by_id(id):
                                     INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
                                     WHERE persona_id = :id """, {'id' : id})
         data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
-
-
         data[0]['product'] = data_add
         return json.dumps(data)
 
 
 
-@app.route("/api/persona-table/<int:id>" , methods = ['PUT'])
+@api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
     app.logger.info(request.json)
 
@@ -180,7 +172,7 @@ def persona_table_put_by_id(id):
 ##-------------------------- PRODUCT API
 
 ## GET PRODUCT LIST
-@app.route("/api/products", methods = ['GET'])
+@api.route("/products", methods = ['GET'])
 def product_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -190,7 +182,7 @@ def product_list():
 
 
 ## GET ALL
-@app.route("/api/product-table", methods = ['GET'])
+@api.route("/product-table", methods = ['GET'])
 def product_table():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -199,7 +191,7 @@ def product_table():
         return json.dumps(data)
 
 ## POST NEW
-@app.route("/api/product-table" , methods = ['POST'])
+@api.route("/product-table" , methods = ['POST'])
 def product_post():
     app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
@@ -250,7 +242,7 @@ def product_post():
         return request.json, 201
 
 ## GET BY ID
-@app.route("/api/product-table/<int:id>" , methods = ['GET'])
+@api.route("/product-table/<int:id>" , methods = ['GET'])
 def product_table_by_id(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -259,7 +251,7 @@ def product_table_by_id(id):
         return json.dumps(data)
 
 
-@app.route("/api/product-table/<int:id>" , methods = ['PUT'])
+@api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
     app.logger.info(request.json)
 
@@ -282,7 +274,7 @@ def product_table_put_by_id(id):
         return request.json, 201
 
 
-@app.route("/api/comments/<table>/<int:id>" , methods = ['GET'])
+@api.route("/comments/<table>/<int:id>" , methods = ['GET'])
 def comments_by_table_and_item(table,id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -291,7 +283,7 @@ def comments_by_table_and_item(table,id):
         return json.dumps(data)
 
 # TODO: Make this work
-@app.route("/api/comments/<table>/<int:id>" , methods = ['POST'])
+@api.route("/comments/<table>/<int:id>" , methods = ['POST'])
 def comments_create_by_table_and_item(table,id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
@@ -324,7 +316,7 @@ def comments_create_by_table_and_item(table,id):
 ## PERSONA TO PRODUCT REL Table
 
 ## TODO MAKE WORK
-@app.route("/api/persona-product-relationship/" , methods = ['GET'])
+@api.route("/persona-product-relationship/" , methods = ['GET'])
 def persona_product_relationship_get():
     if request.args.get('persona_id') != None and request.args.get('product_id') == None:
         SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id"
@@ -344,7 +336,7 @@ def persona_product_relationship_get():
         return json.dumps(data)
 
 
-@app.route("/api/persona-product-relationship" , methods = ['POST'])
+@api.route("/persona-product-relationship" , methods = ['POST'])
 def persona_product_rel_post():
     app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
@@ -355,14 +347,3 @@ def persona_product_rel_post():
                 request.json['quote']]
 #        c.execute("""INSERT INTO PRODUCT"""
         return request.json, 201
-
-
-
-
-
-
-
-##--------------------------------------
-
-if __name__ == '__main__':
-    app.run(host= '0.0.0.0', port=5000 , debug=True)

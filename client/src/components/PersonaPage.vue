@@ -124,7 +124,7 @@ function closeNav() {
   transition: 0.3s; /* Add transition on hover */
   padding: 15px; /* 15px padding */
   padding-top: 100px;
-  width: 40px; /* Set a specific width */
+  width: 60px; /* Set a specific width */
   background-color: #f7f7f7;
   text-decoration: none; /* Remove underline */
   overflow: hidden;

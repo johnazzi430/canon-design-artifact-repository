@@ -119,9 +119,7 @@ break
           </b-dropdown>
           <br>
           <div >Selected: <strong>{{ form.product }}</strong></div>
-          <br>
         </div>
-        <br>
         <div>
           <label for="persona_file">Add File</label>
           <b-form-file v-model="form.persona_file"

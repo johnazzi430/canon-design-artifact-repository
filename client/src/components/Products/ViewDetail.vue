@@ -52,7 +52,7 @@
           <label> Product Homepage</label>
           <b-form-input v-model="form.product_homepage"></b-form-input>
           <br>
-          <b-dropdown text="persona list" block variant="info"
+          <!-- <b-dropdown text="persona list" block variant="info"
                       class="m-2" menu-class="w-100">
             <b-form-select v-model="form.persona"
                            :options="options"
@@ -60,7 +60,7 @@
                            multiple :select-size="4"
                            size="lg">
             </b-form-select>
-          </b-dropdown>
+          </b-dropdown> -->
           <br>
           <div >Selected: <strong>{{ form.persona}}</strong></div>
         </div>

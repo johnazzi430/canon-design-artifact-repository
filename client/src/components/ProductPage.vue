@@ -20,7 +20,7 @@
       </a>
     </nav>
       <!-- MAIN -->
-    <div id="product-panel" class="container" v-if="view === 'table'" v-bind:key="view">
+    <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
         <b-modal id="my-modal">
           <product-add></product-add>
@@ -125,29 +125,33 @@ function closeNav() {
   transition: 0.3s; /* Add transition on hover */
   padding: 15px; /* 15px padding */
   padding-top: 100px;
-  width: 130px; /* Set a specific width */
+  width: 60px; /* Set a specific width */
   background-color: #f7f7f7;
   text-decoration: none; /* Remove underline */
   overflow: hidden;
   font-size: 20px; /* Increase font size */
   color: white; /* White text color */
   align-content: left;
-
 }
 
 .sidepanel-left:hover {
   left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
-#product_panel {
+#persona_panel {
   padding-left:15px;
   margin-left:15px;
   padding-right:15px;
   margin-right:15px;
+  margin-top:-15px;
+  padding-top:-15px;
 }
 
 .wrapper {
-  flex-wrap: nowrap
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    margin-top:-16px;
+    padding-top:-16px;
 }
-
 </style>
