@@ -2,11 +2,12 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
-import PersonaData from './components/PersonaData.vue';
-import Table from './components/Table.vue';
-import InputForm from './components/InputForm.vue';
-
-
+import PersonaPage from './components/PersonaPage.vue';
+import ProductPage from './components/ProductPage.vue';
+import Login from './components/Login.vue';
+import NotFound from './components/NotFound.vue';
+import Table from './components/Personas/Table.vue';
+import CardView from './components/Personas/CardView.vue';
 
 Vue.use(Router);
 //Vue.use(BootstrapVue)
@@ -15,27 +16,41 @@ export default new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
-
     {
       path: '/',
-      name: 'PersonaData',
-      component: PersonaData,
+      redirect: {
+        name: 'login'
+      }
     },
     {
-      path: '/PersonaData',
-      name: 'PersonaData',
-      component: PersonaData,
+      path: '/login',
+      name: 'login',
+      component: Login,
+    },
+    // {
+    //   path: '*',
+    //   name: 'invalid',
+    //   component: NotFound,
+    // },
+    {
+      path: '/persona',
+      name: 'persona default',
+      component: PersonaPage,
     },
     {
-      path: '/table',
-      name: 'table',
-      component: Table,
+      path: '/product',
+      name: 'product default',
+      component: ProductPage,
     },
-    {
-      path: '/add_data',
-      name: 'add_data',
-      component: InputForm,
-    },
-
+    // {
+    //   path: '/persona/cards',
+    //   name: 'persona cards',
+    //   component: CardView,
+    // },
+    // {
+    //   path: '/persona/table',
+    //   name: 'persona table',
+    //   component: Table,
+    // }
   ],
 });

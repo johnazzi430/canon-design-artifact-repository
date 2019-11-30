@@ -17,7 +17,16 @@ export default {
   name: 'app',
   components: {
     'app-nav': Nav,
-  }
+  },
+  data() {
+    return {
+        authenticated: true,
+        mockAccount: {
+            username: "nraboy",
+            password: "password"
+        }
+    }
+  },
 }
 </script>
 
@@ -29,4 +38,6 @@ export default {
   text-align: left;
   color: #2c3e50;
 }
+
+
 </style>

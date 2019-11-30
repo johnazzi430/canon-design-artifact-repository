@@ -1,7 +1,5 @@
 
 
-
-
 .test-container {
     height: 100%;
     display: flex;
@@ -12,8 +10,4 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 13px;
     margin-bottom: 5px;
-}
-
-.navbar {
-  background-color: #a378ff !important; /* Black*/
 }

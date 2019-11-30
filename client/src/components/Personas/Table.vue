@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="test-header row" style="margin:15px">
+    <div class="test-header row" style="margin:15px;">
       <!-- TODO: add "Add data button" -->
       <div class="col-2">
         Selection:
@@ -13,7 +13,7 @@
         placeholder="Filter..." oninput="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100vl; height: 500px;"
+    <ag-grid-vue style="width: 100%; height: 500px;"
     class="ag-theme-balham"
     :columnDefs="columnDefs"
     :rowData="rowData"
@@ -32,7 +32,7 @@ import {AllCommunityModules} from '@ag-grid-community/all-modules';
 import {EventBus} from "../../event-bus.js";
 
 export default {
-  name: 'ProductTable',
+  name: 'PersonaTable',
   data() {
     return {
       columnDefs: null,
@@ -78,10 +78,11 @@ export default {
   beforeMount() {
     this.columnDefs = [
       {headerName: "Name", field: "name", width: 200},
-      {headerName: "Description", field: "description", filter: 'agTextColumnFilter', width: 200},
-      {headerName: "Goals", field: "goals", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Features", field: "features", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Owner", field: "owner", filter: true, width: 50},
+      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
+      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
+      {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
+      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400},
+      {headerName: "Market Size", field: "market_size", filter: true, width: 50},
     ];
 
     this.defaultColDef = {
@@ -95,18 +96,18 @@ export default {
 
     this.gridOptions = {};
     this.rowSelection = "single";
-    this.gridOptions.rowHeight = 100;
-    fetch('http://localhost:5000/api/product-table')
+    this.gridOptions.rowHeight = 200;
+    fetch('http://localhost:5000/api/persona-table')
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
   },
   mounted() {
-    EventBus.$on('product-table-changed',function() {
+    EventBus.$on('persona-table-changed',function() {
       this.gridApi.redrawRows()
     });
 
     this.$nextTick(() => {
-        fetch('http://localhost:5000/api/product-table')
+        fetch('http://localhost:5000/api/persona-table')
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });
