@@ -111,15 +111,14 @@ function closeNav() {
   right: -16px;
   background-color: #f7f7f7; /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 100px; /* Place content 60px from the top */
+  padding-top: 75px; /* Place content 60px from the top */
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 /* Style the links inside the sidenav */
 .sidepanel-left{
-  height: 100%;
-  position: fixed;  /* Position them relative to the browser window */
+  height: 100vh;
   z-index: 2;
   top: 0 ;
   left: -115px; /* Position them outside of the screen */
@@ -145,13 +144,10 @@ function closeNav() {
   margin-left:15px;
   padding-right:15px;
   margin-right:15px;
-  margin-top:0px;
-  padding-top:0px;
 }
 
 .wrapper {
-  margin-top:0;
-  padding-top:0;
+  flex-wrap: nowrap
 }
 
 </style>

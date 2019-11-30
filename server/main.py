@@ -35,6 +35,13 @@ app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
 ##-------------------------- PERSONA API
 
 
+## METHODS
+def convertToBinaryData(filename):
+    #Convert digital data to binary format
+    with open(filename, 'rb') as file:
+        blobData = file.read()
+    return blobData
+
 
 ## GET ALL
 @app.route("/")
@@ -131,9 +138,20 @@ def persona_post():
 def persona_table_by_id(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        persona = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
+        data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
+        persona_products = c.execute("""SELECT
+                                            PERS_PROD_REL.product_id as product_id,
+                                            PRODUCT.name as product_name
+                                    FROM PERS_PROD_REL
+                                    INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
+                                    WHERE persona_id = :id """, {'id' : id})
+        data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
+
+
+        data[0]['product'] = data_add
         return json.dumps(data)
+
 
 
 @app.route("/api/persona-table/<int:id>" , methods = ['PUT'])

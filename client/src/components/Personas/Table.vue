@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="test-header row" style="margin:15px">
+    <div class="test-header row" style="margin:15px;">
       <!-- TODO: add "Add data button" -->
       <div class="col-2">
         Selection:

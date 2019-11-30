@@ -58,6 +58,10 @@ break
         <p> {{form.pain_point}} </p>
         <label for="buss_val">value to business</label>
         <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
+        <label>Associated Products</label>
+        <div v-for="product in form.product" v-bind:key="product">
+          <b-button pill variant="info">{{product.product_name}}</b-button>
+        </div>
         <div class="mt-2">Value: {{ form.buss_val }}</div>
         <label for="persona_file">Add File</label>
         <p> {{form.persona_file}} </p>
@@ -164,7 +168,9 @@ export default {
         pain_point: '',
         buss_val: '',
         revision: '',
-        product: '',
+        product: [
+           {product_id: '' , product_name:''},
+         ],
         persona_photo: '',
         persona_file: null},
       editing: false,
@@ -206,6 +212,7 @@ export default {
             self.form.pain_point= response.data[0].pain_point;
             self.form.buss_val= response.data[0].buss_val;
             self.form.revision= response.data[0].revision;
+            self.form.product = response.data[0].product;
             self.editing = false;
           }
         )
