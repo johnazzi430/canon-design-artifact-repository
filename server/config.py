@@ -19,4 +19,23 @@ class Config(object):
         raise Exception(
             'DIST_DIR not found: {}'.format(DIST_DIR))
 
+class BaseConfig(object):
+ '''
+ Base config class
+ '''
+ DEBUG = True
+ TESTING = False
+class ProductionConfig(BaseConfig):
+ """
+ Production specific config
+ """
+ DEBUG = False
+class DevelopmentConfig(BaseConfig):
+ """
+ Development environment specific configuration
+ """
+ DEBUG = True
+ TESTING = True
+
+
 app.config.from_object('server.config.Config')
