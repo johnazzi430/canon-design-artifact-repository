@@ -13,8 +13,8 @@ Vue.use(Router);
 //Vue.use(BootstrapVue)
 
 export default new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
+  // mode: 'history',
+  // base: process.env.BASE_URL,
   routes: [
     {
       path: '/',
