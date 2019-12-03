@@ -31,7 +31,7 @@ break
         @submit="onEdit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='persona-detail-show' v-if='editing === false && form.id != null'>
+      <div id='persona-detail-show' v-if='editing === false && detailview == "view"'>
       <h1>Detail</h1>
       <span> Persona ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div class="">
@@ -76,8 +76,8 @@ break
 
     </div>
       <div  id='persona-detail-edit' v-else>
-        <h1 v-if='form.id != null'>Edit</h1>
-        <h1 v-else>Add</h1>
+        <h1 v-if='detailview === "add"'>Add</h1>
+        <h1 v-else>Edit</h1>
         <div>
           <label for="Name">Name</label>
           <b-form-input v-model="form.name"  name="Name" />
@@ -134,7 +134,7 @@ break
           <b-button type="submit" variant="primary">Submit Changes</b-button>
         </div>
         <div class="" v-else>
-          <b-button type="submit" variant="primary">Add New Persona</b-button>
+          <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Persona</b-button>
         </div>
       </div>
   </b-form>
@@ -146,11 +146,12 @@ break
 /*eslint-disable */
 import axios from 'axios'
 import CommentView from '../CommentView.vue'
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
 
 export default {
   name: "persona-details",
   components : {'comment-view': CommentView },
+  props : ['detailview'],
   data() {
     return {
       form: {
@@ -169,7 +170,7 @@ export default {
         product: [
            {product_id: '' , product_name:''},
          ],
-        persona_photo: '',
+        persona_picture: '',
         persona_file: null},
       editing: false,
       source: 'PERSONA',
@@ -184,7 +185,7 @@ export default {
       const self = this;
 
       // SET OPTIONS
-      axios.get("http://localhost:5000/api/products")
+      axios.get("/api/products")
         .then(response => {
           self.options = response.data;
         })
@@ -192,8 +193,9 @@ export default {
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('selection-changed', function(selection){
+        self.detailview = 'view';
 
-        var get_url = "http://localhost:5000/api/persona-table/";
+        var get_url = "/api/persona-table/";
         get_url += selection;
 
         axios.get(get_url)
@@ -219,10 +221,10 @@ export default {
       },
       methods: {
        onEdit(evt) {
-         evt.preventDefault()
+
          axios({
              method: 'put',
-             url: 'http://localhost:5000/api/persona-table',
+             url: '/api/persona-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -233,30 +235,28 @@ export default {
          document.getElementById("mySidepanel").style.width = "0px";
        },
 
-       onAdd(evt) {
-         evt.preventDefault()
+       onAdd() {
+         console.log(this.form)
          axios({
              method: 'post',
-             url: 'http://localhost:5000/api/persona-table',
+             url: '/api/persona-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('persona-table-changed','item-updated')
-         document.getElementById("mySidepanel").style.width = "0px";
+         EventBus.$emit('persona-table-changed','item-updated');
+         document.getElementById("right-sidepanel").style.width = "0px";
        },
 
-       onReset(evt) {
-         evt.preventDefault()
+       onReset() {
          // Reset our form values
          this.editing = false;
        },
 
-       onArchive(evt) {
-         evt.preventDefault()
-         var get_url = 'http://localhost:5000/api/persona-table/';
+       onArchive() {
+         var get_url = '/api/persona-table/';
          get_url += this.form.id ;
          //get_url += '?name=frank';
 
@@ -275,7 +275,7 @@ export default {
 
          console.log('delete')
          EventBus.$emit('persona-table-changed' , archive_set )
-         document.getElementById("mySidepanel").style.width = "0px";
+         document.getElementById("right-sidepanel").style.width = "0px";
       },
      },
   };

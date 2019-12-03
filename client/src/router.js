@@ -6,32 +6,29 @@ import PersonaPage from './components/PersonaPage.vue';
 import ProductPage from './components/ProductPage.vue';
 import Login from './components/Login.vue';
 import NotFound from './components/NotFound.vue';
-import Table from './components/Personas/Table.vue';
-import CardView from './components/Personas/CardView.vue';
+import Home from './components/Home.vue';
+import {EventBus} from  "./index.js";
+import store from  "./store";
 
 Vue.use(Router);
-//Vue.use(BootstrapVue)
 
-export default new Router({
+
+const router =  new Router({
   // mode: 'history',
   // base: process.env.BASE_URL,
+
+
   routes: [
     {
       path: '/',
-      redirect: {
-        name: 'login'
-      }
+      name: 'home',
+      component: Home,
     },
     {
       path: '/login',
       name: 'login',
       component: Login,
     },
-    // {
-    //   path: '*',
-    //   name: 'invalid',
-    //   component: NotFound,
-    // },
     {
       path: '/persona',
       name: 'persona default',
@@ -42,15 +39,25 @@ export default new Router({
       name: 'product default',
       component: ProductPage,
     },
-    // {
-    //   path: '/persona/cards',
-    //   name: 'persona cards',
-    //   component: CardView,
-    // },
-    // {
-    //   path: '/persona/table',
-    //   name: 'persona table',
-    //   component: Table,
-    // }
   ],
 });
+
+// router.beforeEach((to, from, next) => {
+//   console.log(store.state.authenticated)
+//   console.log(to)
+//   if(to.name === "login") {
+//     next()
+//     return
+//   }
+//   else {
+//     if(store.state.authenticated === true) {
+//       next()
+//       return
+//     }
+//     else {
+//       next('/login')
+//     }
+//   }
+// })
+
+export default router

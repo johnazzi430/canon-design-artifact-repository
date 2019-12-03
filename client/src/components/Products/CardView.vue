@@ -44,13 +44,13 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
 
 export default {
   data() {return { cards : {} } },
   beforeMount() {
     const self = this;
-    var get_url = "http://localhost:5000/api/product-table";
+    var get_url = "/api/product-table";
 
     axios.get(get_url)
     .then(response => {
@@ -76,6 +76,6 @@ export default {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-}
+};
 
 </style>

@@ -46,13 +46,15 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
+
+
 
 export default {
   data() {return { cards : {} } },
   beforeMount() {
     const self = this;
-    var get_url = "http://localhost:5000/api/persona-table";
+    var get_url = `/api/persona-table`;
 
     axios.get(get_url)
     .then(response => {
@@ -70,14 +72,16 @@ export default {
 
 </script>
 
-<style lang="css">
+<style lang="css" scoped>
 .avatar {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  width: 50px;
-  height: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  min-height: 50px;
+  max-height: 50px;
   border-radius: 50%;
-}
+};
 
 </style>

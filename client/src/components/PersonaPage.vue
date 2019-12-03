@@ -14,7 +14,8 @@
         class="nav-link active" v-on:click="expandDetail()">
         <i class="fa fa-align-left"></i></a>
       <a href="javascript:void(0)" id="Add"
-          class="nav-link active" v-on:click=" refreshData(); expandDetail()"
+          class="nav-link active"
+          v-on:click=" refreshData(); expandDetail(), switchAdd()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
       </a>
@@ -36,7 +37,7 @@
       <a href="javascript:void(0)"
         class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
       <div id = "side-panel-switcher">
-        <persona-detail :key="componentKey"></persona-detail>
+        <persona-detail v-bind:detailview="detailview"></persona-detail>
       </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -51,7 +52,7 @@ import axios from 'axios'
 import Table from './Personas/Table.vue';
 import ViewDetail from './Personas/ViewDetail.vue';
 import CardView from './Personas/CardView.vue';
-import {EventBus} from "../event-bus.js";
+import {EventBus} from "../index.js";
 
 
 export default {
@@ -63,8 +64,8 @@ export default {
   },
   data() {
     return {
-     componentKey: 0,
-     view:'card'
+    detailview : 'add',
+     view:'card',
    }
   },
   methods: {
@@ -78,6 +79,10 @@ export default {
 
     expandDetail() {
     document.getElementById("right-sidepanel").style.width = "80%";
+    },
+
+    switchAdd() {
+      this.detailview = 'add'
     },
 
     refreshData() {

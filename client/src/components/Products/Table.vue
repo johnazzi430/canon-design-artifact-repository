@@ -29,7 +29,7 @@
 /*eslint-disable */
 import {AgGridVue} from "@ag-grid-community/vue";
 import {AllCommunityModules} from '@ag-grid-community/all-modules';
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
 
 export default {
   name: 'ProductTable',
@@ -96,7 +96,7 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 100;
-    fetch('http://localhost:5000/api/product-table')
+    fetch('/api/product-table')
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
   },
@@ -106,7 +106,7 @@ export default {
     });
 
     this.$nextTick(() => {
-        fetch('http://localhost:5000/api/product-table')
+        fetch('/api/product-table')
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });

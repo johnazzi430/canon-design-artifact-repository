@@ -51,7 +51,7 @@ import axios from 'axios'
 import Table from './Products/Table.vue';
 import ViewDetail from './Products/ViewDetail.vue';
 import CardView from './Products/CardView.vue';
-import {EventBus} from "../event-bus.js";
+import {EventBus} from "../index.js";
 
 
 export default {

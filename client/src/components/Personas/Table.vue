@@ -14,13 +14,13 @@
       </div>
     </div>
     <ag-grid-vue style="width: 100%; height: 500px;"
-    class="ag-theme-balham"
-    :columnDefs="columnDefs"
-    :rowData="rowData"
-    :modules="modules"
-    rowSelection="single"
-    @grid-ready="onGridReady"
-    @selection-changed="onSelectionChanged">
+        class="ag-theme-balham"
+        :columnDefs="columnDefs"
+        :rowData="rowData"
+        :modules="modules"
+        rowSelection="single"
+        @grid-ready="onGridReady"
+        @selection-changed="onSelectionChanged">
   </ag-grid-vue>
 </div>
 </template>
@@ -29,7 +29,9 @@
 /*eslint-disable */
 import {AgGridVue} from "@ag-grid-community/vue";
 import {AllCommunityModules} from '@ag-grid-community/all-modules';
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
+
+const API_URL = process.env.API_URL
 
 export default {
   name: 'PersonaTable',
@@ -42,7 +44,7 @@ export default {
       gridOptions: null,
       modules: AllCommunityModules,
       selectedRow: null,
-      defaultColDef: null
+      defaultColDef: null,
     }
   },
   components: {
@@ -73,7 +75,6 @@ export default {
     onFilterTextBoxChanged() {
       gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);
     },
-
   },
   beforeMount() {
     this.columnDefs = [
@@ -97,17 +98,17 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 200;
-    fetch('http://localhost:5000/api/persona-table')
+    fetch(`/api/persona-table`)
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
-  },
-  mounted() {
-    EventBus.$on('persona-table-changed',function() {
-      this.gridApi.redrawRows()
-    });
+  // },
+  // mounted() {
+    // EventBus.$on('persona-table-changed',function() {
+    //   this.gridApi.redrawRows();
+    // });
 
     this.$nextTick(() => {
-        fetch('http://localhost:5000/api/persona-table')
+        fetch(`/api/persona-table`)
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });

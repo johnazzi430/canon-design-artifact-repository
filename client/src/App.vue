@@ -22,7 +22,7 @@ export default {
     return {
         authenticated: true,
         mockAccount: {
-            username: "nraboy",
+            username: "unitedtech",
             password: "password"
         }
     }

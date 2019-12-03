@@ -28,7 +28,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
-import {EventBus} from "../event-bus.js";
+import {EventBus} from "../index.js";
 
 export default {
   data() {
@@ -42,7 +42,7 @@ export default {
   },
   props: ["sourceTable" , "itemId"],
   mounted() {
-      var get_url = "http://localhost:5000/api/comments/" + this.sourceTable + '/' + this.itemId
+      var get_url = "/api/comments/" + this.sourceTable + '/' + this.itemId
 
       axios
       .get(get_url)
@@ -62,7 +62,7 @@ export default {
         upchange : None,
       };
 
-      var set_url = "http://localhost:5000/api/comments/" + this.sourceTable + '/' + this.itemId
+      var set_url = "/api/comments/" + this.sourceTable + '/' + this.itemId
 
       axios({
           method: 'post',

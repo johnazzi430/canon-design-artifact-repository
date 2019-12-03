@@ -79,7 +79,7 @@ def persona_list():
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
-    app.logger.info(request.json['name'])
+    current_app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
@@ -100,7 +100,8 @@ def persona_post():
                 None,                                # creator_id   TODO
                 None,                                # access_group TODO
                 0,                                     # archived
-                request.json['persona_file']]
+                request.json['persona_file'],
+                request.json['persona_picture']]
 
         c.execute("""INSERT INTO PERSONA
         (id,
@@ -114,13 +115,15 @@ def persona_post():
         external,
         market_size,
         buss_val,
-        record_date,
+        create_date,
         revision,
         creator_id,
         access_group,
         archived,
-        persona_file)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
+        persona_file,
+        persona_picture)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
+        conn.commit()
         return request.json, 201
 
 ## GET BY ID
@@ -130,21 +133,23 @@ def persona_table_by_id(id):
         c = conn.cursor()
         persona = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
         data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
-        persona_products = c.execute("""SELECT
-                                            PERS_PROD_REL.product_id as product_id,
-                                            PRODUCT.name as product_name
-                                    FROM PERS_PROD_REL
-                                    INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
-                                    WHERE persona_id = :id """, {'id' : id})
-        data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
-        data[0]['product'] = data_add
-        return json.dumps(data)
-
+        if id != 0:
+            persona_products = c.execute("""SELECT
+                                                PERS_PROD_REL.product_id as product_id,
+                                                PRODUCT.name as product_name
+                                        FROM PERS_PROD_REL
+                                        INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
+                                        WHERE persona_id = :id """, {'id' : id})
+            data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
+            data[0]['product'] = data_add
+            return json.dumps(data), 201
+        else:
+            return json.dumps([{'id': None}])
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
-    app.logger.info(request.json)
+    current_app.logger.info(request.json)
 
     SQL = "UPDATE PERSONA SET "
     data_values = []
@@ -157,11 +162,12 @@ def persona_table_put_by_id(id):
 
     SQL = SQL + " WHERE id = ?"
     data_values.append(id)
-    app.logger.info(SQL)
-    app.logger.info(data_values)
+    current_app.logger.info(SQL)
+    current_app.logger.info(data_values)
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         c.execute( SQL, data_values)
+        conn.commit()
         return request.json, 201
 
 
@@ -189,52 +195,40 @@ def product_table():
 ## POST NEW
 @api.route("/product-table" , methods = ['POST'])
 def product_post():
-    app.logger.info(request.json['name'])
+    current_app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT ").fetchall()[0][0]
         last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PRODUCT where name=?", [request.json['name']]).fetchall()[0][0]
         data = [last_id+1,                              ## SET ID
                 request.json['name'],
-                request.json['title'] ,
-                request.json['quote'],
-                request.json['job_function'] ,
-                request.json['needs'] ,
-                request.json['wants'] ,
-                request.json['pain_point'] ,
-                request.json['external'] ,
-                request.json['market_size'] ,
-                request.json['buss_val'] ,
+                request.json['description'] ,
+                request.json['metrics'],
+                request.json['goals'] ,
+                request.json['features'] ,
                 datetime.datetime.now(),               # Record Date
                 datetime.datetime.now(),               # Record Date
-                last_revision,                          # Revision
-                None,                                # creator_id   TODO
-                None,                                # access_group TODO
                 0,                                     # archived
-                request.json['persona_file'],
-                request.json['persona_picture']]
+                None,                                # creator_id   TODO
+                request.json['owner'],                                # access_group TODO
+                last_revision,                          # Revision
+                request.json['product_homepage']        ]
 
         c.execute("""INSERT INTO PRODUCT
         (id,
         name,
-        title,
-        quote,
-        job_function,
-        needs,
-        wants,
-        pain_point,
-        external,
-        market_size,
-        buss_val,
+        description,
+        metrics,
+        goals,
+        features,
         create_date,
-        last_update_date
-        revision,
-        creator_id,
-        access_group,
+        last_update,
         archived,
-        persona_file,
-        persona_picture)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?.?)""",data)
+        creator_id,
+        owner,
+        revision,
+        product_homepage)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
         return request.json, 201
 
 ## GET BY ID
@@ -249,7 +243,7 @@ def product_table_by_id(id):
 
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
-    app.logger.info(request.json)
+    current_app.logger.info(request.json)
 
     SQL = "UPDATE PRODUCT SET "
     data_values = []
@@ -262,8 +256,6 @@ def product_table_put_by_id(id):
 
     SQL = SQL + " WHERE id = ?"
     data_values.append(id)
-    app.logger.info(SQL)
-    app.logger.info(data_values)
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         c.execute( SQL, data_values)
@@ -308,8 +300,16 @@ def comments_create_by_table_and_item(table,id):
         return request.json, 201
         return json.dumps(data)
 
-
 ## PERSONA TO PRODUCT REL Table
+
+
+
+
+
+
+
+
+
 
 ## TODO MAKE WORK
 @api.route("/persona-product-relationship/" , methods = ['GET'])
@@ -334,7 +334,6 @@ def persona_product_relationship_get():
 
 @api.route("/persona-product-relationship" , methods = ['POST'])
 def persona_product_rel_post():
-    app.logger.info(request.json['name'])
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         data = [last_id+1,                              ## SET ID

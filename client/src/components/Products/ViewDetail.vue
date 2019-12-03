@@ -91,7 +91,7 @@
 /*eslint-disable */
 import axios from 'axios'
 import CommentView from '../CommentView.vue'
-import {EventBus} from "../../event-bus.js";
+import {EventBus} from "../../index.js";
 
 export default {
   name: "product-details",
@@ -127,7 +127,7 @@ export default {
       const self = this;
 
       // SET OPTIONS
-      axios.get("http://localhost:5000/api/personas")
+      axios.get("/api/personas")
         .then(response => {
           self.options = response.data;
         })
@@ -136,7 +136,7 @@ export default {
       // GET ON DATA CHANGE
       EventBus.$on('selection-changed', function(selection){
 
-        var get_url = "http://localhost:5000/api/product-table/";
+        var get_url = "/api/product-table/";
         get_url += selection;
 
         axios.get(get_url)
@@ -161,7 +161,7 @@ export default {
          evt.preventDefault()
          axios({
              method: 'post',
-             url: 'http://localhost:5000/api/product-table',
+             url: '/api/product-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -169,14 +169,14 @@ export default {
              console.log(error);})
 
          EventBus.$emit('product-table-changed','item-updated')
-         document.getElementById("mySidepanel").style.width = "0px";
+         document.getElementById("right-sidepanel").style.width = "0px";
        },
 
        onAdd(evt) {
          evt.preventDefault()
          axios({
              method: 'post',
-             url: 'http://localhost:5000/api/product-table',
+             url: '/api/product-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -184,7 +184,7 @@ export default {
              console.log(error);})
 
          EventBus.$emit('product-table-changed','item-updated')
-         document.getElementById("mySidepanel").style.width = "0px";
+         document.getElementById("right-sidepanel").style.width = "0px";
        },
 
        onReset(evt) {
@@ -195,7 +195,7 @@ export default {
 
        onArchive(evt) {
          evt.preventDefault()
-         var get_url = 'http://localhost:5000/api/product-table/';
+         var get_url = '/api/product-table/';
          get_url += this.form.id ;
          //get_url += '?name=frank';
 
@@ -214,7 +214,7 @@ export default {
 
          console.log('delete')
          EventBus.$emit('product-table-changed' , archive_set )
-         document.getElementById("mySidepanel").style.width = "0px";
+         document.getElementById("right-sidepanel").style.width = "0px";
       },
      },
   };
