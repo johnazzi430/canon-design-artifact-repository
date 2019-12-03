@@ -96,7 +96,7 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 100;
-    fetch('http://localhost:5000/api/product-table')
+    fetch('http://0.0.0.0:5000/api/product-table')
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
   },
@@ -106,7 +106,7 @@ export default {
     });
 
     this.$nextTick(() => {
-        fetch('http://localhost:5000/api/product-table')
+        fetch('http://0.0.0.0:5000/api/product-table')
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });

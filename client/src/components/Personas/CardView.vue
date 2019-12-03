@@ -52,7 +52,7 @@ export default {
   data() {return { cards : {} } },
   beforeMount() {
     const self = this;
-    var get_url = "http://localhost:5000/api/persona-table";
+    var get_url = "http://0.0.0.0:5000/api/persona-table";
 
     axios.get(get_url)
     .then(response => {

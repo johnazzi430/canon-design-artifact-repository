@@ -184,7 +184,7 @@ export default {
       const self = this;
 
       // SET OPTIONS
-      axios.get("http://localhost:5000/api/products")
+      axios.get("http://0.0.0.0:5000/api/products")
         .then(response => {
           self.options = response.data;
         })
@@ -193,7 +193,7 @@ export default {
       // UPDATE DATA ON CHANGES
       EventBus.$on('selection-changed', function(selection){
 
-        var get_url = "http://localhost:5000/api/persona-table/";
+        var get_url = "http://0.0.0.0:5000/api/persona-table/";
         get_url += selection;
 
         axios.get(get_url)
@@ -222,7 +222,7 @@ export default {
          evt.preventDefault()
          axios({
              method: 'put',
-             url: 'http://localhost:5000/api/persona-table',
+             url: 'http://0.0.0.0:5000/api/persona-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -237,7 +237,7 @@ export default {
          evt.preventDefault()
          axios({
              method: 'post',
-             url: 'http://localhost:5000/api/persona-table',
+             url: 'http://0.0.0.0:5000/api/persona-table',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -256,7 +256,7 @@ export default {
 
        onArchive(evt) {
          evt.preventDefault()
-         var get_url = 'http://localhost:5000/api/persona-table/';
+         var get_url = 'http://0.0.0.0:5000/api/persona-table/';
          get_url += this.form.id ;
          //get_url += '?name=frank';
 

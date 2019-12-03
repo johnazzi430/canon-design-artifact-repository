@@ -15,6 +15,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.1.0",
     "core-js": "^3.3.2",
+    "npm": "^6.13.1",
     "vue": "^2.6.10",
     "vue-property-decorator": "^8.3.0",
     "vue-router": "^3.1.3",
