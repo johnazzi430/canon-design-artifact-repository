@@ -70,7 +70,7 @@ export default {
 
 </script>
 
-<style lang="css" scoped>
+<style lang="css">
 .avatar {
   display: block;
   margin-left: auto;

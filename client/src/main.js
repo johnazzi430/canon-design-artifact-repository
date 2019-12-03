@@ -4,6 +4,7 @@ import App from './App.vue';
 import BootstrapVue from 'bootstrap-vue'
 import axios from 'axios'
 import router from './router';
+import store from './store';
 
 // CSS
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
@@ -17,7 +18,9 @@ Vue.use(BootstrapVue)
 
 new Vue({
   router,
+  store,
   render: h => h(App),
 }).$mount('#app');
+
 
 router.start(App, '#Entry');
