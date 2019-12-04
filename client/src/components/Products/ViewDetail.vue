@@ -222,7 +222,7 @@ export default {
 </script>
 
 
-<style  scoped>
+<style scoped>
 
 .avatar {
   vertical-align: middle;

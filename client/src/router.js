@@ -14,10 +14,6 @@ Vue.use(Router);
 
 
 const router =  new Router({
-  // mode: 'history',
-  // base: process.env.BASE_URL,
-
-
   routes: [
     {
       path: '/',
@@ -43,14 +39,13 @@ const router =  new Router({
 });
 
 // router.beforeEach((to, from, next) => {
-//   console.log(store.state.authenticated)
-//   console.log(to)
 //   if(to.name === "login") {
+//     store.state.authenticated===false
 //     next()
 //     return
 //   }
 //   else {
-//     if(store.state.authenticated === true) {
+//     if(store.state.authenticated === true && store.state.role != null) {
 //       next()
 //       return
 //     }

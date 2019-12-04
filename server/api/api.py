@@ -389,7 +389,7 @@ def authenticate_user():
         result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
         if result != []:
             if check_password_hash(result[0][1],password) == True:
-                return jsonify( { 'username': username , 'authenticated' : True } )
+                return jsonify( { 'username': username , 'authenticated' : True , 'role': result[0][2]} )
             else:
                 return jsonify( { 'username': username , 'authenticated' : False} )
         else:
@@ -438,12 +438,15 @@ def get_user_data():
         return json.dumps(data)
 
 
-# TODO: add some way to authenticate an admin
 @api.route('/users/admin', methods = ['PUT'])
 def admin_user():
     username = request.json.get('username')
     new_role = request.json.get('role')
-    with sqlite3.connect('server/data/data.db') as conn:
-        c = conn.cursor()
-        c.execute("UPDATE USERS  SET role = ? WHERE username = ?", [ new_role, username])
-        return jsonify( { 'username': username  , 'role' : new_role})
+    if request.json.get('admin') == 'admin':
+        with sqlite3.connect('server/data/data.db') as conn:
+            c = conn.cursor()
+            c.execute("UPDATE USERS SET role = ? WHERE username = ?", [ new_role, username])
+            conn.commit()
+            return jsonify( { 'username': username  , 'role' : new_role})
+    else:
+        return "user must be an admin" , 401

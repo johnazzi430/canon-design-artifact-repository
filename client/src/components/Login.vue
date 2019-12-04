@@ -1,9 +1,12 @@
 <template>
-    <div id="login">
-      <b-alert v-model="alert.show" :variant="alert.variant" dismissible>
-      {{alert.text}}
-    </b-alert>
-      <div v-if='form_mode === "login"'>
+    <div>
+        <b-alert :show='this.$store.state.authenticated===false' variant="info" dismissible>
+          Please log in..
+      </b-alert>
+        <b-alert v-model="alert.show" :variant="alert.variant" dismissible>
+        {{alert.text}}
+      </b-alert>
+      <div id="login" v-if='form_mode === "login"'>
         <h1>Login</h1>
           <input type="text" name="username" v-model="input.username" placeholder="Email" />
           <input type="password" name="password" v-model="input.password" placeholder="Password" />
@@ -16,7 +19,7 @@
               v-on:click="changeView('reset_password')">reset password</button>
           </div>
       </div>
-      <div v-else-if='form_mode === "register"'>
+      <div id="login" v-else-if='form_mode === "register"'>
         <h1>Register</h1>
         <div class="row">
           <input type="text" name="username" v-model="input.username" placeholder="Email" />
@@ -29,7 +32,7 @@
             v-on:click="register()">register</button>
         </div>
       </div>
-      <div v-else-if='form_mode === "reset_password"'>
+      <div id="login" v-else-if='form_mode === "reset_password"'>
         <h1>Reset Password</h1>
           <input type="text" name="username" v-model="input.username" placeholder="Email" />
           <input type="password" name="password" v-model="input.password" placeholder="Password" />
@@ -92,10 +95,12 @@ export default {
             if ( self.input.authenticated === true) {
               self.$emit("authenticated", true);
               store.state.authenticated = true;
+              store.state.role= response.data.role;
               console.log("succesfull login")
               self.alert.show = true;
               self.alert.text = "logged in...";
               self.alert.variant = 'success';
+              self.$router.push("/")
             }
             else {
               self.alert.show = true;
