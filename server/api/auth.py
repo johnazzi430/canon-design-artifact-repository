@@ -22,7 +22,7 @@ def authenticate_user():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         result = c.execute("SELECT username, password_hash FROM USERS where username =?" , [username]).fetchall()
-        if check_password_hash(result[0],password) == True:
+        if check_password_hash(result[0][1],password) == True:
             return jsonify( { 'username': username , 'authenticated' : True} )
         else:
             return jsonify( { 'username': username , 'authenticated' : False} )

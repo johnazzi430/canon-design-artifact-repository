@@ -8,9 +8,12 @@
           <input type="text" name="username" v-model="input.username" placeholder="Email" />
           <input type="password" name="password" v-model="input.password" placeholder="Password" />
           <div class="row">
-            <button type="button" v-on:click="login()">login</button>
-            <button type="button" v-on:click="changeView('register')">register</button>
-            <button type="button" v-on:click="changeView('reset_password')">reset password</button>
+            <button type="button" class="btn btn-outline-secondary"
+              v-on:click="login()">login</button>
+            <button type="button" class="btn btn-outline-secondary"
+              v-on:click="changeView('register')">register</button>
+            <button type="button" class="btn btn-outline-secondary"
+              v-on:click="changeView('reset_password')">reset password</button>
           </div>
       </div>
       <div v-else-if='form_mode === "register"'>
@@ -20,8 +23,10 @@
           <input type="password" name="password" v-model="input.password" placeholder="Password" />
         </div>
         <div class="row">
-          <button type="button" v-on:click="changeView('login')">cancel</button>
-          <button type="button" v-on:click="register()">register</button>
+          <button type="button" class="btn btn-outline-secondary"
+            v-on:click="changeView('login')">cancel</button>
+          <button type="button" class="btn btn-outline-secondary"
+            v-on:click="register()">register</button>
         </div>
       </div>
       <div v-else-if='form_mode === "reset_password"'>
@@ -29,8 +34,10 @@
           <input type="text" name="username" v-model="input.username" placeholder="Email" />
           <input type="password" name="password" v-model="input.password" placeholder="Password" />
           <div class="row">
-            <button type="button" v-on:click="changeView('login')">back</button>
-            <button type="button" v-on:click="changeView('reset_password')">reset password</button>
+            <button type="button" class="btn btn-outline-secondary"
+            v-on:click="changeView('login')">back</button>
+            <button type="button" class="btn btn-outline-secondary"
+            v-on:click="changeView('reset_password')">reset password</button>
           </div>
       </div>
 
@@ -70,7 +77,7 @@ export default {
     login() {
       const self = this
 
-      if(this.input.username != "" && this.input.password != "") {
+      if(self.input.username != "" && self.input.password != "") {
         axios({
             method: 'post',
             url: '/api/users/auth',
@@ -81,29 +88,29 @@ export default {
           })
         .then(function (response) {
             console.log(response);
-            self.input.authenticated = response.data[0].authenticated
+            self.input.authenticated = response.data.authenticated
+            if ( self.input.authenticated === true) {
+              self.$emit("authenticated", true);
+              store.state.authenticated = true;
+              console.log("succesfull login")
+              self.alert.show = true;
+              self.alert.text = "logged in...";
+              self.alert.variant = 'success';
+            }
+            else {
+              self.alert.show = true;
+              self.alert.text = "The username and / or password is incorrect";
+              self.alert.variant = 'danger';
+              console.log("The username and / or password is incorrect");
+            }
           })
         .catch(function (error) {
             console.log(error);})
-        if ( self.input.authenticated == true) {
-          self.$emit("authenticated", true);
-          store.state.authenticated = true;
-          console.log("succesfull login")
-          self.alert.show = true;
-          self.alert.text = "logged in...";
-          self.alert.variant = 'success';
-        }
-        else {
-          self.alert.show = true;
-          self.alert.text = "The username and / or password is incorrect";
-          self.alert.variant = 'danger';
-          console.log("The username and / or password is incorrect");
-        }
       }
       else {
-        this.alert.show = true;
-        this.alert.text = "A username and password must be present";
-        this.alert.variant = 'danger';
+        self.alert.show = true;
+        self.alert.text = "A username and password must be present";
+        self.alert.variant = 'danger';
         console.log("A username and password must be present");
       }
     },
