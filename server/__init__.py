@@ -3,12 +3,14 @@ from flask import Flask, current_app, send_file, render_template
 from flask_cors import CORS
 
 from .api.api import api
+from .api.auth import auth
 from .clientApp import client_bp
 
 
 app = Flask(__name__,
     static_folder='../client/dist/static')
 app.register_blueprint(api)
+app.register_blueprint(auth)
 # app.register_blueprint(client_bp)
 
 from .config import Config
