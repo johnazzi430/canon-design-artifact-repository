@@ -1,15 +1,46 @@
 <template>
     <div id="login">
+      <b-alert v-model="alert.show" :variant="alert.variant" dismissible>
+      {{alert.text}}
+    </b-alert>
+      <div v-if='form_mode === "login"'>
         <h1>Login</h1>
-        <input type="text" name="username" v-model="input.username" placeholder="Username" />
-        <input type="password" name="password" v-model="input.password" placeholder="Password" />
-        <button type="button" v-on:click="login()">Login</button>
+          <input type="text" name="username" v-model="input.username" placeholder="Email" />
+          <input type="password" name="password" v-model="input.password" placeholder="Password" />
+          <div class="row">
+            <button type="button" v-on:click="login()">login</button>
+            <button type="button" v-on:click="changeView('register')">register</button>
+            <button type="button" v-on:click="changeView('reset_password')">reset password</button>
+          </div>
+      </div>
+      <div v-else-if='form_mode === "register"'>
+        <h1>Register</h1>
+        <div class="row">
+          <input type="text" name="username" v-model="input.username" placeholder="Email" />
+          <input type="password" name="password" v-model="input.password" placeholder="Password" />
+        </div>
+        <div class="row">
+          <button type="button" v-on:click="changeView('login')">cancel</button>
+          <button type="button" v-on:click="register()">register</button>
+        </div>
+      </div>
+      <div v-else-if='form_mode === "reset_password"'>
+        <h1>Reset Password</h1>
+          <input type="text" name="username" v-model="input.username" placeholder="Email" />
+          <input type="password" name="password" v-model="input.password" placeholder="Password" />
+          <div class="row">
+            <button type="button" v-on:click="changeView('login')">back</button>
+            <button type="button" v-on:click="changeView('reset_password')">reset password</button>
+          </div>
+      </div>
+
     </div>
 </template>
 
 <script>
 /*eslint-disable */
 import store from  "../store";
+import axios from 'axios'
 
 export default {
   name: 'Login',
@@ -18,29 +49,100 @@ export default {
       input: {
         username: "",
         password: ""
-      }
+      },
+      alert : {
+        show : false,
+        text : "",
+        variant : "danger",
+      },
+      form_mode: "login",
+      alert_show: false,
+      alert_text: ""
     }
   },
   methods: {
+
+    changeView(view) {
+      this.form_mode = view
+    },
+
+
     login() {
-
-      axios.
-
-
+      const self = this
 
       if(this.input.username != "" && this.input.password != "") {
-        if(this.input.username == this.$parent.mockAccount.username && this.input.password == this.$parent.mockAccount.password) {
-          this.$emit("authenticated", true);
+        axios({
+            method: 'post',
+            url: '/api/users/auth',
+            data: self.input,
+            header: {
+              "Content-Type":"application/json"
+            }
+          })
+        .then(function (response) {
+            console.log(response);
+            self.input.authenticated = response.data[0].authenticated
+          })
+        .catch(function (error) {
+            console.log(error);})
+        if ( self.input.authenticated == true) {
+          self.$emit("authenticated", true);
           store.state.authenticated = true;
           console.log("succesfull login")
-        } else {
+          self.alert.show = true;
+          self.alert.text = "logged in...";
+          self.alert.variant = 'success';
+        }
+        else {
+          self.alert.show = true;
+          self.alert.text = "The username and / or password is incorrect";
+          self.alert.variant = 'danger';
           console.log("The username and / or password is incorrect");
         }
-      } else {
+      }
+      else {
+        this.alert.show = true;
+        this.alert.text = "A username and password must be present";
+        this.alert.variant = 'danger';
         console.log("A username and password must be present");
       }
-    }
-  }
+    },
+
+    register() {
+      const self = this
+
+      if(this.input.username != "" && this.input.password != "" && this.input.username.includes("utc.com")) {
+        axios({
+            method: 'post',
+            url: '/api/users',
+            data: self.input,
+            header: {
+              "Content-Type":"application/json"
+            }
+          })
+        .then(function (response) {
+            console.log(response);
+            self.input.authenticated = response.data[0].authenticated
+          })
+        .catch(function (error) {
+            console.log(error);
+          })
+
+          this.form_mode = 'login'
+          this.alert.show = true;
+          this.alert.text = "Succesfully registered, please login...";
+          this.alert.variant = 'success';
+
+          }
+        else {
+          this.alert.show = true;
+          this.alert.text = "A UTC email must be definied";
+          this.alert.variant = 'danger';
+        }
+    },
+    reset_password(){
+    },
+  },
 }
 </script>
 

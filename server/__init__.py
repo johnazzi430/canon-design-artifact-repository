@@ -16,7 +16,12 @@ app.register_blueprint(auth)
 from .config import Config
 app.logger.info('>>> {}'.format(Config.FLASK_ENV))
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={
+                    r"/api/*": {"origins": "*"},
+                    })
+cors = CORS(app, resources={
+                    r"/auth/*": {"origins": "*"},
+                    })
 
 @app.route('/')
 def index_client():
