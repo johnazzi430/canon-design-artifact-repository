@@ -266,7 +266,7 @@ def product_table_put_by_id(id):
 def comments_by_table_and_item(table,id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM COMMENTS WHERE source_id = ? AND source_table = ? ", [ id , table])
+        result = c.execute("SELECT * FROM ? WHERE source_id = ?", [ table, id ])
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 

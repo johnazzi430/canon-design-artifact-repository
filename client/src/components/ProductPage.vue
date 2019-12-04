@@ -11,7 +11,7 @@
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
       <a href="javascript:void(0)" id="Detail"
-        class="nav-link active" v-on:click="expandDetail()">
+        class="nav-link disabled" v-on:click="expandDetail()">
         <i class="fa fa-align-left"></i></a>
       <a href="javascript:void(0)" id="Add"
           class="nav-link active" v-on:click=" refreshData(); expandDetail()"
@@ -64,7 +64,8 @@ export default {
   data() {
     return {
      componentKey: 0,
-     view:'card'
+     view:'card',
+     selectedRow: 0
    }
   },
   methods: {
@@ -90,8 +91,20 @@ export default {
 }
 
 
+
 //document.getElementById("productDetails").innerHTML = 'test';
-EventBus.$on('selection-changed' , function() {document.getElementById("right-sidepanel").style.width = "500px"});
+EventBus.$on('selection-changed' , function(selection) {
+  document.getElementById("right-sidepanel").style.width = "500px"
+  if (selection === 0) {
+    document.getElementById("Detail").style.class("disabled");
+  }
+  else {
+    document.getElementById("Detail").style.class("active");
+  }
+
+
+});
+
 
 function closeNav() {
   document.getElementById("right-sidepanel").style.width = "0px";

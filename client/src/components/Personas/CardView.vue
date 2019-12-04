@@ -13,7 +13,7 @@
 
     <b-card-group columns>
       <b-card class="card" v-for="card in cards" v-bind:key="card.id">
-        <div class="">
+        <div class="col">
                   <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
         </div>
         <b-card-text>

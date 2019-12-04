@@ -15,7 +15,7 @@
         <i class="fa fa-align-left"></i></a>
       <a href="javascript:void(0)" id="Add"
           class="nav-link active"
-          v-on:click=" refreshData(); expandDetail(), switchAdd()"
+          v-on:click=" refreshData(); expandDetail()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
       </a>
@@ -23,21 +23,18 @@
       <!-- MAIN -->
     <div id="persona-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
-        <b-modal id="my-modal">
-          <persona-add></persona-add>
-        </b-modal>
-        <persona-data></persona-data>
+        <persona-data v-bind:key = "dataKey"></persona-data>
       </div>
     </div>
     <div class="" v-if="view === 'card'" v-bind:key="view">
-      <persona-card></persona-card>
+      <persona-card v-bind:key = "dataKey">></persona-card>
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
-      <a href="javascript:void(0)"
-        class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
+      <h1><a href="javascript:void(0)"
+        class="closebtn" @click="addDataAction(); closeDetail(); ">&times;</a></h1>
       <div id = "side-panel-switcher">
-        <persona-detail v-bind:detailview="detailview"></persona-detail>
+        <persona-detail :key="detailKey"></persona-detail>
       </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -64,8 +61,9 @@ export default {
   },
   data() {
     return {
-    detailview : 'add',
-     view:'card',
+    detailKey: 0,
+    dataKey: 0,
+    view:'card',
    }
   },
   methods: {
@@ -81,22 +79,35 @@ export default {
     document.getElementById("right-sidepanel").style.width = "80%";
     },
 
-    switchAdd() {
-      this.detailview = 'add'
-    },
-
-    refreshData() {
-      this.componentKey += 1;
+    addDataAction() {
+      this.detailKey += 1;
       EventBus.$emit('selection-changed',this.selectedRow = '0')
     },
 
+    refreshData() {
+      EventBus.$emit('persona-table-changed','')
+    },
+
     changeView(view) { this.view = view},
-  }
+  },
+  onCreate() {
+    EventBus.$on('persona-table-changed',function() {
+      this.dataKey += 1;
+    });
+  },
 }
 
 
 //document.getElementById("personaDetails").innerHTML = 'test';
-EventBus.$on('selection-changed' , function() {document.getElementById("right-sidepanel").style.width = "500px"});
+EventBus.$on('selection-changed' , function(selection) {
+  document.getElementById("right-sidepanel").style.width = "500px"
+  if (selection === 0) {
+    document.getElementById("Detail").className("disabled");
+  }
+  else {
+    document.getElementById("Detail").className("active");
+  }
+});
 
 function closeNav() {
   document.getElementById("right-sidepanel").style.width = "0px";
@@ -136,7 +147,7 @@ function closeNav() {
   font-size: 20px; /* Increase font size */
   color: white; /* White text color */
   align-content: left;
-}
+};
 
 .sidepanel-left:hover {
   left: 0; /* On mouse-over, make the elements appear as they should */

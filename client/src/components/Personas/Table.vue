@@ -101,11 +101,6 @@ export default {
     fetch(`/api/persona-table`)
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
-  // },
-  // mounted() {
-    // EventBus.$on('persona-table-changed',function() {
-    //   this.gridApi.redrawRows();
-    // });
 
     this.$nextTick(() => {
         fetch(`/api/persona-table`)

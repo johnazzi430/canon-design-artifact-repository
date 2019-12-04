@@ -31,7 +31,7 @@ break
         @submit="onEdit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='persona-detail-show' v-if='editing === false && detailview == "view"'>
+      <div id='persona-detail-show' v-if='editing === false && form.id != 0'>
       <h1>Detail</h1>
       <span> Persona ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div class="">
@@ -76,7 +76,7 @@ break
 
     </div>
       <div  id='persona-detail-edit' v-else>
-        <h1 v-if='detailview === "add"'>Add</h1>
+        <h1 v-if='form.id === 0'>Add</h1>
         <h1 v-else>Edit</h1>
         <div>
           <label for="Name">Name</label>
@@ -151,7 +151,6 @@ import {EventBus} from "../../index.js";
 export default {
   name: "persona-details",
   components : {'comment-view': CommentView },
-  props : ['detailview'],
   data() {
     return {
       form: {
@@ -193,7 +192,6 @@ export default {
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('selection-changed', function(selection){
-        self.detailview = 'view';
 
         var get_url = "/api/persona-table/";
         get_url += selection;
