@@ -1,7 +1,7 @@
 
 
 <template lang="html">
-  <div class="container" :key='componentKey'>
+  <div class="container" :key="commentKey">
     <div class="col-5" v-for="comment in comments" v-bind:key="comment.id">
       <div class="" v-if="comment.action === null">
         <span> {{comment.creator_id}} commented on {{comment.create_date}}
@@ -33,7 +33,7 @@ import {EventBus} from "../index.js";
 export default {
   data() {
     return {
-      componentKey: 0,
+      commentKey: 0,
       comments : {},
       form :{
         comment:''
@@ -41,8 +41,8 @@ export default {
     }
   },
   props: ["sourceTable" , "itemId"],
-  mounted() {
-      var get_url = "/api/comments/" + this.sourceTable + '/' + this.itemId
+  beforeMount() {
+      var get_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
 
       axios
       .get(get_url)
@@ -62,7 +62,7 @@ export default {
         upchange : None,
       };
 
-      var set_url = "/api/comments/" + this.sourceTable + '/' + this.itemId
+      var set_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
 
       axios({
           method: 'post',
@@ -71,11 +71,11 @@ export default {
       .then(function (response) {
           console.log(response);
           EventBus.$emit('comments-added', comment_data );
-          this.$forceUpdate();
-          this.componentKey += 1;
+          this.commentKey +1;
         })
       .catch(function (error) {
           console.log(error);})
+
 
     }
   }

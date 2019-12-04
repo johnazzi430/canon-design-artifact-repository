@@ -255,48 +255,84 @@ def product_table_put_by_id(id):
         data_values.append(value)
 
     SQL = SQL + " WHERE id = ?"
+    current_app.logger.info(SQL)
     data_values.append(id)
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         c.execute( SQL, data_values)
+        conn.commit()
         return request.json, 201
 
 
-@api.route("/comments/<table>/<int:id>" , methods = ['GET'])
-def comments_by_table_and_item(table,id):
+@api.route("/persona/comments/<int:id>" , methods = ['GET'])
+def persona_comments(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM ? WHERE source_id = ?", [ table, id ])
+        result = c.execute("SELECT * FROM PERSONA_COMMENTS WHERE source_id = ?", [id] )
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
-# TODO: Make this work
-@api.route("/comments/<table>/<int:id>" , methods = ['POST'])
-def comments_create_by_table_and_item(table,id):
+@api.route("/product/comments/<int:id>" , methods = ['GET'])
+def product_comments(id):
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM COMMENTS ").fetchall()[0][0]
+        result = c.execute("SELECT * FROM PRODUCT_COMMENTS WHERE source_id = ?", [id] )
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
+# TODO: Make this work
+@api.route("/persona/comments/<int:id>" , methods = ['POST'])
+def persona_comments_post(id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_COMMENTS ").fetchall()[0][0]
         data = [
             last_id+1,
             request.json['source_id'],
-            request.json['source_table'],
             request.json['comment_body'],
             None,       #creator id # TODO:
             datetime.datetime.now(),
             request.json['action'],
             request.json['downchange'],
             request.json['upchange']]
-        c.execute("""INSERT INTO COMMENTS
+        c.execute("""INSERT INTO PERSONA_COMMENTS
         (id,
         source_id,
-        source_table,
         comment_body,
         creator_id,
         create_date,
         action,
         downchange,
         upchange)
-        VALUES (?,?,?,?,?,?,?,?,?)""",data)
+        VALUES (?,?,?,?,?,?,?,?)""",data)
+        return request.json, 201
+        return json.dumps(data)
+
+@api.route("/product/comments/<int:id>" , methods = ['POST'])
+def product_comments_post(id):
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT_COMMENTS ").fetchall()[0][0]
+        data = [
+            last_id+1,
+            request.json['source_id'],
+            request.json['comment_body'],
+            None,       #creator id # TODO:
+            datetime.datetime.now(),
+            request.json['action'],
+            request.json['downchange'],
+            request.json['upchange']]
+        c.execute("""INSERT INTO PRODUCT_COMMENTS
+        (id,
+        source_id,
+        comment_body,
+        creator_id,
+        create_date,
+        action,
+        downchange,
+        upchange)
+        VALUES (?,?,?,?,?,?,?,?)""",data)
         return request.json, 201
         return json.dumps(data)
 

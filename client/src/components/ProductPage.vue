@@ -36,7 +36,7 @@
       <a href="javascript:void(0)"
         class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
       <div id = "side-panel-switcher">
-        <product-detail :key="componentKey"></product-detail>
+        <product-detail :key="detailKey"></product-detail>
       </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -63,9 +63,9 @@ export default {
   },
   data() {
     return {
-     componentKey: 0,
+     detailKey: 0,
+     dataKey: 0,
      view:'card',
-     selectedRow: 0
    }
   },
   methods: {

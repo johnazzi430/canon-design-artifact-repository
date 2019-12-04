@@ -115,7 +115,7 @@ export default {
         product_photo: '',
         product_file: null},
       editing: false,
-      source: 'PRODUCT',
+      source: 'product',
       options: [
           { value: 'EngineWise', text: 'EngineWise' },
           { value: 'PWX', text: 'PWX' },

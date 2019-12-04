@@ -172,7 +172,7 @@ export default {
         persona_picture: '',
         persona_file: null},
       editing: false,
-      source: 'PERSONA',
+      source: 'persona',
       options: [
           { value: 'EngineWise', text: 'EngineWise' },
           { value: 'PWX', text: 'PWX' },
