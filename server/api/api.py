@@ -386,10 +386,10 @@ def authenticate_user():
     #     return "missing information"
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT username, password_hash FROM USERS where username =?" , [username]).fetchall()
+        result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
         if result != []:
             if check_password_hash(result[0][1],password) == True:
-                return jsonify( { 'username': username , 'authenticated' : True} )
+                return jsonify( { 'username': username , 'authenticated' : True } )
             else:
                 return jsonify( { 'username': username , 'authenticated' : False} )
         else:
@@ -412,6 +412,7 @@ def add_user():
             return 'this user already exists'
 
 
+## TODO NOT WORKING?
 @api.route('/users', methods = ['PUT'])
 def reset_password():
     username = request.json.get('username')
@@ -427,3 +428,22 @@ def reset_password():
             return jsonify( { 'username': username  , 'authenticated' : True , 'password_changed' : True} )
         else:
             return 'password incorrect'
+
+@api.route('/users', methods = ['GET'])
+def get_user_data():
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT user_id , username, role FROM USERS ")
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
+
+
+# TODO: add some way to authenticate an admin
+@api.route('/users/admin', methods = ['PUT'])
+def admin_user():
+    username = request.json.get('username')
+    new_role = request.json.get('role')
+    with sqlite3.connect('server/data/data.db') as conn:
+        c = conn.cursor()
+        c.execute("UPDATE USERS  SET role = ? WHERE username = ?", [ new_role, username])
+        return jsonify( { 'username': username  , 'role' : new_role})
