@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="test-header row" style="margin:15px;">
-      <!-- TODO: add "Add data button" -->
+      <b-alert :show="this.alert_show===true" variant="info" dismissible>
+        Data Updated {{this.alert_text }}
+    </b-alert>
       <div class="col-2">
         Selection:
         <span id="selectedRows"></span>
@@ -31,6 +33,7 @@ import {AgGridVue} from "@ag-grid-community/vue";
 import {AllCommunityModules} from '@ag-grid-community/all-modules';
 import {EventBus} from "../../index.js";
 
+
 const API_URL = process.env.API_URL
 
 export default {
@@ -45,6 +48,8 @@ export default {
       modules: AllCommunityModules,
       selectedRow: null,
       defaultColDef: null,
+      alert_show: false,
+      alert_text: null,
     }
   },
   components: {
@@ -76,7 +81,19 @@ export default {
       gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);
     },
   },
+  mounted() {
+    const self = this
+
+    EventBus.$on('data-changed',function(data) {
+      fetch(`/api/persona-table`)
+      .then(result => result.json())
+      .then(rowData => self.rowData = rowData);
+        console.log('recive')
+    })
+  },
   beforeMount() {
+
+
     this.columnDefs = [
       {headerName: "Name", field: "name", width: 200},
       {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},

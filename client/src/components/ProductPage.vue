@@ -10,11 +10,22 @@
       <a href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
-      <a href="javascript:void(0)" id="Detail"
-        class="nav-link disabled" v-on:click="expandDetail()">
-        <i class="fa fa-align-left"></i></a>
+        <!-- v-if start -->
+        <div v-if="selection === null">
+          <a href="javascript:void(0)" id="Detail"
+            class="nav-link active" v-on:click="expandDetail()">
+            <i class="fa fa-align-left"></i>
+          </a>
+        </div>
+        <div v-else>
+          <a href="javascript:void(0)" id="Detail"
+              class="nav-link disabled" v-on:click="expandDetail() ">
+              <i class="fa fa-align-left"></i>
+          </a>
+        </div>
+        <!-- v-if start -->
       <a href="javascript:void(0)" id="Add"
-          class="nav-link active" v-on:click=" refreshData(); expandDetail()"
+          class="nav-link active" v-on:click=" addDataAction(); expandDetail()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
       </a>
@@ -33,8 +44,8 @@
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
-      <a href="javascript:void(0)"
-        class="closebtn" @click="refreshData(); closeDetail(); ">&times;</a>
+      <h1><a href="javascript:void(0)"
+        class="closebtn" @click="closeDetail(); ">&times;</a></h1>
       <div id = "side-panel-switcher">
         <product-detail :key="detailKey"></product-detail>
       </div>
@@ -66,44 +77,47 @@ export default {
      detailKey: 0,
      dataKey: 0,
      view:'card',
+     selection : null
    }
   },
   methods: {
-    closeNav() {
-    document.getElementById("right-sidepanel").style.width = "0px";
-    },
 
     expandDetail() {
-    document.getElementById("right-sidepanel").style.width = "80%";
+      document.getElementById("right-sidepanel").style.width = "80%";
     },
 
     closeDetail() {
-    document.getElementById("right-sidepanel").style.width = "0px";
+      document.getElementById("right-sidepanel").style.width = "0px";
+      // EventBus.$emit('selection-changed',this.selectedRow = null);
     },
 
-    refreshData() {
-      this.componentKey += 1;
-      EventBus.$emit('selection-changed',this.selectedRow = '0')
+    closeNav() {
+      document.getElementById("right-sidepanel").style.width = "0px";
+    },
+
+    addDataAction() {
+      this.detailKey += 1;
+      EventBus.$emit('selection-changed',this.selectedRow = null)
     },
 
     changeView(view) { this.view = view},
+  },
+  mounted () {
+    const self = this
+
+    EventBus.$on('selection-changed' , function(selection) {
+      document.getElementById("right-sidepanel").style.width = "500px"
+      self.selection = selection
+    });
   }
 }
 
 
 
-//document.getElementById("productDetails").innerHTML = 'test';
-EventBus.$on('selection-changed' , function(selection) {
-  document.getElementById("right-sidepanel").style.width = "500px"
-  if (selection === 0) {
-    document.getElementById("Detail").style.class("disabled");
-  }
-  else {
-    document.getElementById("Detail").style.class("active");
-  }
-
-
-});
+// //document.getElementById("productDetails").innerHTML = 'test';
+// EventBus.$on('selection-changed' , function(selection) {
+//   document.getElementById("right-sidepanel").style.width = "500px"
+// });
 
 
 function closeNav() {

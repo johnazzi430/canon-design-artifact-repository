@@ -101,15 +101,14 @@ export default {
     .then(rowData => this.rowData = rowData);
   },
   mounted() {
-    EventBus.$on('product-table-changed',function() {
-      this.gridApi.redrawRows()
-    });
+    const self = this
 
-    this.$nextTick(() => {
-        fetch('/api/product-table')
-        .then(result => result.json())
-        .then(rowData => this.rowData = rowData);
-    });
+    EventBus.$on('data-changed',function(data) {
+      fetch(`/api/persona-table`)
+      .then(result => result.json())
+      .then(rowData => self.rowData = rowData);
+        console.log('recive')
+    })
   },
 };
 

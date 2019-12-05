@@ -3,7 +3,7 @@
 <template lang="html">
   <div class="container" style="margin-top:0px">
     <div class="md-form mt-0" id="card-search">
-      <input
+      <input v-model="search"
         class="form-control"
         type="text"
         placeholder="Search for user persona"
@@ -51,7 +51,11 @@ import {EventBus} from "../../index.js";
 
 
 export default {
-  data() {return { cards : {} } },
+  data() {return {
+    cards : {},
+    search : ''
+  }
+ },
   beforeMount() {
     const self = this;
     var get_url = `/api/persona-table`;

@@ -66,8 +66,6 @@ export default {
         variant : "danger",
       },
       form_mode: "login",
-      alert_show: false,
-      alert_text: ""
     }
   },
   methods: {

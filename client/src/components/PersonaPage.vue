@@ -10,12 +10,23 @@
       <a href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
-      <a href="javascript:void(0)" id="Detail"
-        class="nav-link active" v-on:click="expandDetail()">
-        <i class="fa fa-align-left"></i></a>
+      <!-- v-if start -->
+      <div v-if="selection === null">
+        <a href="javascript:void(0)" id="Detail"
+          class="nav-link active" v-on:click="expandDetail()">
+          <i class="fa fa-align-left"></i>
+        </a>
+      </div>
+      <div v-else>
+        <a href="javascript:void(0)" id="Detail"
+            class="nav-link disabled" v-on:click="expandDetail()">
+            <i class="fa fa-align-left"></i>
+        </a>
+      </div>
+      <!-- v-if start -->
       <a href="javascript:void(0)" id="Add"
           class="nav-link active"
-          v-on:click=" refreshData(); expandDetail()"
+          v-on:click=" addDataAction();  expandDetail()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
       </a>
@@ -32,7 +43,7 @@
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
       <h1><a href="javascript:void(0)"
-        class="closebtn" @click="addDataAction(); closeDetail(); ">&times;</a></h1>
+        class="closebtn" @click="closeDetail(); ">&times;</a></h1>
       <div id = "side-panel-switcher">
         <persona-detail :key="detailKey"></persona-detail>
       </div>
@@ -64,9 +75,15 @@ export default {
     detailKey: 0,
     dataKey: 0,
     view:'card',
+    selection: 0,
    }
   },
   methods: {
+
+    expandDetail() {
+    document.getElementById("right-sidepanel").style.width = "80%";
+    },
+
     closeDetail() {
     document.getElementById("right-sidepanel").style.width = "0px";
     },
@@ -75,39 +92,24 @@ export default {
     document.getElementById("left-sidepanel").style= "left: -115px"
     },
 
-    expandDetail() {
-    document.getElementById("right-sidepanel").style.width = "80%";
-    },
-
     addDataAction() {
       this.detailKey += 1;
-      EventBus.$emit('selection-changed',this.selectedRow = '0')
-    },
-
-    refreshData() {
-      EventBus.$emit('persona-table-changed','')
+      EventBus.$emit('selection-changed',this.selectedRow = null)
     },
 
     changeView(view) { this.view = view},
   },
-  onCreate() {
-    EventBus.$on('persona-table-changed',function() {
-      this.dataKey += 1;
-    });
+  mounted() {
+
+    const self = this;
+
+    EventBus.$on('selection-changed' , function(selection) {
+      document.getElementById("right-sidepanel").style.width = "500px"
+      self.selection = selection
+    })
   },
 }
 
-
-//document.getElementById("personaDetails").innerHTML = 'test';
-EventBus.$on('selection-changed' , function(selection) {
-  document.getElementById("right-sidepanel").style.width = "500px"
-  if (selection === 0) {
-    document.getElementById("Detail").className("disabled");
-  }
-  else {
-    document.getElementById("Detail").className("active");
-  }
-});
 
 function closeNav() {
   document.getElementById("right-sidepanel").style.width = "0px";
