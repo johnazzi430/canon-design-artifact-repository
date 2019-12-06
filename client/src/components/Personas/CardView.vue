@@ -12,7 +12,7 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in cards" v-bind:key="card.id">
+      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
         <div class="col">
                   <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
         </div>
@@ -71,6 +71,14 @@ export default {
     OpenDetail(id) {
       EventBus.$emit('selection-changed' ,this.selectedRow = id)
     },
+
+    filterItems: function(cards) {
+      var self = this;
+      return cards.filter(function(cards) {
+        let regex = new RegExp('(' + self.search+ ')', 'i');
+        return cards.name.match(regex);
+      })
+    }
   },
 };
 
