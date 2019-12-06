@@ -76,7 +76,8 @@ export default {
       var self = this;
       return cards.filter(function(cards) {
         let regex = new RegExp('(' + self.search+ ')', 'i');
-        return cards.name.match(regex);
+//        return cards.name.match(regex);
+        return JSON.stringify(cards).match(regex);
       })
     }
   },
