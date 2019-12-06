@@ -109,17 +109,21 @@ break
           <br>
           <label for="product-select">Add Product:    </label>
           <br>
-          <b-dropdown text="product list" block variant="info"
-                      class="m-2" menu-class="w-100">
-            <b-form-select v-model="form.product"
-                           :options="options"
-                           name="product-select"
-                           multiple :select-size="12"
-                           size="lg">
-            </b-form-select>
-          </b-dropdown>
+          <multiselect
+                      v-model="form.product" :options="product_options"
+                      :multiple="true" :close-on-select="false"
+                      :clear-on-select="false" :preserve-search="true"
+                      placeholder="Pick some" label="product_name"
+                      track-by="product_id" :preselect-first="false">
+            <template slot="selection"
+                      slot-scope="{ values, search, isOpen }">
+              <span class="multiselect__single"
+                    v-if="values.length &amp;&amp; !isOpen">
+                          {{ values.length}} options selected
+                        </span>
+            </template>
+          </multiselect>
           <br>
-          <div >Selected: <strong>{{ form.product }}</strong></div>
         </div>
         <div>
           <label for="persona_file">Add File</label>
@@ -132,7 +136,7 @@ break
         <div id="button-if" v-if='form.id != null'>
           <b-button type="reset" variant="secondary">Return</b-button>
           <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-          <b-button type="submit" variant="primary">Submit Changes</b-button>
+          <b-button type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
           <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Persona</b-button>
@@ -148,6 +152,7 @@ import axios from 'axios'
 import CommentView from '../CommentView.vue'
 import {EventBus} from "../../index.js";
 import store from  "../../store";
+
 
 export default {
   name: "persona-details",
@@ -174,11 +179,7 @@ export default {
         persona_file: null},
       editing: false,
       source: 'persona',
-      options: [
-          { value: 'EngineWise', text: 'EngineWise' },
-          { value: 'PWX', text: 'PWX' },
-          { value: 'Connected Factory', text: 'Connected Factory' },
-        ]
+      product_options: [],
       }
     },
     beforeMount() {
@@ -187,7 +188,7 @@ export default {
       // SET OPTIONS
       axios.get("/api/products")
         .then(response => {
-          self.options = response.data;
+          self.product_options = response.data;
         })
         .catch(error => console.log(error))
 
@@ -219,7 +220,6 @@ export default {
         });
       },
       methods: {
-
 
 
       // DELETE LATER {
@@ -294,6 +294,8 @@ export default {
 
 </script>
 
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
+
 
 <style scoped>
 
@@ -308,6 +310,5 @@ export default {
 p {
   white-space: pre-line;
 };
-
 
 </style>

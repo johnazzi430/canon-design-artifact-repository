@@ -81,18 +81,19 @@ export default {
       gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);
     },
   },
+
   mounted() {
     const self = this
 
-    EventBus.$on('data-changed',function(data) {
+    EventBus.$on('persona-table-changed',function(data) {
       fetch(`/api/persona-table`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
         console.log('recive')
     })
   },
-  beforeMount() {
 
+  beforeMount() {
 
     this.columnDefs = [
       {headerName: "Name", field: "name", width: 200},

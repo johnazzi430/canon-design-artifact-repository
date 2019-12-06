@@ -178,7 +178,7 @@ def persona_table_put_by_id(id):
 def product_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as value, name as text FROM PRODUCT") # TODO: WHERE archived = 0
+        result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -342,13 +342,13 @@ def product_comments_post(id):
 
 
 ## TODO MAKE WORK
-@api.route("/persona-product-relationship/" , methods = ['GET'])
+@api.route("/persona-product" , methods = ['GET'])
 def persona_product_relationship_get():
     if request.args.get('persona_id') != None and request.args.get('product_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id"
+        SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id;"
         id = request.args.get('persona_id')
     elif request.args.get('product_id') != None and request.args.get('persona_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE product_id = :id"
+        SQL = "SELECT * FROM PERS_PROD_REL WHERE product_id = :id;"
         id = request.args.get('product_id')
     else:
         SQL = "SELECT * FROM PERS_PROD_REL"
@@ -362,16 +362,30 @@ def persona_product_relationship_get():
         return json.dumps(data)
 
 
-@api.route("/persona-product-relationship" , methods = ['POST'])
+@api.route("/persona-product" , methods = ['POST'])
 def persona_product_rel_post():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        data = [last_id+1,                              ## SET ID
-                request.json['name'],
-                request.json['title'] ,
-                request.json['quote']]
-#        c.execute("""INSERT INTO PRODUCT"""
-        return request.json, 201
+        if request.args.get('table') == 'persona':
+            id = request.json.get('persona_id')
+            c.execute( "DELETE FROM PERS_PROD_REL WHERE persona_id = ?;" , [id])
+            data =[]
+            for item in request.json.get('products'):
+                 data.append([id,item])
+            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
+            conn.commit()
+            return request.json, 201
+        elif request.args.get('table') == 'product':
+            id = request.json.get('product_id')
+            c.execute( "DELETE FROM PERS_PROD_REL WHERE product_id = ?;" , [id])
+            data =[]
+            for item in request.json.get('personas'):
+                 data.append([item,id])
+            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
+            conn.commit()
+            return request.json, 201
+        else:
+            return "error"
 
 
 
