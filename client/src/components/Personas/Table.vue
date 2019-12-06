@@ -12,7 +12,7 @@
       <div class="col-2">
         <span> Search: </span>
         <input type="text" id="filter-text-box"
-        placeholder="Filter..." oninput="onFilterTextBoxChanged()"/>
+        placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
     <ag-grid-vue style="width: 100%; height: 500px;"
@@ -77,8 +77,9 @@ export default {
       EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
     },
 
+
     onFilterTextBoxChanged() {
-      gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);
+      this.gridApi.setQuickFilter(document.getElementById('filter-text-box').value);
     },
   },
 
