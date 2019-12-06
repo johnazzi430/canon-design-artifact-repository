@@ -3,6 +3,7 @@ import secrets
 import json
 import sqlite3
 import datetime
+import sys
 from flask import Flask , flash, redirect, render_template, session
 from flask import Blueprint, jsonify, request, current_app
 from flask_cors import CORS
@@ -157,13 +158,12 @@ def persona_table_put_by_id(id):
     for item in request.json:
         attribute = item
         value = request.json[item]
-        SQL = SQL +" "+ attribute + " = " + "?" +" "
+        SQL = SQL +" "+ attribute + " = " + "?" +" ,"
         data_values.append(value)
 
-    SQL = SQL + " WHERE id = ?"
+    SQL = SQL[:-1] + " WHERE id = ?"
     data_values.append(id)
-    current_app.logger.info(SQL)
-    current_app.logger.info(data_values)
+    print(SQL)
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         c.execute( SQL, data_values)
@@ -229,6 +229,7 @@ def product_post():
         revision,
         product_homepage)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
+        conn.commit()
         return request.json, 201
 
 ## GET BY ID
@@ -306,6 +307,7 @@ def persona_comments_post(id):
         downchange,
         upchange)
         VALUES (?,?,?,?,?,?,?,?)""",data)
+        conn.commit()
         return request.json, 201
         return json.dumps(data)
 
@@ -333,12 +335,9 @@ def product_comments_post(id):
         downchange,
         upchange)
         VALUES (?,?,?,?,?,?,?,?)""",data)
+        conn.commit()
         return request.json, 201
         return json.dumps(data)
-
-## PERSONA TO PRODUCT REL Table
-
-
 
 
 ## TODO MAKE WORK
@@ -367,20 +366,20 @@ def persona_product_rel_post():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         if request.args.get('table') == 'persona':
-            id = request.json.get('persona_id')
+            id = request.json.get('id')
             c.execute( "DELETE FROM PERS_PROD_REL WHERE persona_id = ?;" , [id])
             data =[]
             for item in request.json.get('products'):
-                 data.append([id,item])
+                 data.append([id,item['product_id']])
             c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
             conn.commit()
             return request.json, 201
         elif request.args.get('table') == 'product':
-            id = request.json.get('product_id')
+            id = request.json.get('id')
             c.execute( "DELETE FROM PERS_PROD_REL WHERE product_id = ?;" , [id])
             data =[]
             for item in request.json.get('personas'):
-                 data.append([item,id])
+                 data.append([item['persona_id'],id])
             c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
             conn.commit()
             return request.json, 201
@@ -401,6 +400,7 @@ def authenticate_user():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
         result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
+        conn.commit()
         if result != []:
             if check_password_hash(result[0][1],password) == True:
                 return jsonify( { 'username': username , 'authenticated' : True , 'role': result[0][2]} )
@@ -421,6 +421,7 @@ def add_user():
             last_id = c.execute("SELECT MAX(user_id) as last_id FROM USERS ").fetchall()[0][0]
             data = [ last_id +1 , username , password_hash , None]
             c.execute(""" INSERT INTO USERS (user_id,username,password_hash,role) VALUES (?,?,?,?)""" , data)
+            conn.commit()
             return jsonify( { 'username': username  , 'authenticated' : True} )
         else:
             return 'this user already exists'
@@ -439,6 +440,7 @@ def reset_password():
         if check_password_hash(result[0][1], current_password ) == True:
             c = conn.cursor()
             c.execute("UPDATE USERS  SET password_hash = ? WHERE username = ?", [ password_hash , username ])
+            conn.commit()
             return jsonify( { 'username': username  , 'authenticated' : True , 'password_changed' : True} )
         else:
             return 'password incorrect'

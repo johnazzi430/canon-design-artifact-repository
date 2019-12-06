@@ -157,7 +157,7 @@ export default {
         });
       },
       methods: {
-       onEdit(evt) {
+       onEdit() {
          evt.preventDefault()
          axios({
              method: 'post',
@@ -172,7 +172,7 @@ export default {
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
-       onAdd(evt) {
+       onAdd() {
          evt.preventDefault()
          axios({
              method: 'post',
@@ -187,13 +187,13 @@ export default {
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
-       onReset(evt) {
+       onReset() {
          evt.preventDefault()
          // Reset our form values
          this.editing = false;
        },
 
-       onArchive(evt) {
+       onArchive() {
          evt.preventDefault()
          var get_url = '/api/product-table/';
          get_url += this.form.id ;

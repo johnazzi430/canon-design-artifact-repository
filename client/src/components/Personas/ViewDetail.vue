@@ -1,7 +1,6 @@
 
 <template>
 <div style="padding-right:15px; margin-left:15px">
-  <button type="button" name="button" v-on:click="changeData()"> Change Data</button>
   <!-- <div role="tablist">
           <b-button block href="#" v-b-toggle.accordion-1
           variant="btn-outline-secondary">Wants</b-button>
@@ -60,7 +59,7 @@ break
         <label for="buss_val">value to business</label>
         <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
         <label>Associated Products</label>
-        <div v-for="product in form.product" v-bind:key="product">
+        <div v-for="product in form.products" v-bind:key="product.product_id">
           <b-button pill variant="info">{{product.product_name}}</b-button>
         </div>
         <div class="mt-2">Value: {{ form.buss_val }}</div>
@@ -71,8 +70,7 @@ break
 
       <hr>
       <h4>Comments</h4>
-      <comment-view :key='form.id'
-                    v-bind:sourceTable="source"
+      <comment-view v-bind:sourceTable="source"
                     v-bind:itemId='form.id'></comment-view>
 
     </div>
@@ -110,7 +108,7 @@ break
           <label for="product-select">Add Product:    </label>
           <br>
           <multiselect
-                      v-model="form.product" :options="product_options"
+                      v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
                       placeholder="Pick some" label="product_name"
@@ -135,8 +133,10 @@ break
         </div>
         <div id="button-if" v-if='form.id != null'>
           <b-button type="reset" variant="secondary">Return</b-button>
-          <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-          <b-button type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
+          <b-button href="javascript:void(0)"
+            type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
+          <b-button href="javascript:void(0)"
+            type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
           <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Persona</b-button>
@@ -172,9 +172,7 @@ export default {
         pain_point: '',
         buss_val: '',
         revision: '',
-        product: [
-           {product_id: '' , product_name:''},
-         ],
+        products: [],
         persona_picture: '',
         persona_file: null},
       editing: false,
@@ -212,7 +210,7 @@ export default {
             self.form.pain_point= response.data[0].pain_point;
             self.form.buss_val= response.data[0].buss_val;
             self.form.revision= response.data[0].revision;
-            self.form.product = response.data[0].product;
+            self.form.products = response.data[0].product;
             self.editing = false;
           }
         )
@@ -231,19 +229,31 @@ export default {
 
       ///                 }
 
-       onEdit(evt) {
+       onEdit() {
+        // axios({
+        //      method: 'put',
+        //      url: '/api/persona-table/' + this.form.id,
+        //      data: this.form, })
+        // .then(function (response) {
+        //      console.log(response);})
+        // .catch(function (error) {
+        //      console.log(error);})
 
-         axios({
-             method: 'put',
-             url: '/api/persona-table',
-             data: this.form, })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
+        axios({
+            method: 'post',
+            url: '/api/persona-product',
+            data: this.form,
+            params : {
+              table : "persona"
+              }
+            })
+        .then(function (response) {
+                 console.log(response);})
+        .catch(function (error) {
+                 console.log(error);})
 
-         EventBus.$emit('persona-table-changed','item-updated')
-         document.getElementById("mySidepanel").style.width = "0px";
+        EventBus.$emit('persona-table-changed','item-updated')
+        document.getElementById("right-sidepanel").style.width = "0px";
 
        },
 
@@ -270,7 +280,6 @@ export default {
        onArchive() {
          var get_url = '/api/persona-table/';
          get_url += this.form.id ;
-         //get_url += '?name=frank';
 
          var archive_set = { 'archived': 1};
 
@@ -279,6 +288,9 @@ export default {
              method: 'PUT',
              url: get_url,
              data: archive_set,
+             params: {
+                table: "persona"
+              }
             })
          .then(function (response) {
              console.log(response);})
