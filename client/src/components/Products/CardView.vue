@@ -1,10 +1,9 @@
 
 
 <template lang="html">
-  <div class="container">
-
+  <div class="container">x
     <div class="md-form mt-0" id="card-search">
-      <input
+      <input v-model="search"
         class="form-control"
         type="text"
         placeholder="Search for user persona"
@@ -13,7 +12,7 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in cards" v-bind:key="card.id">
+      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
         <b-card-text>
           <span> {{card.name}}
           </span>
@@ -47,7 +46,11 @@ import axios from 'axios'
 import {EventBus} from "../../index.js";
 
 export default {
-  data() {return { cards : {} } },
+  data() {return {
+    cards : {},
+    search : ''
+  }
+ },
   beforeMount() {
     const self = this;
     var get_url = "/api/product-table";
@@ -63,6 +66,15 @@ export default {
     OpenDetail(id) {
       EventBus.$emit('selection-changed' ,this.selectedRow = id)
     },
+
+    filterItems: function(cards) {
+      var self = this;
+      return cards.filter(function(cards) {
+        let regex = new RegExp('(' + self.search+ ')', 'i');
+//        return cards.name.match(regex);
+        return JSON.stringify(cards).match(regex);
+      })
+    }
   },
 };
 

@@ -12,6 +12,12 @@ from sqlite3 import Error
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
+
+
+
+
+
+
 ## ---------------- SERVE STATIC
 #
 # @api.route('/', defaults={'path': ''})
@@ -71,7 +77,7 @@ def persona_table():
 def persona_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as value , title as text FROM PERSONA") # TODO: WHERE archived = 0
+        result = c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA ")
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -150,25 +156,17 @@ def persona_table_by_id(id):
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
-    current_app.logger.info(request.json)
-
-    SQL = "UPDATE PERSONA SET "
-    data_values = []
-    # Iterate through JSON object nad build SQL query
-    for item in request.json:
-        attribute = item
-        value = request.json[item]
-        SQL = SQL +" "+ attribute + " = " + "?" +" ,"
-        data_values.append(value)
-
-    SQL = SQL[:-1] + " WHERE id = ?"
-    data_values.append(id)
-    print(SQL)
+    data = request.get_json()
+    key = list(data.keys())[1]
+    value = data[key]
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        c.execute( SQL, data_values)
+        SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ?"
+        data_values = [value , data['id']]
+        c.execute(SQL,data_values)
         conn.commit()
-        return request.json, 201
+    return request.json, 201
+
 
 
 ##-------------------------- PRODUCT API
@@ -250,10 +248,11 @@ def product_table_put_by_id(id):
     data_values = []
     # Iterate through JSON object nad build SQL query
     for item in request.json:
-        attribute = item
-        value = request.json[item]
-        SQL = SQL +" "+ attribute + " = " + "?" +" "
-        data_values.append(value)
+        if not isinstance(item, (list, tuple)):
+            attribute = item
+            value = request.json[item]
+            SQL = SQL +" "+ attribute + " = " + "?" +" "
+            data_values.append(value)
 
     SQL = SQL + " WHERE id = ?"
     current_app.logger.info(SQL)

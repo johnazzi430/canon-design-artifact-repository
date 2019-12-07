@@ -79,30 +79,38 @@ break
         <h1 v-else>Edit</h1>
         <div>
           <label for="Name">Name</label>
-          <b-form-input v-model="form.name"  name="Name" />
+          <b-form-input v-model="form.name" @change="onInputChanged('name')" name="Name" />
           <label for="Title">Title</label>
-          <b-form-input v-model="form.title" id="Title" name="Title" />
+          <b-form-input v-model="form.title" @change="onInputChanged('title')"
+                        id="Title" name="Title" />
           <div class="">
             <label for="external">Internal or External?</label>
             <b-form-radio v-model="form.external" name="some-radios"
-            value="1">External</b-form-radio>
+            value="1" @change="onInputChanged('external')">External</b-form-radio>
             <b-form-radio v-model="form.external" name="some-radios"
-            value="0">Internal</b-form-radio>
+            value="0" @change="onInputChanged('external')">Internal</b-form-radio>
           </div>
           <label for="qty">Number people who fit this persona</label>
-          <b-form-input type="number" v-model="form.market_size" id="qty" name="qty" />
+          <b-form-input type="number" v-model="form.market_size"
+                id="qty" name="qty" @change="onInputChanged('market_size')"/>
           <label for="quote">Persona Quote</label>
-          <b-form-textarea v-model="form.quote" id="quote" name="quote" />
+          <b-form-textarea v-model="form.quote" id="quote"
+                name="quote" @change="onInputChanged('quote')"/>
           <label for="function">Job Function</label>
-          <b-form-textarea v-model="form.job_function" id="function" name="function" />
+          <b-form-textarea v-model="form.job_function" id="function"
+                name="function" @change="onInputChanged('job_function')"/>
           <label for="needs">Needs</label>
-          <b-form-textarea v-model="form.needs" id="needs" name="needs" />
+          <b-form-textarea v-model="form.needs" id="needs"
+                name="needs" @change="onInputChanged('needs')"/>
           <label for="wants">Wants</label>
-          <b-form-textarea v-model="form.wants" id="wants" name="wants" />
+          <b-form-textarea v-model="form.wants" id="wants"
+                name="wants" @change="onInputChanged('wants')"/>
           <label for="pain-point">Pain Points</label>
-          <b-form-textarea v-model="form.pain_point" id="pain_point" name="pain_point" />
+          <b-form-textarea v-model="form.pain_point" id="pain_point"
+                name="pain_point" @change="onInputChanged('pain_points')"/>
           <label for="buss-val">value to business</label>
-          <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
+          <b-form-input type="range" min="0" max="5" v-model="form.buss_val"
+              @change="onInputChanged('buss_val')"/>
           <div class="mt-2">Value: {{ form.buss_val }}</div>
           <br>
           <label for="product-select">Add Product:    </label>
@@ -178,6 +186,7 @@ export default {
       editing: false,
       source: 'persona',
       product_options: [],
+      edited_fields: []
       }
     },
     beforeMount() {
@@ -212,6 +221,7 @@ export default {
             self.form.revision= response.data[0].revision;
             self.form.products = response.data[0].product;
             self.editing = false;
+            self.edited_fields.length = 0 ;
           }
         )
         .catch(error => console.log(error))
@@ -219,8 +229,10 @@ export default {
       },
       methods: {
 
-
-      // DELETE LATER {
+      onInputChanged(field) {
+        this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
+        console.log(this.edited_fields)
+      },
 
       changeData() {
         EventBus.$emit('data-changed',this.form.id)
@@ -230,14 +242,17 @@ export default {
       ///                 }
 
        onEdit() {
-        // axios({
-        //      method: 'put',
-        //      url: '/api/persona-table/' + this.form.id,
-        //      data: this.form, })
-        // .then(function (response) {
-        //      console.log(response);})
-        // .catch(function (error) {
-        //      console.log(error);})
+         var key;
+         for (key of this.edited_fields) {
+           axios({
+               method: 'put',
+               url: '/api/persona-table/' + this.form.id ,
+               data: {
+                 'id' : this.form.id,
+                  [key] : this.form[key]
+               }
+               })
+             }
 
         axios({
             method: 'post',

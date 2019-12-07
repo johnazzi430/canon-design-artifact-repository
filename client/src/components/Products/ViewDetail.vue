@@ -23,6 +23,9 @@
         <p class="text-wrap"> {{form.owner}} </p>
         <label> Product Homepage</label>
         <p> {{form.product_homepage}} </p>
+        <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
+          <b-button pill variant="info">{{persona.persona_title}} </b-button>
+        </div>
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
@@ -52,15 +55,20 @@
           <label> Product Homepage</label>
           <b-form-input v-model="form.product_homepage"></b-form-input>
           <br>
-          <!-- <b-dropdown text="persona list" block variant="info"
-                      class="m-2" menu-class="w-100">
-            <b-form-select v-model="form.persona"
-                           :options="options"
-                           name="product-select"
-                           multiple :select-size="4"
-                           size="lg">
-            </b-form-select>
-          </b-dropdown> -->
+          <multiselect
+                      v-model="form.personas" :options="persona_options"
+                      :multiple="true" :close-on-select="false"
+                      :clear-on-select="false" :preserve-search="true"
+                      placeholder="Pick some" label="persona_title"
+                      track-by="persona_id" :preselect-first="false">
+            <template slot="selection"
+                      slot-scope="{ values, search, isOpen }">
+              <span class="multiselect__single"
+                    v-if="values.length &amp;&amp; !isOpen">
+                          {{ values.length}} options selected
+                        </span>
+            </template>
+          </multiselect>
           <br>
           <div >Selected: <strong>{{ form.persona}}</strong></div>
         </div>
@@ -75,8 +83,10 @@
         <br>
         <div id="button-if" v-if='form.id != null'>
           <b-button type="reset" variant="secondary">Return</b-button>
-          <b-button type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-          <b-button type="submit" variant="primary">Submit Changes</b-button>
+          <b-button href="javascript:void(0)"
+            type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
+          <b-button href="javascript:void(0)"
+            type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
           <b-button type="submit" variant="primary">Add New Persona</b-button>
@@ -111,16 +121,12 @@ export default {
         pain_point: '',
         buss_val: '',
         revision: '',
-        product: '',
+        personas: '',
         product_photo: '',
         product_file: null},
       editing: false,
       source: 'product',
-      options: [
-          { value: 'EngineWise', text: 'EngineWise' },
-          { value: 'PWX', text: 'PWX' },
-          { value: 'Connected Factory', text: 'Connected Factory' },
-        ]
+      persona_options : []
       }
     },
     beforeMount() {
@@ -129,7 +135,7 @@ export default {
       // SET OPTIONS
       axios.get("/api/personas")
         .then(response => {
-          self.options = response.data;
+          self.persona_options = response.data;
         })
         .catch(error => console.log(error))
 
@@ -157,7 +163,35 @@ export default {
         });
       },
       methods: {
-       onEdit() {
+       onEdit(evt) {
+         evt.preventDefault()
+         axios({
+             method: 'post',
+             url: '/api/product-table',
+             data: this.form, })
+         .then(function (response) {
+             console.log(response);})
+         .catch(function (error) {
+             console.log(error);})
+
+        axios({
+            method: 'post',
+            url: '/api/persona-product',
+            data: this.form,
+            params : {
+                table : "product"
+              }
+            })
+        .then(function (response) {
+            console.log(response);})
+        .catch(function (error) {
+            console.log(error);})
+
+         EventBus.$emit('product-table-changed','item-updated')
+         document.getElementById("right-sidepanel").style.width = "0px";
+       },
+
+       onAdd(evt) {
          evt.preventDefault()
          axios({
              method: 'post',
@@ -172,28 +206,13 @@ export default {
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
-       onAdd() {
-         evt.preventDefault()
-         axios({
-             method: 'post',
-             url: '/api/product-table',
-             data: this.form, })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
-
-         EventBus.$emit('product-table-changed','item-updated')
-         document.getElementById("right-sidepanel").style.width = "0px";
-       },
-
-       onReset() {
+       onReset(evt) {
          evt.preventDefault()
          // Reset our form values
          this.editing = false;
        },
 
-       onArchive() {
+       onArchive(evt) {
          evt.preventDefault()
          var get_url = '/api/product-table/';
          get_url += this.form.id ;
