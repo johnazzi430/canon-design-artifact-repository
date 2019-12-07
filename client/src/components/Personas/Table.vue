@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="test-header row" style="margin:15px;">
-      <b-alert :show="this.alert_show===true" variant="info" dismissible>
+      <b-alert :show="this.alert_show === true" variant="info" dismissible>
         Data Updated {{this.alert_text }}
     </b-alert>
       <div class="col-2">

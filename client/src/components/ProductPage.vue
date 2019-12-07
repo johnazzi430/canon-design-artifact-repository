@@ -11,7 +11,7 @@
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
         <!-- v-if start -->
-        <div v-if="selection === null">
+        <div v-if="this.selection !== null">
           <a href="javascript:void(0)" id="Detail"
             class="nav-link active" v-on:click="expandDetail()">
             <i class="fa fa-align-left"></i>
@@ -36,11 +36,11 @@
         <b-modal id="my-modal">
           <product-add></product-add>
         </b-modal>
-        <product-data></product-data>
+        <product-data v-bind:key = "dataKey"></product-data>
       </div>
     </div>
     <div class="" v-if="view === 'card'" v-bind:key="view">
-      <product-card></product-card>
+      <product-card v-bind:key = "dataKey"></product-card>
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">

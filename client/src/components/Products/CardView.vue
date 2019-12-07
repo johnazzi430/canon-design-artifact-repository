@@ -1,7 +1,7 @@
 
 
 <template lang="html">
-  <div class="container">x
+  <div class="container">
     <div class="md-form mt-0" id="card-search">
       <input v-model="search"
         class="form-control"

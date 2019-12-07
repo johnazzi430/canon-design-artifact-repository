@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="test-header row" style="margin:15px">
-      <!-- TODO: add "Add data button" -->
       <div class="col-2">
         Selection:
         <span id="selectedRows"></span>
@@ -14,13 +13,13 @@
       </div>
     </div>
     <ag-grid-vue style="width: 100vl; height: 500px;"
-    class="ag-theme-balham"
-    :columnDefs="columnDefs"
-    :rowData="rowData"
-    :modules="modules"
-    rowSelection="single"
-    @grid-ready="onGridReady"
-    @selection-changed="onSelectionChanged">
+        class="ag-theme-balham"
+        :columnDefs="columnDefs"
+        :rowData="rowData"
+        :modules="modules"
+        rowSelection="single"
+        @grid-ready="onGridReady"
+        @selection-changed="onSelectionChanged">
   </ag-grid-vue>
 </div>
 </template>
@@ -103,11 +102,10 @@ export default {
   mounted() {
     const self = this
 
-    EventBus.$on('data-changed',function(data) {
-      fetch(`/api/persona-table`)
+    EventBus.$on('product-table-changed',function(data) {
+      fetch(`/api/product-table`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
-        console.log('recive')
     })
   },
 };

@@ -158,10 +158,20 @@ def persona_table_by_id(id):
 def persona_table_put_by_id(id):
     data = request.get_json()
     key = list(data.keys())[1]
+        #has to take an index of a list of keys because we dont know what the key that is changing is
+        #we could modify the json being sent from the front end but idk
     value = data[key]
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ?"
+        SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ? "
+        # SQL = SQL + "OUTPUT inserted.{}"
+        #
+        # SQL = """UPDATE PERSONA SET {} = ? WHERE id = ?
+        #         OUTPUT inserted.{}
+        #                inserted.persona_id
+        #                deleted.{}
+        #                INTO PERSONA_COMMENTS"
+        #
         data_values = [value , data['id']]
         c.execute(SQL,data_values)
         conn.commit()
@@ -186,7 +196,7 @@ def product_list():
 def product_table():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT") # TODO: WHERE archived = 0
+        result = c.execute("SELECT * FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -242,27 +252,19 @@ def product_table_by_id(id):
 
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
-    current_app.logger.info(request.json)
-
-    SQL = "UPDATE PRODUCT SET "
-    data_values = []
-    # Iterate through JSON object nad build SQL query
-    for item in request.json:
-        if not isinstance(item, (list, tuple)):
-            attribute = item
-            value = request.json[item]
-            SQL = SQL +" "+ attribute + " = " + "?" +" "
-            data_values.append(value)
-
-    SQL = SQL + " WHERE id = ?"
-    current_app.logger.info(SQL)
-    data_values.append(id)
+    data = request.get_json()
+    key = list(data.keys())[1]
+        #has to take an index of a list of keys because we dont know what the key that is changing is
+        #we could modify the json being sent from the front end but idk
+    value = data[key]
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        c.execute( SQL, data_values)
-        conn.commit()
-        return request.json, 201
+        SQL = "UPDATE PRODUCT SET " + key + " = ? WHERE id = ? "
 
+        data_values = [value , data['id']]
+        c.execute(SQL,data_values)
+        conn.commit()
+    return request.json, 201
 
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):

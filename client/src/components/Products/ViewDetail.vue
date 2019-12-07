@@ -5,7 +5,7 @@
         @submit="onEdit"
         @reset="onReset"
         @archive="onArchive">
-      <div id='product-detail-show' v-if='editing === false && form.id != null'>
+      <div id='product-detail-show' v-if='editing === false && form.id !== null'>
       <h1>Detail</h1>
       <span> Product ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div>
@@ -37,23 +37,30 @@
 
     </div>
       <div  id='product-detail-edit' v-else>
-        <h1 v-if='form.id != null'>Edit</h1>
+        <h1 v-if='form.id !== null'>Edit</h1>
         <h1 v-else>Add</h1>
         <div>
           <label>Name</label>
-          <b-form-input v-model="form.name"></b-form-input>
+          <b-form-input v-model="form.name"
+              @change="onInputChanged('name')"></b-form-input>
           <label>Description</label>
-          <b-form-textarea v-model="form.description"></b-form-textarea>
+          <b-form-textarea v-model="form.description"
+              @change="onInputChanged('description')"></b-form-textarea>
           <label>Metrics</label>
-          <b-form-textarea v-model="form.metrics"></b-form-textarea>
+          <b-form-textarea v-model="form.metrics"
+              @change="onInputChanged('metrics')"></b-form-textarea>
           <label>Product Features</label>
-          <b-form-textarea v-model="form.features"></b-form-textarea>
+          <b-form-textarea v-model="form.features"
+              @change="onInputChanged('features')"></b-form-textarea>
           <label>Goals</label>
-          <b-form-input v-model="form.goals"></b-form-input>
+          <b-form-input v-model="form.goals"
+              @change="onInputChanged('goals')"></b-form-input>
           <label for="function">Owner</label>
-          <b-form-input v-model="form.owner"></b-form-input>
+          <b-form-input v-model="form.owner"
+              @change="onInputChanged('owner')"></b-form-input>
           <label> Product Homepage</label>
-          <b-form-input v-model="form.product_homepage"></b-form-input>
+          <b-form-input v-model="form.product_homepage"
+              @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
           <multiselect
                       v-model="form.personas" :options="persona_options"
@@ -126,7 +133,8 @@ export default {
         product_file: null},
       editing: false,
       source: 'product',
-      persona_options : []
+      persona_options : [],
+      edited_fields: []
       }
     },
     beforeMount() {
@@ -157,39 +165,48 @@ export default {
             self.form.product_homepage = response.data[0].product_homepage;
             self.form.revision= response.data[0].revision;
             self.editing = false;
+            self.edited_fields.length = 0 ;
           }
         )
         .catch(error => console.log(error))
         });
       },
       methods: {
-       onEdit(evt) {
-         evt.preventDefault()
+        onInputChanged(field) {
+          this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
+          console.log(this.edited_fields)
+        },
+
+        onEdit() {
+          var key;
+          for (key of this.edited_fields) {
+            axios({
+                method: 'put',
+                url: '/api/product-table/' + this.form.id ,
+                data: {
+                  'id' : this.form.id,
+                   [key] : this.form[key]
+                }
+                })
+              }
+
          axios({
              method: 'post',
-             url: '/api/product-table',
-             data: this.form, })
+             url: '/api/persona-product',
+             data: this.form,
+             params : {
+               table : "product"
+               }
+             })
          .then(function (response) {
-             console.log(response);})
+                  console.log(response);})
          .catch(function (error) {
-             console.log(error);})
+                  console.log(error);})
 
-        axios({
-            method: 'post',
-            url: '/api/persona-product',
-            data: this.form,
-            params : {
-                table : "product"
-              }
-            })
-        .then(function (response) {
-            console.log(response);})
-        .catch(function (error) {
-            console.log(error);})
-
-         EventBus.$emit('product-table-changed','item-updated')
+         EventBus.$emit('persona-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
-       },
+
+        },
 
        onAdd(evt) {
          evt.preventDefault()
@@ -214,25 +231,20 @@ export default {
 
        onArchive(evt) {
          evt.preventDefault()
-         var get_url = '/api/product-table/';
-         get_url += this.form.id ;
-         //get_url += '?name=frank';
-
-         var archive_set = { 'archived': 1};
-
-         console.log(get_url)
          axios({
-             method: 'PUT',
-             url: get_url,
-             data: archive_set,
-            })
+            method: 'put',
+            url: '/api/product-table/' + this.form.id ,
+            data: {
+              'id' : this.form.id,
+              'archived': 1
+            }
+         })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         console.log('delete')
-         EventBus.$emit('product-table-changed' , archive_set )
+         EventBus.$emit('product-table-changed' , 'data archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
      },

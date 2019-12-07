@@ -11,7 +11,7 @@
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
       <!-- v-if start -->
-      <div v-if="selection === null">
+      <div v-if="this.selection !== null">
         <a href="javascript:void(0)" id="Detail"
           class="nav-link active" v-on:click="expandDetail()">
           <i class="fa fa-align-left"></i>
