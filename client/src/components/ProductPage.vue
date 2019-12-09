@@ -97,7 +97,7 @@ export default {
 
     addDataAction() {
       this.detailKey += 1;
-      EventBus.$emit('selection-changed',this.selectedRow = null)
+      EventBus.$emit('product-selection-changed',this.selectedRow = null)
     },
 
     changeView(view) { this.view = view},
@@ -105,24 +105,13 @@ export default {
   mounted () {
     const self = this
 
-    EventBus.$on('selection-changed' , function(selection) {
+    EventBus.$on('product-selection-changed' , function(selection) {
       document.getElementById("right-sidepanel").style.width = "500px"
       self.selection = selection
     });
   }
 }
 
-
-
-// //document.getElementById("productDetails").innerHTML = 'test';
-// EventBus.$on('selection-changed' , function(selection) {
-//   document.getElementById("right-sidepanel").style.width = "500px"
-// });
-
-
-function closeNav() {
-  document.getElementById("right-sidepanel").style.width = "0px";
-}
 
 
 </script>

@@ -74,7 +74,7 @@ export default {
       });
 
       document.querySelector("#selectedRows").innerHTML = selectedRowsString;
-      EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
+      EventBus.$emit('persona-selection-changed' ,this.selectedRow = selectedRowsid)
     },
 
 
@@ -90,7 +90,7 @@ export default {
       fetch(`/api/persona-table`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
-        console.log('recive')
+        console.log('recived')
     })
   },
 

@@ -64,7 +64,7 @@ export default {
   },
   methods:{
     OpenDetail(id) {
-      EventBus.$emit('selection-changed' ,this.selectedRow = id)
+      EventBus.$emit('product-selection-changed' ,this.selectedRow = id)
     },
 
     filterItems: function(cards) {

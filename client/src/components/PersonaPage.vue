@@ -94,7 +94,7 @@ export default {
 
     addDataAction() {
       this.detailKey += 1;
-      EventBus.$emit('selection-changed',this.selectedRow = null)
+      EventBus.$emit('persona-selection-changed',this.selectedRow = null)
     },
 
     changeView(view) { this.view = view},
@@ -103,7 +103,7 @@ export default {
 
     const self = this;
 
-    EventBus.$on('selection-changed' , function(selection) {
+    EventBus.$on('persona-selection-changed' , function(selection) {
       document.getElementById("right-sidepanel").style.width = "500px"
       self.selection = selection
     })

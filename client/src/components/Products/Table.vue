@@ -66,7 +66,7 @@ export default {
       });
 
       document.querySelector("#selectedRows").innerHTML = selectedRowsString;
-      EventBus.$emit('selection-changed' ,this.selectedRow = selectedRowsid)
+      EventBus.$emit('product-selection-changed' ,this.selectedRow = selectedRowsid)
     },
 
     onFilterTextBoxChanged() {

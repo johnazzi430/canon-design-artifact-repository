@@ -200,7 +200,7 @@ export default {
         .catch(error => console.log(error))
 
       // UPDATE DATA ON CHANGES
-      EventBus.$on('selection-changed', function(selection){
+      EventBus.$on('persona-selection-changed', function(selection){
 
         var get_url = "/api/persona-table/";
         get_url += selection;

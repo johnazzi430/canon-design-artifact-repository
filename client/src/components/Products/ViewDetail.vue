@@ -148,7 +148,7 @@ export default {
         .catch(error => console.log(error))
 
       // GET ON DATA CHANGE
-      EventBus.$on('selection-changed', function(selection){
+      EventBus.$on('product-selection-changed', function(selection){
 
         var get_url = "/api/product-table/";
         get_url += selection;

@@ -77,7 +77,7 @@ def persona_table():
 def persona_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA ")
+        result = c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = 0")
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -148,7 +148,7 @@ def persona_table_by_id(id):
                                         INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
                                         WHERE persona_id = :id """, {'id' : id})
             data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
-            data[0]['product'] = data_add
+            data[0]['products'] = data_add
             return json.dumps(data), 201
         else:
             return json.dumps([{'id': None}])
@@ -186,7 +186,7 @@ def persona_table_put_by_id(id):
 def product_list():
     with sqlite3.connect('server/data/data.db') as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT") # TODO: WHERE archived = 0
+        result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -266,6 +266,8 @@ def product_table_put_by_id(id):
         conn.commit()
     return request.json, 201
 
+
+#### COMMENTS
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
     with sqlite3.connect('server/data/data.db') as conn:
