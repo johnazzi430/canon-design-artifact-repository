@@ -97,7 +97,6 @@ export default {
   beforeMount() {
 
     this.columnDefs = [
-      {headerName: "Name", field: "name", width: 200},
       {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
       {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
       {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},

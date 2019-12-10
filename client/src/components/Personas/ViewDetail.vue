@@ -120,7 +120,8 @@ break
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
                       placeholder="Pick some" label="product_name"
-                      track-by="product_id" :preselect-first="false">
+                      track-by="product_id" :preselect-first="false"
+                      @input="onInputChanged('products')">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -219,7 +220,7 @@ export default {
             self.form.pain_point= response.data[0].pain_point;
             self.form.buss_val= response.data[0].buss_val;
             self.form.revision= response.data[0].revision;
-            self.form.products = response.data[0].product;
+            self.form.products = response.data[0].products;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
@@ -244,32 +245,30 @@ export default {
        onEdit() {
          var key;
          for (key of this.edited_fields) {
-           axios({
-               method: 'put',
-               url: '/api/persona-table/' + this.form.id ,
-               data: {
-                 'id' : this.form.id,
-                  [key] : this.form[key]
-               }
-               })
-             }
-
-        axios({
-            method: 'post',
-            url: '/api/persona-product',
-            data: this.form,
-            params : {
-              table : "persona"
-              }
-            })
-        .then(function (response) {
-                 console.log(response);})
-        .catch(function (error) {
-                 console.log(error);})
+           if (key === 'products') {
+             axios({
+                 method: 'post',
+                 url: '/api/persona-product',
+                 data: this.form,
+                 params : {
+                   table : "persona"
+                   }
+                 })
+           }
+           else {
+             axios({
+                 method: 'put',
+                 url: '/api/persona-table/' + this.form.id ,
+                 data: {
+                   'id' : this.form.id,
+                    [key] : this.form[key]
+                 }
+                 })
+               };
+           }
 
         EventBus.$emit('persona-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
-
        },
 
        onAdd() {
@@ -281,6 +280,17 @@ export default {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
+
+        if (this.edited_fields.includes('products')) {
+               axios({
+                   method: 'post',
+                   url: '/api/persona-product',
+                   data: this.form,
+                   params : {
+                     table : "persona"
+                     }
+                   })
+         };
 
          EventBus.$emit('persona-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -331,10 +341,10 @@ export default {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-};
+}
 
 p {
   white-space: pre-line;
-};
+}
 
 </style>

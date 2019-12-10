@@ -79,8 +79,9 @@ export default {
 };
 
 </script>
-
+<!-- 
 <style lang="css" scoped>
+
 .avatar {
   display: block;
   margin-left: auto;
@@ -90,4 +91,4 @@ export default {
   border-radius: 50%;
 };
 
-</style>
+</style> -->

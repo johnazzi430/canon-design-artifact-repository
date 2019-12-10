@@ -48,7 +48,6 @@
         <persona-detail :key="detailKey"></persona-detail>
       </div>
     </div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </div>
 </template>
 
@@ -117,7 +116,7 @@ function closeNav() {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 .sidepanel-right{
   height: 100%; /* Specify a height */
@@ -149,20 +148,20 @@ function closeNav() {
   font-size: 20px; /* Increase font size */
   color: white; /* White text color */
   align-content: left;
-};
+}
 
 .sidepanel-left:hover {
   left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
-#persona_panel {
-  padding-left:15px;
-  margin-left:15px;
-  padding-right:15px;
-  margin-right:15px;
-  margin-top:-15px;
-  padding-top:-15px;
-}
+// #persona_panel {
+//   padding-left:15px;
+//   margin-left:15px;
+//   padding-right:15px;
+//   margin-right:15px;
+//   margin-top:-15px;
+//   padding-top:-15px;
+// }
 
 .wrapper {
     display: flex;

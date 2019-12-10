@@ -63,6 +63,7 @@
               @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
           <multiselect
+                      @change="onInputChanged('personas')"
                       v-model="form.personas" :options="persona_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
@@ -96,7 +97,8 @@
             type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
-          <b-button type="submit" variant="primary">Add New Persona</b-button>
+          <b-button type="submit" variant="primary" v-on:click='onAdd'>
+            Add New Product</b-button>
         </div>
       </div>
   </b-form>
@@ -118,17 +120,13 @@ export default {
       form: {
         id: null,
         name: '',
-        title: '',
-        external: '',
-        market_size: '',
-        quote: '',
-        job_function: '',
-        needs: '',
-        wants: '',
-        pain_point: '',
-        buss_val: '',
-        revision: '',
-        personas: '',
+        description: '',
+        metrics: '',
+        features: '',
+        goals: '',
+        owner: '',
+        product_homepage: '',
+        personas: [],
         product_photo: '',
         product_file: null},
       editing: false,
@@ -179,29 +177,29 @@ export default {
 
         onEdit() {
           var key;
+          var key;
           for (key of this.edited_fields) {
-            axios({
-                method: 'put',
-                url: '/api/product-table/' + this.form.id ,
-                data: {
-                  'id' : this.form.id,
-                   [key] : this.form[key]
-                }
-                })
-              }
-
-         axios({
-             method: 'post',
-             url: '/api/persona-product',
-             data: this.form,
-             params : {
-               table : "product"
-               }
-             })
-         .then(function (response) {
-                  console.log(response);})
-         .catch(function (error) {
-                  console.log(error);})
+            if (key === 'personas') {
+              axios({
+                  method: 'post',
+                  url: '/api/persona-product',
+                  data: this.form,
+                  params : {
+                    table : "product"
+                    }
+                  })
+            }
+            else {
+              axios({
+                  method: 'put',
+                  url: '/api/persona-table/' + this.form.id ,
+                  data: {
+                    'id' : this.form.id,
+                     [key] : this.form[key]
+                  }
+                  })
+                };
+            }
 
          EventBus.$emit('persona-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -219,7 +217,18 @@ export default {
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('product-table-changed','item-updated')
+        if (this.edited_fields.match('personas')) {
+               axios({
+                   method: 'post',
+                   url: '/api/persona-product',
+                   data: this.form,
+                   params : {
+                     table : "product"
+                     }
+                   })
+         };
+
+         EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
@@ -252,7 +261,6 @@ export default {
 
 </script>
 
-
 <style scoped>
 
 .avatar {
@@ -261,11 +269,10 @@ export default {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-};
+}
 
 p {
   white-space: pre-line;
-};
-
+}
 
 </style>

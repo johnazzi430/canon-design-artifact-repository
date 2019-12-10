@@ -13,8 +13,9 @@
 
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
-        <div class="col">
-                  <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
+        <div>
+                  <img alt="avatar" class="avatar"
+                       src="../../../public/assets/img_avatar2.png" >
         </div>
         <b-card-text>
           <span> {{card.name}} the {{card.title}}
@@ -85,16 +86,17 @@ export default {
 
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
+
 .avatar {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
   min-width: 50px;
   max-width: 50px;
   min-height: 50px;
   max-height: 50px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 50%;
-};
+}
 
 </style>

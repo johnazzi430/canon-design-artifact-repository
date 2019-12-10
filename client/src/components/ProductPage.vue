@@ -33,9 +33,6 @@
       <!-- MAIN -->
     <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
-        <b-modal id="my-modal">
-          <product-add></product-add>
-        </b-modal>
         <product-data v-bind:key = "dataKey"></product-data>
       </div>
     </div>
@@ -50,7 +47,6 @@
         <product-detail :key="detailKey"></product-detail>
       </div>
     </div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </div>
 </template>
 
@@ -112,11 +108,9 @@ export default {
   }
 }
 
-
-
 </script>
 
-<style scoped>
+<style lang="scss">
 
 .sidepanel-right{
   height: 100%; /* Specify a height */
@@ -154,14 +148,14 @@ export default {
   left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
-#persona_panel {
-  padding-left:15px;
-  margin-left:15px;
-  padding-right:15px;
-  margin-right:15px;
-  margin-top:-15px;
-  padding-top:-15px;
-}
+// #product_panel {
+//   padding-left:15px;
+//   margin-left:15px;
+//   padding-right:15px;
+//   margin-right:15px;
+//   margin-top:-15px;
+//   padding-top:-15px;
+// }
 
 .wrapper {
     display: flex;
@@ -170,4 +164,5 @@ export default {
     margin-top:-16px;
     padding-top:-16px;
 }
+
 </style>
