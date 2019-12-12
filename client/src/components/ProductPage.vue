@@ -33,6 +33,9 @@
       <!-- MAIN -->
     <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
+        <b-modal id="my-modal">
+          <product-add></product-add>
+        </b-modal>
         <product-data v-bind:key = "dataKey"></product-data>
       </div>
     </div>

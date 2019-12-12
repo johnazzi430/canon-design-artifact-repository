@@ -458,7 +458,7 @@ def get_user_data():
 def admin_user():
     username = request.json.get('username')
     new_role = request.json.get('role')
-    if request.json.get('admin').lower() == 'admin':
+    if request.json.get('admin') == 'admin':
         with sqlite3.connect('server/data/data.db') as conn:
             c = conn.cursor()
             c.execute("UPDATE USERS SET role = ? WHERE username = ?", [ new_role, username])

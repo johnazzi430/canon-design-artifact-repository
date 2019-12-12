@@ -177,29 +177,29 @@ export default {
 
         onEdit() {
           var key;
-          var key;
           for (key of this.edited_fields) {
-            if (key === 'personas') {
-              axios({
-                  method: 'post',
-                  url: '/api/persona-product',
-                  data: this.form,
-                  params : {
-                    table : "product"
-                    }
-                  })
-            }
-            else {
-              axios({
-                  method: 'put',
-                  url: '/api/persona-table/' + this.form.id ,
-                  data: {
-                    'id' : this.form.id,
-                     [key] : this.form[key]
-                  }
-                  })
-                };
-            }
+            axios({
+                method: 'put',
+                url: '/api/product-table/' + this.form.id ,
+                data: {
+                  'id' : this.form.id,
+                   [key] : this.form[key]
+                }
+                })
+              }
+
+          // CALL TO PERSONA RELATIONSHIP
+        if (this.edited_fields.match('personas')) {
+          axios({
+              method: 'post',
+              url: '/api/persona-product',
+              data: this.form,
+              params : {
+                table : "product"
+                }
+              })
+        }
+
 
          EventBus.$emit('persona-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";

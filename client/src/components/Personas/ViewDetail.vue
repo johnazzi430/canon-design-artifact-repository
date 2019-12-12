@@ -116,12 +116,12 @@ break
           <label for="product-select">Add Product:    </label>
           <br>
           <multiselect
+                      @change="onInputChanged('products')"
                       v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
                       placeholder="Pick some" label="product_name"
-                      track-by="product_id" :preselect-first="false"
-                      @input="onInputChanged('products')">
+                      track-by="product_id" :preselect-first="false">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -220,7 +220,7 @@ export default {
             self.form.pain_point= response.data[0].pain_point;
             self.form.buss_val= response.data[0].buss_val;
             self.form.revision= response.data[0].revision;
-            self.form.products = response.data[0].products;
+            self.form.products = response.data[0].product;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
@@ -245,30 +245,30 @@ export default {
        onEdit() {
          var key;
          for (key of this.edited_fields) {
-           if (key === 'products') {
-             axios({
-                 method: 'post',
-                 url: '/api/persona-product',
-                 data: this.form,
-                 params : {
-                   table : "persona"
-                   }
-                 })
-           }
-           else {
-             axios({
-                 method: 'put',
-                 url: '/api/persona-table/' + this.form.id ,
-                 data: {
-                   'id' : this.form.id,
-                    [key] : this.form[key]
-                 }
-                 })
-               };
-           }
+           axios({
+               method: 'put',
+               url: '/api/persona-table/' + this.form.id ,
+               data: {
+                 'id' : this.form.id,
+                  [key] : this.form[key]
+               }
+               })
+             };
+
+        if (this.edited_fields.match('products')) {
+          axios({
+              method: 'post',
+              url: '/api/persona-product',
+              data: this.form,
+              params : {
+                table : "persona"
+                }
+              })
+        };
 
         EventBus.$emit('persona-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
+
        },
 
        onAdd() {
@@ -281,7 +281,7 @@ export default {
          .catch(function (error) {
              console.log(error);})
 
-        if (this.edited_fields.includes('products')) {
+        if (this.edited_fields.match('products')) {
                axios({
                    method: 'post',
                    url: '/api/persona-product',

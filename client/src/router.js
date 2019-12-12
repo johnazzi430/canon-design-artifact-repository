@@ -4,7 +4,6 @@ import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
 import PersonaPage from './components/PersonaPage.vue';
 import ProductPage from './components/ProductPage.vue';
-import Admin from './components/Admin.vue';
 import Login from './components/Login.vue';
 import NotFound from './components/NotFound.vue';
 import Home from './components/Home.vue';
@@ -27,11 +26,6 @@ const router =  new Router({
       component: Login,
     },
     {
-      path: '/admin',
-      name: 'admin',
-      component: Admin,
-    },
-    {
       path: '/persona',
       name: 'persona default',
       component: PersonaPage,
@@ -44,21 +38,21 @@ const router =  new Router({
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  if(to.name === "login") {
-    store.state.authenticated===false
-    next()
-    return
-  }
-  else {
-    if(store.state.authenticated === true && store.state.role != null) {
-      next()
-      return
-    }
-    else {
-      next('/login')
-    }
-  }
-})
+// router.beforeEach((to, from, next) => {
+//   if(to.name === "login") {
+//     store.state.authenticated===false
+//     next()
+//     return
+//   }
+//   else {
+//     if(store.state.authenticated === true && store.state.role != null) {
+//       next()
+//       return
+//     }
+//     else {
+//       next('/login')
+//     }
+//   }
+// })
 
 export default router
