@@ -176,12 +176,12 @@ export default {
           console.log(this.edited_fields)
         },
 
-        onEdit() {
+        async onEdit() {
           var key;
           var key;
           for (key of this.edited_fields) {
             if (key === 'personas') {
-              axios({
+              const resp = await axios({
                   method: 'post',
                   url: '/api/persona-product',
                   data: this.form,
@@ -191,9 +191,9 @@ export default {
                   })
             }
             else {
-              axios({
+             await axios({
                   method: 'put',
-                  url: '/api/persona-table/' + this.form.id ,
+                  url: '/api/product-table/' + this.form.id ,
                   data: {
                     'id' : this.form.id,
                      [key] : this.form[key]
@@ -202,14 +202,14 @@ export default {
                 };
             }
 
-         EventBus.$emit('persona-table-changed','item-updated');
+         EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
 
         },
 
-       onAdd(evt) {
+       async onAdd(evt) {
          evt.preventDefault()
-         axios({
+         await xios({
              method: 'post',
              url: '/api/product-table',
              data: this.form, })
@@ -219,7 +219,7 @@ export default {
              console.log(error);})
 
         if (this.edited_fields.match('personas')) {
-               axios({
+              await axios({
                    method: 'post',
                    url: '/api/persona-product',
                    data: this.form,
@@ -239,9 +239,9 @@ export default {
          this.editing = false;
        },
 
-       onArchive(evt) {
+       async onArchive(evt) {
          evt.preventDefault()
-         axios({
+         await axios({
             method: 'put',
             url: '/api/product-table/' + this.form.id ,
             data: {

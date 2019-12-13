@@ -242,17 +242,12 @@ export default {
         console.log(this.edited_fields)
       },
 
-      changeData() {
-        EventBus.$emit('data-changed',this.form.id)
-        console.log('send')
-      },
-
-       onEdit() {
+       async onEdit() {
          var key;
          var success = 1 ;
          for (key of this.edited_fields) {
            if (key === 'products') {
-             axios({
+             await axios({
                  method: 'post',
                  url: '/api/persona-product',
                  data: this.form,
@@ -264,7 +259,7 @@ export default {
                    success = 1 * success ;})
            }
            else if (key === 'roles') {
-             axios({
+             await axios({
                  method: 'post',
                  url: '/api/persona/roles',
                  data: this.form,
@@ -273,7 +268,7 @@ export default {
                    success = 1 * success ;})
            }
            else {
-             axios({
+             await axios({
                  method: 'put',
                  url: '/api/persona-table/' + this.form.id ,
                  data: {
@@ -290,8 +285,8 @@ export default {
         document.getElementById("right-sidepanel").style.width = "0px";
        },
 
-       onAdd() {
-         axios({
+       async onAdd() {
+         await axios({
              method: 'post',
              url: '/api/persona-table',
              data: this.form, })
@@ -301,7 +296,7 @@ export default {
              console.log(error);})
 
         if (this.edited_fields.includes('products')) {
-               axios({
+               await axios({
                    method: 'post',
                    url: '/api/persona-product',
                    data: this.form,
@@ -320,14 +315,14 @@ export default {
          this.editing = false;
        },
 
-       onArchive() {
+       async onArchive() {
          var get_url = '/api/persona-table/';
          get_url += this.form.id ;
 
          var archive_set = { 'archived': 1};
 
          console.log(get_url)
-         axios({
+         await axios({
              method: 'PUT',
              url: get_url,
              data: archive_set,

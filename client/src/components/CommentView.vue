@@ -49,36 +49,44 @@ export default {
       .then(response => {this.comments = response.data})
       .catch(error => console.log(error))
     },
+  mounted() {
+    const self = this
+
+    EventBus.$on('comments-added', function(){
+      var get_url = "/api/"+ self.sourceTable+"/comments/" +self.itemId
+
+      axios
+      .get(get_url)
+      .then(response => {self.comments = response.data})
+      .catch(error => console.log(error))
+    });
+  },
   methods:{
      async addComment() {
 
-      var None = null
-      var comment_data = {
-        source_id : this.itemId,
-        source_table : this.sourceTable,
-        comment_body : this.form.comment,
-        action : None,
-        downchange : None,
-        upchange : None,
-      };
+        var None = null
+        var comment_data = {
+          source_id : this.itemId,
+          source_table : this.sourceTable,
+          comment_body : this.form.comment,
+          action : None,
+          downchange : None,
+          upchange : None,
+        };
 
-      var set_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
+        var set_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
 
-      axios({
-          method: 'post',
-          url: set_url,
-          data: comment_data })
-      .then(function (response) {
-          console.log(response);
-          EventBus.$emit('comments-added', comment_data );
-          this.commentKey +1;
-        })
-      .catch(function (error) {
-          console.log(error);})
+        const data = await axios({
+            method: 'post',
+            url: set_url,
+            data: comment_data })
 
+        EventBus.$emit('comments-added', comment_data );
 
-    }
+    },
+
   }
 };
+
 
 </script>
