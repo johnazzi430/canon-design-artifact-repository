@@ -5,7 +5,7 @@
       <b-navbar class="navbar navbar-expand-md navbar-light bg-light"
           style="padding-left:30px">
         <div class="navbar-nav">
-          <b-navbar-brand>UTC User Personas</b-navbar-brand>
+          <b-navbar-brand>UTC Product Insight</b-navbar-brand>
           <!-- <b-nav-item :to="{path :'/'}">Home</b-nav-item>
           <b-nav-item :to="{path :'/persona'}">Personas</b-nav-item >
           <b-nav-item :to="{path :'/product'}">Products</b-nav-item>

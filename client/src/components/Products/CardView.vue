@@ -14,8 +14,7 @@
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
         <b-card-text>
-          <span> {{card.name}}
-          </span>
+          <h5 style="text-align:center">{{card.name}}</h5>
           <p class="well">
             {{card.description}}
           </p>

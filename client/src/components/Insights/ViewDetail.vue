@@ -1,31 +1,6 @@
 
 <template>
 <div style="padding-right:15px; margin-left:15px">
-  <!-- <div role="tablist">
-          <b-button block href="#" v-b-toggle.accordion-1
-          variant="btn-outline-secondary">Wants</b-button>
-        <b-collapse id="accordion-1" accordion="my-accordion" >
-          <b-form-textarea v-model="form.wants" id="quote" name="quote" />
-        </b-collapse>
-
-          <b-button block href="#" v-b-toggle.accordion-2
-          variant="btn-outline-secondary">Quote</b-button>
-        <b-collapse id="accordion-2" accordion="my-accordion" >
-          <b-form-textarea v-model="form.quote" id="quote" name="quote" />
-        </b-collapse>
-
-          <b-button block href="#" v-b-click.accordion-3
-          variant="btn-outline-secondary">Accordion 3</b-button>
-        <b-collapse id="accordion-3" v-model="visible" tag="link">
-            <div>{{ form.quote }}</div>
-        </b-collapse>
-    </div> -->
-<!--
-
-break
-break
-
- -->
 
     <b-form id='persona-detail'
         @submit="onEdit"
@@ -33,12 +8,12 @@ break
         @archive="onArchive">
       <div id='persona-detail-show' v-if='editing === false && form.id !== null'>
       <h1>Insight Detail</h1>
-      <div class="">>
+      <div class="">
         <label>Title</label>
         <p class="text-wrap"> {{form.title}} </p>
         <label>description</label>
         <p class="text-wrap"> {{form.description}} </p>
-        <label>content</label>
+        <label>Content</label>
         <p class="text-wrap"> {{form.content}} </p>
         <label>Experience vector</label>
         <p class="text-wrap"> {{form.experience_vector}} </p>
@@ -52,6 +27,16 @@ break
         <p class="text-wrap"> {{form.props}} </p>
         <label>Journey Location</label>
         <p class="text-wrap"> {{form.journey}} </p>
+        <label>Associated Personas</label>
+        <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
+          <b-button pill variant="info">{{persona.persona_title}} </b-button>
+          <!-- TODO: make it so clicking her routes to the persona -->
+        </div>
+        <label>Associated products</label>
+        <div v-for="product in form.products" v-bind:key="product.product_id">
+          <b-button pill variant="info">{{product.product_name}}</b-button>
+          <!-- TODO: make it so clicking her routes to the product -->
+        </div>
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
@@ -69,9 +54,15 @@ break
           <label>Title</label>
           <b-form-input v-model="form.title" @change="onInputChanged('title')"
                         id="Title" name="Title" />
-          <label>description</label>
-          <b-form-textarea v-model="form.description" id="description"
-                name="description" @change="onInputChanged('description')"/>
+          <!-- Collapasble form input  -->
+          <div variant="light" v-b-toggle="'collapse-description'" class="m-1">
+            <label>description</label>
+          </div>
+          <b-collapse id="collapse-description">
+            <b-card><b-form-textarea v-model="form.description" id="description"
+            name="description" @change="onInputChanged('description')"/></b-card>
+          </b-collapse>
+
           <label>content</label>
           <b-form-textarea v-model="form.content" id="content"
                 name="content" @change="onInputChanged('content')"/>
@@ -194,6 +185,7 @@ export default {
             self.form.id = selection;
             self.form.title= response.data[0].title;
             self.form.description= response.data[0].description;
+            self.form.content = response.data[0].content;
             self.form.experience_vector= response.data[0].experience_vector;
             self.form.magnitude = response.data[0].magnitude;
             self.form.frequency= response.data[0].frequency;

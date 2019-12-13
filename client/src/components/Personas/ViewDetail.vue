@@ -1,32 +1,6 @@
 
 <template>
 <div style="padding-right:15px; margin-left:15px">
-  <!-- <div role="tablist">
-          <b-button block href="#" v-b-toggle.accordion-1
-          variant="btn-outline-secondary">Wants</b-button>
-        <b-collapse id="accordion-1" accordion="my-accordion" >
-          <b-form-textarea v-model="form.wants" id="quote" name="quote" />
-        </b-collapse>
-
-          <b-button block href="#" v-b-toggle.accordion-2
-          variant="btn-outline-secondary">Quote</b-button>
-        <b-collapse id="accordion-2" accordion="my-accordion" >
-          <b-form-textarea v-model="form.quote" id="quote" name="quote" />
-        </b-collapse>
-
-          <b-button block href="#" v-b-click.accordion-3
-          variant="btn-outline-secondary">Accordion 3</b-button>
-        <b-collapse id="accordion-3" v-model="visible" tag="link">
-            <div>{{ form.quote }}</div>
-        </b-collapse>
-    </div> -->
-<!--
-
-break
-break
-
- -->
-
     <b-form id='persona-detail'
         @submit="onEdit"
         @reset="onReset"
@@ -61,10 +35,11 @@ break
         <label>Associated Products</label>
         <div v-for="product in form.products" v-bind:key="product.product_id">
           <b-button pill variant="info">{{product.product_name}}</b-button>
+          <!-- TODO: make it so clicking her routes to the product -->
         </div>
         <label>Associated Roles</label>
         <div v-for="role in form.roles" v-bind:key="role.persona_role_id">
-          <b-button pill >{{role.persona_role_name}}</b-button>
+          <b-badge pill variant="success">{{role.persona_role_name}}</b-badge>
         </div>
         <div class="mt-2">Market Value: {{ form.buss_val }}</div>
         <label for="persona_file">Add File</label>

@@ -12,7 +12,7 @@ from sqlite3 import Error
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
-
+db = 'server/data/data.db'
 
 
 ## ---------------- SERVE STATIC
@@ -42,13 +42,13 @@ def convertToBinaryData(filename):
 @api.route("/persona-table", methods = ['GET'])
 def persona_table():
     if request.args.get('filter') == "False" :
-        with sqlite3.connect('server/data/data.db') as conn:
+        with sqlite3.connect(db) as conn:
             c = conn.cursor()
             result = c.execute("SELECT * FROM PERSONA") # TODO: WHERE archived = 0
             data = [dict(zip([key[0] for key in c.description], row)) for row in result]
             return json.dumps(data)
     else :
-        with sqlite3.connect('server/data/data.db') as conn:
+        with sqlite3.connect(db) as conn:
             c = conn.cursor()
             ## ONLY GET THE LAST REVISION WHERE NOT ARCHIVED
             result = c.execute("""SELECT
@@ -72,7 +72,7 @@ def persona_table():
 ## GET PERSONA LIST
 @api.route("/personas", methods = ['GET'])
 def persona_list():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = 0")
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -83,7 +83,7 @@ def persona_list():
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
     current_app.logger.info(request.json['name'])
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
         last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PERSONA where name=?", [request.json['name']]).fetchall()[0][0]
@@ -132,7 +132,7 @@ def persona_post():
 ## GET BY ID
 @api.route("/persona-table/<int:id>" , methods = ['GET'])
 def persona_table_by_id(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         persona = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
         data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
@@ -149,7 +149,7 @@ def persona_table_by_id(id):
                                         PERSONA_ROLES_REL.persona_role_id as persona_role_id,
                                         PERSONA_ROLES.name as persona_role_name
                                         FROM PERSONA_ROLES_REL
-                                        INNER JOIN PERSONA_ROLES ON PERSONA_ROLES.id = PERSONA_ROLES_REL.persona_id
+                                        INNER JOIN PERSONA_ROLES ON PERSONA_ROLES.id = PERSONA_ROLES_REL.persona_role_id
                                         WHERE persona_id = :id """, {'id' : id})
             data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_roles]
             data[0]['roles'] = data_add
@@ -165,7 +165,7 @@ def persona_table_put_by_id(id):
         #has to take an index of a list of keys because we dont know what the key that is changing is
         #we could modify the json being sent from the front end but idk
     value = data[key]
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ? "
         # SQL = SQL + "OUTPUT inserted.{}"
@@ -188,7 +188,7 @@ def persona_table_put_by_id(id):
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
 def product_list():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -197,7 +197,7 @@ def product_list():
 ## GET ALL
 @api.route("/product-table", methods = ['GET'])
 def product_table():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -207,7 +207,7 @@ def product_table():
 @api.route("/product-table" , methods = ['POST'])
 def product_post():
     current_app.logger.info(request.json['name'])
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT ").fetchall()[0][0]
         last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PRODUCT where name=?", [request.json['name']]).fetchall()[0][0]
@@ -246,7 +246,7 @@ def product_post():
 ## GET BY ID
 @api.route("/product-table/<int:id>" , methods = ['GET'])
 def product_table_by_id(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM PRODUCT WHERE id = :id ", {'id' : id})
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -260,7 +260,7 @@ def product_table_put_by_id(id):
         #has to take an index of a list of keys because we dont know what the key that is changing is
         #we could modify the json being sent from the front end but idk
     value = data[key]
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         SQL = "UPDATE PRODUCT SET " + key + " = ? WHERE id = ? "
 
@@ -275,7 +275,7 @@ def product_table_put_by_id(id):
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
 def insights_get():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM INSIGHT WHERE archived = 0") # TODO: WHERE archived = 0
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -285,7 +285,7 @@ def insights_get():
 @api.route("/insights" , methods = ['POST'])
 def insights_post():
     current_app.logger.info(request.json['title'])
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT ").fetchall()[0][0]
         last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM INSIGHT where title=?", [request.json['title']]).fetchall()[0][0]
@@ -327,7 +327,7 @@ def insights_post():
 ## GET BY ID
 @api.route("/insights/<int:id>" , methods = ['GET'])
 def insights_get_by_id(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM INSIGHT WHERE id = :id ", {'id' : id})
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -341,7 +341,7 @@ def insights_put(id):
         #has to take an index of a list of keys because we dont know what the key that is changing is
         #we could modify the json being sent from the front end but idk
     value = data[key]
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         SQL = "UPDATE INSIGHT SET " + key + " = ? WHERE id = ? "
 
@@ -351,19 +351,25 @@ def insights_put(id):
     return request.json, 201
 
 ## relationshops
-# TODO: figure it out
+# TODO: this
 @api.route("/insights/<table>" , methods = ['GET'])
 def insights_get_relationship():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
-        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+
+        persona_products = c.execute("""SELECT
+                            PERS_PROD_REL.product_id as product_id,
+                            PRODUCT.name as product_name
+                            FROM PERS_PROD_REL
+                            INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
+                            WHERE persona_id = :id """, {'id' : id})
+        data = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
+
         return json.dumps(data)
 
 @api.route("/insights/<table>" , methods = ['POST'])
 def insights_post_relationship():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         id = request.json.get('id')
         c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
@@ -379,7 +385,7 @@ def insights_post_relationship():
 #### COMMENTS
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM PERSONA_COMMENTS WHERE source_id = ?", [id] )
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -387,7 +393,7 @@ def persona_comments(id):
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
 def product_comments(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM PRODUCT_COMMENTS WHERE source_id = ?", [id] )
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -397,7 +403,7 @@ def product_comments(id):
 ## COMMENTS
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
 def persona_comments_post(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_COMMENTS ").fetchall()[0][0]
         data = [
@@ -425,7 +431,7 @@ def persona_comments_post(id):
 
 @api.route("/product/comments/<int:id>" , methods = ['POST'])
 def product_comments_post(id):
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT_COMMENTS ").fetchall()[0][0]
         data = [
@@ -464,7 +470,7 @@ def persona_product_relationship_get():
         SQL = "SELECT * FROM PERS_PROD_REL"
         id = None
 
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT * FROM PERS_PROD_REL")
         #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
@@ -474,7 +480,7 @@ def persona_product_relationship_get():
 
 @api.route("/persona-product" , methods = ['POST'])
 def persona_product_rel_post():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         if request.args.get('table') == 'persona':
             id = request.json.get('id')
@@ -500,7 +506,7 @@ def persona_product_rel_post():
 ## pickup_roles
 @api.route("/persona/roles" , methods = ['GET'])
 def persona_roles_get():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
         #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
@@ -510,7 +516,7 @@ def persona_roles_get():
 
 @api.route("/persona/roles" , methods = ['POST'])
 def persona_role_post():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         id = request.json.get('id')
         c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
@@ -524,7 +530,7 @@ def persona_role_post():
 # PLACEHOLDER FOR API TO PUT NEW ROLES
 # @api.route("/persona/roles" , methods = ['POST'])
 # def persona_role_post():
-#     with sqlite3.connect('server/data/data.db') as conn:
+#     with sqlite3.connect(db) as conn:
 #         c = conn.cursor()
 #         id = request.json.get('id')
 #         c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
@@ -545,7 +551,7 @@ def authenticate_user():
     password = request.json.get('password')
     # if username is None or password is None:
     #     return "missing information"
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
         conn.commit()
@@ -562,7 +568,7 @@ def add_user():
     username = request.json.get('username')
     password = request.json.get('password')
     password_hash = generate_password_hash(password)
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         check_username = (c.execute("SELECT user_id FROM USERS where username =?" , [username]).fetchall() == [])
         if check_username == True:
@@ -582,7 +588,7 @@ def reset_password():
     current_password = request.json.get('current_password')
     new_password = request.json.get('new_password')
     password_hash = generate_password_hash(new_password)
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT username, password_hash FROM USERS where username =?" , [username]).fetchall()
         if check_password_hash(result[0][1], current_password ) == True:
@@ -595,7 +601,7 @@ def reset_password():
 
 @api.route('/users', methods = ['GET'])
 def get_user_data():
-    with sqlite3.connect('server/data/data.db') as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         result = c.execute("SELECT user_id , username, role FROM USERS ")
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
@@ -607,7 +613,7 @@ def admin_user():
     username = request.json.get('username')
     new_role = request.json.get('role')
     if request.json.get('admin').lower() == 'admin':
-        with sqlite3.connect('server/data/data.db') as conn:
+        with sqlite3.connect(db) as conn:
             c = conn.cursor()
             c.execute("UPDATE USERS SET role = ? WHERE username = ?", [ new_role, username])
             conn.commit()

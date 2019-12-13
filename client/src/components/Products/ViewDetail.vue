@@ -25,6 +25,7 @@
         <p> {{form.product_homepage}} </p>
         <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
           <b-button pill variant="info">{{persona.persona_title}} </b-button>
+          <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>

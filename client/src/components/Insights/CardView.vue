@@ -17,21 +17,9 @@
           <p class="well">
             {{card.title}}
           </p>
-          <b-button v-b-toggle="'collapse-'+card.id"
-            variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
           <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
               variant="outline-secondary">Open insight</b-button>
-          <b-collapse :id="'collapse-'+card.id" class="mt-2">
-              <label for="function">Description</label>
-              <p class="text-wrap"> {{card.description}} </p>
-              <label style="white-space: pre-line;">Experience Vector</label>
-              <p> {{card.experience_vector}} </p>
-              <label  style="white-space: pre-line;">Journey</label>
-              <p> {{card.journey}} </p>
-              <label>Emotions</label>
-                <p> {{card.emotions}} </p>
-          </b-collapse>
         </b-card-text>
       </b-card>
     </b-card-group>
@@ -48,7 +36,8 @@ import {EventBus} from "../../index.js";
 export default {
   data() {return {
     cards : {},
-    search : ''
+    search : '',
+    columns: 4
   }
  },
   beforeMount() {
@@ -81,6 +70,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.card-columns {
+    column-count: 4;
+}
 
 .avatar {
   min-width: 50px;

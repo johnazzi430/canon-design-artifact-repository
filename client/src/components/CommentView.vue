@@ -50,7 +50,7 @@ export default {
       .catch(error => console.log(error))
     },
   methods:{
-    addComment() {
+     async addComment() {
 
       var None = null
       var comment_data = {
