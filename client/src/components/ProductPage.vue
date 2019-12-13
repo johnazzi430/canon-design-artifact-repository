@@ -6,7 +6,7 @@
       <a href="javascript:void(0)" id="Cards"
         class="nav-link active" v-on:click="changeView('card'); closeNav()">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-user"></i></a>
+        <i class="fa fa-laptop"></i></a>
       <a href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
         <i class="fa fa-list"></i></a>
@@ -33,9 +33,6 @@
       <!-- MAIN -->
     <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
       <div >
-        <b-modal id="my-modal">
-          <product-add></product-add>
-        </b-modal>
         <product-data v-bind:key = "dataKey"></product-data>
       </div>
     </div>

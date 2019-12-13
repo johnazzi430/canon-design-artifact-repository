@@ -2,22 +2,43 @@
   <div class="wrapper">
     <!-- LEFT SIDEPANEL -->
     <nav id="left-sidepanel" class="sidepanel-left">
+      <a href="javascript:void(0)" id="Cards"
+        class="nav-link active" v-on:click="changeView('card'); closeNav()">
+          <!-- class="nav-link active" v-on:click="changeView('card')"> -->
+        <i class="fa fa-exclamation"></i></a>
+      <!-- v-if start -->
+      <div v-if="this.selection !== null">
+        <a href="javascript:void(0)" id="Detail"
+          class="nav-link active" v-on:click="expandDetail()">
+          <i class="fa fa-align-left"></i>
+        </a>
+      </div>
+      <div v-else>
+        <a href="javascript:void(0)" id="Detail"
+            class="nav-link disabled" v-on:click="expandDetail()">
+            <i class="fa fa-align-left"></i>
+        </a>
+      </div>
+      <!-- v-if start -->
+      <a href="javascript:void(0)" id="Add"
+          class="nav-link active"
+          v-on:click=" addDataAction();  expandDetail()"
+          data-toggle="tooltip" title="Add">
+      <i class="fa fa-plus"></i></a>
+      <a href="javascript:void(0)" id="Dashboard"
+          class="nav-link disabled" v-on:click="expandDetail()">
+          <i class="fas fa-chart-line"></i></a>
     </nav>
       <!-- MAIN -->
-    <div id="persona-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
-      <div >
-        <persona-data v-bind:key = "dataKey"></persona-data>
-      </div>
-    </div>
     <div class="" v-if="view === 'card'" v-bind:key="view">
-      <persona-card v-bind:key = "dataKey">></persona-card>
+      <insight-card v-bind:key = "dataKey">></insight-card>
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
       <h1><a href="javascript:void(0)"
         class="closebtn" @click="closeDetail(); ">&times;</a></h1>
       <div id = "side-panel-switcher">
-        <persona-detail :key="detailKey"></persona-detail>
+        <insight-detail :key="detailKey"></insight-detail>
       </div>
     </div>
   </div>
@@ -28,18 +49,16 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
-import Table from './Personas/Table.vue';
-import ViewDetail from './Personas/ViewDetail.vue';
-import CardView from './Personas/CardView.vue';
+import ViewDetail from './Insights/ViewDetail.vue';
+import CardView from './Insights/CardView.vue';
 import {EventBus} from "../index.js";
 
 
 export default {
-  name: 'persona-panel',
+  name: 'insight-panel',
   components: {
-    'persona-data': Table,
-    'persona-detail': ViewDetail,
-    'persona-card': CardView,
+    'insight-detail': ViewDetail,
+    'insight-card': CardView,
   },
   data() {
     return {
@@ -65,7 +84,7 @@ export default {
 
     addDataAction() {
       this.detailKey += 1;
-      EventBus.$emit('persona-selection-changed',this.selectedRow = null)
+      EventBus.$emit('insight-selection-changed',this.selectedRow = null)
     },
 
     changeView(view) { this.view = view},
@@ -74,7 +93,7 @@ export default {
 
     const self = this;
 
-    EventBus.$on('persona-selection-changed' , function(selection) {
+    EventBus.$on('insight-selection-changed' , function(selection) {
       document.getElementById("right-sidepanel").style.width = "500px"
       self.selection = selection
     })
@@ -126,7 +145,7 @@ function closeNav() {
   left: 0; /* On mouse-over, make the elements appear as they should */
 }
 
-// #persona_panel {
+// #insight_panel {
 //   padding-left:15px;
 //   margin-left:15px;
 //   padding-right:15px;

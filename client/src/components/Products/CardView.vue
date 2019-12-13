@@ -6,7 +6,7 @@
       <input v-model="search"
         class="form-control"
         type="text"
-        placeholder="Search for user persona"
+        placeholder="Search for product"
         aria-label="Search">
     </div>
     <br>
@@ -79,7 +79,7 @@ export default {
 };
 
 </script>
-<!-- 
+<!--
 <style lang="css" scoped>
 
 .avatar {

@@ -32,39 +32,26 @@ break
         @reset="onReset"
         @archive="onArchive">
       <div id='persona-detail-show' v-if='editing === false && form.id !== null'>
-      <h1>Detail</h1>
-      <span> Persona ID: {{form.id}} | Revision: {{form.revision}}  </span>
-      <div class="">
-        <div class="">
-          <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
-        </div>
-        <label for="Name">Name</label>
-        <div class="panel-group"> {{form.name}} </div>
-        <label for="Title">Title</label>
+      <h1>Insight Detail</h1>
+      <div class="">>
+        <label>Title</label>
         <p class="text-wrap"> {{form.title}} </p>
-        <label for="external">Internal or External?</label>
-        <p class="text-wrap"> {{form.external}} </p>
-        <label for="qty">Number people who fit this persona</label>
-        <p> {{form.market_size}} </p>
-        <label for="quote">Persona Quote</label>
-        <p> {{form.quote}} </p>
-        <label for="function">Job Function</label>
-        <p class="text-wrap"> {{form.job_function}} </p>
-        <label for="needs" style="white-space: pre-line;">Needs</label>
-        <p> {{form.needs}} </p>
-        <label for="wants" style="white-space: pre-line;">Wants</label>
-        <p> {{form.wants}} </p>
-        <label for="pain_point">Pain Points</label>
-        <p> {{form.pain_point}} </p>
-        <label for="buss_val">value to business</label>
-        <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
-        <label>Associated Products</label>
-        <div v-for="product in form.products" v-bind:key="product.product_id">
-          <b-button pill variant="info">{{product.product_name}}</b-button>
-        </div>
-        <div class="mt-2">Value: {{ form.buss_val }}</div>
-        <label for="persona_file">Add File</label>
-        <p> {{form.persona_file}} </p>
+        <label>description</label>
+        <p class="text-wrap"> {{form.description}} </p>
+        <label>content</label>
+        <p class="text-wrap"> {{form.content}} </p>
+        <label>Experience vector</label>
+        <p class="text-wrap"> {{form.experience_vector}} </p>
+        <label>Magnitude</label>
+        <p class="text-wrap"> {{form.magnitude}} </p>
+        <label>Frequency</label>
+        <p class="text-wrap"> {{form.frequency}} </p>
+        <label>Emotions</label>
+        <p class="text-wrap"> {{form.emotions}} </p>
+        <label>Props</label>
+        <p class="text-wrap"> {{form.props}} </p>
+        <label>Journey Location</label>
+        <p class="text-wrap"> {{form.journey}} </p>
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
@@ -78,40 +65,34 @@ break
         <h1 v-if='form.id === null'>Add</h1>
         <h1 v-else>Edit</h1>
         <div>
-          <label for="Name">Name</label>
-          <b-form-input v-model="form.name" @change="onInputChanged('name')" name="Name" />
-          <label for="Title">Title</label>
+
+          <label>Title</label>
           <b-form-input v-model="form.title" @change="onInputChanged('title')"
                         id="Title" name="Title" />
-          <div class="">
-            <label for="external">Internal or External?</label>
-            <b-form-radio v-model="form.external" name="some-radios"
-            value="1" @change="onInputChanged('external')">External</b-form-radio>
-            <b-form-radio v-model="form.external" name="some-radios"
-            value="0" @change="onInputChanged('external')">Internal</b-form-radio>
-          </div>
-          <label for="qty">Number people who fit this persona</label>
-          <b-form-input type="number" v-model="form.market_size"
-                id="qty" name="qty" @change="onInputChanged('market_size')"/>
-          <label for="quote">Persona Quote</label>
-          <b-form-textarea v-model="form.quote" id="quote"
-                name="quote" @change="onInputChanged('quote')"/>
-          <label for="function">Job Function</label>
-          <b-form-textarea v-model="form.job_function" id="function"
-                name="function" @change="onInputChanged('job_function')"/>
-          <label for="needs">Needs</label>
-          <b-form-textarea v-model="form.needs" id="needs"
-                name="needs" @change="onInputChanged('needs')"/>
-          <label for="wants">Wants</label>
-          <b-form-textarea v-model="form.wants" id="wants"
-                name="wants" @change="onInputChanged('wants')"/>
-          <label for="pain-point">Pain Points</label>
-          <b-form-textarea v-model="form.pain_point" id="pain_point"
-                name="pain_point" @change="onInputChanged('pain_points')"/>
-          <label for="buss-val">value to business</label>
-          <b-form-input type="range" min="0" max="5" v-model="form.buss_val"
-              @change="onInputChanged('buss_val')"/>
-          <div class="mt-2">Value: {{ form.buss_val }}</div>
+          <label>description</label>
+          <b-form-textarea v-model="form.description" id="description"
+                name="description" @change="onInputChanged('description')"/>
+          <label>content</label>
+          <b-form-textarea v-model="form.content" id="content"
+                name="content" @change="onInputChanged('content')"/>
+          <label>Experience vector</label>
+          <b-form-textarea v-model="form.experience_vector" id="experience_vector"
+                name="experience_vector" @change="onInputChanged('experience_vector')"/>
+          <label>Magnitude</label>
+          <b-form-textarea v-model="form.magnitude" id="magnitude"
+                name="magnitude" @change="onInputChanged('magnitude')"/>
+          <label>Frequency</label>
+          <b-form-textarea v-model="form.frequency" id="frequency"
+                name="frequency" @change="onInputChanged('frequency')"/>
+          <label>Emotions</label>
+          <b-form-textarea v-model="form.emotions" id="emotions"
+                name="emotions" @change="onInputChanged('emotions')"/>
+          <label>Props</label>
+          <b-form-textarea v-model="form.props" id="props"
+                name="props" @change="onInputChanged('props')"/>
+          <label>Journey Location</label>
+          <b-form-textarea v-model="form.journey" id="journey"
+                name="journey" @change="onInputChanged('journey')"/>
           <br>
           <label for="product-select">Add Product:    </label>
           <br>
@@ -127,7 +108,7 @@ break
               <span class="multiselect__single"
                     v-if="values.length &amp;&amp; !isOpen">
                           {{ values.length}} options selected
-                        </span>
+              </span>
             </template>
           </multiselect>
           <br>
@@ -164,30 +145,32 @@ import store from  "../../store";
 
 
 export default {
-  name: "persona-details",
+  name: "insight-details",
   components : {'comment-view': CommentView },
   data() {
     return {
       form: {
         id : null,
-        name: '',
         title: '',
-        external: '',
-        market_size: '',
-        quote: '',
-        job_function: '',
-        needs: '',
-        wants: '',
-        pain_point: '',
-        buss_val: '',
+        description: '',
+        content: '',
+        file: null,
+        experience_vector: '',
+        magnitude: '',
+        frequency: '',
+        emotions: '',
+        props: '',
+        journey: '',
+        creator_id: '',
         revision: '',
         products: [],
-        persona_picture: '',
-        persona_file: null},
+        personas: []
+      },
       editing: false,
-      source: 'persona',
+      source: 'insights',
       product_options: [],
-      edited_fields: []
+      persona_options: [],
+      edited_fields: [],
       }
     },
     beforeMount() {
@@ -201,25 +184,23 @@ export default {
         .catch(error => console.log(error))
 
       // UPDATE DATA ON CHANGES
-      EventBus.$on('persona-selection-changed', function(selection){
+      EventBus.$on('insight-selection-changed', function(selection){
 
-        var get_url = "/api/persona-table/";
+        var get_url = "/api/insights/";
         get_url += selection;
 
         axios.get(get_url)
         .then(response => {
             self.form.id = selection;
-            self.form.name = response.data[0].name;
             self.form.title= response.data[0].title;
-            self.form.external= response.data[0].external;
-            self.form.market_size= response.data[0].market_size;
-            self.form.quote = response.data[0].quote;
-            self.form.job_function = response.data[0].job_function;
-            self.form.needs = response.data[0].needs;
-            self.form.wants = response.data[0].wants;
-            self.form.pain_point= response.data[0].pain_point;
-            self.form.buss_val= response.data[0].buss_val;
-            self.form.revision= response.data[0].revision;
+            self.form.description= response.data[0].description;
+            self.form.experience_vector= response.data[0].experience_vector;
+            self.form.magnitude = response.data[0].magnitude;
+            self.form.frequency= response.data[0].frequency;
+            self.form.emotions = response.data[0].emotions;
+            self.form.props = response.data[0].props;
+            self.form.journey= response.data[0].journey;
+            self.form.personas= response.data[0].personas;
             self.form.products = response.data[0].product;
             self.editing = false;
             self.edited_fields.length = 0 ;
@@ -231,7 +212,8 @@ export default {
       methods: {
 
       onInputChanged(field) {
-        this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
+        // add list of edited fields to array to reduce api calls on backend
+        this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field):
         console.log(this.edited_fields)
       },
 
@@ -247,7 +229,7 @@ export default {
          for (key of this.edited_fields) {
            axios({
                method: 'put',
-               url: '/api/persona-table/' + this.form.id ,
+               url: '/api/insights/' + this.form.id ,
                data: {
                  'id' : this.form.id,
                   [key] : this.form[key]
@@ -258,7 +240,7 @@ export default {
         if (this.edited_fields.match('products')) {
           axios({
               method: 'post',
-              url: '/api/persona-product',
+              url: '/api/insights',
               data: this.form,
               params : {
                 table : "persona"
@@ -266,7 +248,7 @@ export default {
               })
         };
 
-        EventBus.$emit('persona-table-changed','item-updated');
+        EventBus.$emit('insight-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
 
        },
@@ -274,7 +256,7 @@ export default {
        onAdd() {
          axios({
              method: 'post',
-             url: '/api/persona-table',
+             url: '/api/insights',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
@@ -284,7 +266,7 @@ export default {
         if (this.edited_fields.match('products')) {
                axios({
                    method: 'post',
-                   url: '/api/persona-product',
+                   url: '/api/insights',
                    data: this.form,
                    params : {
                      table : "persona"
@@ -292,7 +274,7 @@ export default {
                    })
          };
 
-         EventBus.$emit('persona-table-changed','item-updated');
+         EventBus.$emit('insight-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
@@ -302,7 +284,7 @@ export default {
        },
 
        onArchive() {
-         var get_url = '/api/persona-table/';
+         var get_url = '/api/insights/';
          get_url += this.form.id ;
 
          var archive_set = { 'archived': 1};
@@ -313,7 +295,7 @@ export default {
              url: get_url,
              data: archive_set,
              params: {
-                table: "persona"
+                table: "insights"
               }
             })
          .then(function (response) {
@@ -322,7 +304,7 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('persona-table-changed' , archive_set )
+         EventBus.$emit('insight-table-changed' , archive_set )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
      },

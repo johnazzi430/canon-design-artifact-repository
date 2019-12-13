@@ -6,37 +6,31 @@
       <input v-model="search"
         class="form-control"
         type="text"
-        placeholder="Search for user persona"
+        placeholder="Search for user insight"
         aria-label="Search">
     </div>
     <br>
 
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
-        <div>
-                  <img alt="avatar" class="avatar"
-                       src="../../../public/assets/img_avatar2.png" >
-        </div>
         <b-card-text>
-          <span> {{card.name}} the {{card.title}}
-          </span>
           <p class="well">
-            {{card.quote}}
+            {{card.title}}
           </p>
           <b-button v-b-toggle="'collapse-'+card.id"
             variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
           <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
-              variant="outline-secondary">Open Persona</b-button>
+              variant="outline-secondary">Open insight</b-button>
           <b-collapse :id="'collapse-'+card.id" class="mt-2">
-              <label for="function">Job Function</label>
-              <p class="text-wrap"> {{card.job_function}} </p>
-              <label for="needs" style="white-space: pre-line;">Needs</label>
-              <p> {{card.needs}} </p>
-              <label for="wants" style="white-space: pre-line;">Wants</label>
-              <p> {{card.wants}} </p>
-              <label for="pain_point">Pain Points</label>
-                <p> {{card.pain_point}} </p>
+              <label for="function">Description</label>
+              <p class="text-wrap"> {{card.description}} </p>
+              <label style="white-space: pre-line;">Experience Vector</label>
+              <p> {{card.experience_vector}} </p>
+              <label  style="white-space: pre-line;">Journey</label>
+              <p> {{card.journey}} </p>
+              <label>Emotions</label>
+                <p> {{card.emotions}} </p>
           </b-collapse>
         </b-card-text>
       </b-card>
@@ -59,7 +53,7 @@ export default {
  },
   beforeMount() {
     const self = this;
-    var get_url = `/api/persona-table`;
+    var get_url = `/api/insights`;
 
     axios.get(get_url)
     .then(response => {
@@ -70,7 +64,7 @@ export default {
   },
   methods:{
     OpenDetail(id) {
-      EventBus.$emit('persona-selection-changed' ,this.selectedRow = id)
+      EventBus.$emit('insight-selection-changed' ,this.selectedRow = id)
     },
 
     filterItems: function(cards) {

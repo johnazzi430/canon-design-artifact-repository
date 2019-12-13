@@ -62,7 +62,11 @@ break
         <div v-for="product in form.products" v-bind:key="product.product_id">
           <b-button pill variant="info">{{product.product_name}}</b-button>
         </div>
-        <div class="mt-2">Value: {{ form.buss_val }}</div>
+        <label>Associated Roles</label>
+        <div v-for="role in form.roles" v-bind:key="role.persona_role_id">
+          <b-button pill >{{role.persona_role_name}}</b-button>
+        </div>
+        <div class="mt-2">Market Value: {{ form.buss_val }}</div>
         <label for="persona_file">Add File</label>
         <p> {{form.persona_file}} </p>
       </div>
@@ -116,12 +120,29 @@ break
           <label for="product-select">Add Product:    </label>
           <br>
           <multiselect
-                      @change="onInputChanged('products')"
                       v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
                       placeholder="Pick some" label="product_name"
-                      track-by="product_id" :preselect-first="false">
+                      track-by="product_id" :preselect-first="false"
+                      @input="onInputChanged('products')">
+            <template slot="selection"
+                      slot-scope="{ values, search, isOpen }">
+              <span class="multiselect__single"
+                    v-if="values.length &amp;&amp; !isOpen">
+                          {{ values.length}} options selected
+                        </span>
+            </template>
+          </multiselect>
+          <br>
+          <br>
+          <multiselect
+                      v-model="form.roles" :options="role_options"
+                      :multiple="true" :close-on-select="false"
+                      :clear-on-select="false" :preserve-search="true"
+                      placeholder="Pick some" label="persona_role_name"
+                      track-by="persona_role_id" :preselect-first="false"
+                      @input="onInputChanged('roles')">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -182,11 +203,13 @@ export default {
         buss_val: '',
         revision: '',
         products: [],
+        roles: [] ,
         persona_picture: '',
         persona_file: null},
       editing: false,
       source: 'persona',
       product_options: [],
+      role_options: [],
       edited_fields: []
       }
     },
@@ -194,11 +217,19 @@ export default {
       const self = this;
 
       // SET OPTIONS
+      axios.get("/api/persona/roles")
+        .then(response => {
+          self.role_options = response.data;
+        })
+        .catch(error => console.log(error))
+
       axios.get("/api/products")
         .then(response => {
           self.product_options = response.data;
         })
         .catch(error => console.log(error))
+
+
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('persona-selection-changed', function(selection){
@@ -220,7 +251,8 @@ export default {
             self.form.pain_point= response.data[0].pain_point;
             self.form.buss_val= response.data[0].buss_val;
             self.form.revision= response.data[0].revision;
-            self.form.products = response.data[0].product;
+            self.form.products = response.data[0].products;
+            self.form.roles = response.data[0].roles;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
@@ -240,35 +272,47 @@ export default {
         console.log('send')
       },
 
-      ///                 }
-
        onEdit() {
          var key;
+         var success = 1 ;
          for (key of this.edited_fields) {
-           axios({
-               method: 'put',
-               url: '/api/persona-table/' + this.form.id ,
-               data: {
-                 'id' : this.form.id,
-                  [key] : this.form[key]
-               }
-               })
-             };
-
-        if (this.edited_fields.match('products')) {
-          axios({
-              method: 'post',
-              url: '/api/persona-product',
-              data: this.form,
-              params : {
-                table : "persona"
-                }
-              })
-        };
+           if (key === 'products') {
+             axios({
+                 method: 'post',
+                 url: '/api/persona-product',
+                 data: this.form,
+                 params : {
+                   table : "persona"
+                   }
+                 })
+                 .then(function (response) {
+                   success = 1 * success ;})
+           }
+           else if (key === 'roles') {
+             axios({
+                 method: 'post',
+                 url: '/api/persona/roles',
+                 data: this.form,
+                 })
+                 .then(function (response) {
+                   success = 1 * success ;})
+           }
+           else {
+             axios({
+                 method: 'put',
+                 url: '/api/persona-table/' + this.form.id ,
+                 data: {
+                   'id' : this.form.id,
+                    [key] : this.form[key]
+                 }
+                 })
+                 .then(function (response) {
+                   success = 1 * success ;})
+               };
+           }
 
         EventBus.$emit('persona-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
-
        },
 
        onAdd() {
@@ -281,7 +325,7 @@ export default {
          .catch(function (error) {
              console.log(error);})
 
-        if (this.edited_fields.match('products')) {
+        if (this.edited_fields.includes('products')) {
                axios({
                    method: 'post',
                    url: '/api/persona-product',

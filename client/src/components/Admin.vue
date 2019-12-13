@@ -87,7 +87,7 @@ export default {
          data: {
            'username' : params.data.username,
            'role': params.data.role,
-           'admin' : store.state.role
+           'admin' : this.$store.state.role
          }
       })
     },
