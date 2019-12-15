@@ -352,37 +352,59 @@ def insights_put(id):
 
 ## relationshops
 # TODO: this
-@api.route("/insights/<table>" , methods = ['GET'])
-def insights_get_relationship():
+@api.route("/insights/<int:id>/<table>" , methods = ['GET'])
+def insights_get_relationship(id,table):
     with sqlite3.connect(db) as conn:
         c = conn.cursor()
+        if table == 'products':
+            insight_products = c.execute("""SELECT
+                                                PRODUCT.id as product_id,
+                                                PRODUCT.name as product_name
+                                            FROM INSIGHT
+                                            INNER JOIN INSIGHT_PRODUCT_REL on INSIGHT_PRODUCT_REL.insight_id = INSIGHT.id
+                                            INNER JOIN PRODUCT ON PRODUCT.id = INSIGHT_PRODUCT_REL.product_id
+                                            WHERE INSIGHT.id = :id """, {'id' : id})
+            data = [dict(zip([key[0] for key in insight_products.description], row)) for row in insight_products]
+            return json.dumps(data)
+        elif table == 'personas':
+            insight_personas = c.execute("""SELECT
+                                                PERSONA.id as persona_id,
+                                                PERSONA.title as persona_title
+                                            FROM INSIGHT
+                                            INNER JOIN INSIGHT_PERSONA_REL on INSIGHT_PERSONA_REL.insight_id = INSIGHT.id
+                                            INNER JOIN PERSONA ON PERSONA.id = INSIGHT_PERSONA_REL.persona_id
+                                            WHERE INSIGHT.id = :id """, {'id' : id})
+            data = [dict(zip([key[0] for key in insight_personas.description], row)) for row in insight_personas]
+            return json.dumps(data)
+        else:
+            return 'error' ,  401
 
-        persona_products = c.execute("""SELECT
-                            PERS_PROD_REL.product_id as product_id,
-                            PRODUCT.name as product_name
-                            FROM PERS_PROD_REL
-                            INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
-                            WHERE persona_id = :id """, {'id' : id})
-        data = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
 
-        return json.dumps(data)
-
-@api.route("/insights/<table>" , methods = ['POST'])
-def insights_post_relationship():
+@api.route("/insights/<int:id>/<table>" , methods = ['POST'])
+def insights_post_relationship(id,table):
     with sqlite3.connect(db) as conn:
         c = conn.cursor()
-        id = request.json.get('id')
-        c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
-        data =[]
-        for item in request.json.get('roles'):
-            data.append([id,item['persona_role_id']])
-        c.executemany("INSERT INTO PERSONA_ROLES_REL (persona_id,persona_role_id) VALUES (?,?)",data)
-        conn.commit()
-        return request.json, 201
+        if table == 'products':
+            c.execute( "DELETE FROM INSIGHT_PRODUCT_REL WHERE insight_id = ?;" , [id])
+            data =[]
+            for item in request.json:
+                data.append([item['product_id'],id])
+            c.executemany("INSERT INTO INSIGHT_PRODUCT_REL (product_id,insight_id) VALUES (?,?)",data)
+            conn.commit()
+            return 'success', 201
+        elif table == 'personas':
+            c.execute( "DELETE FROM INSIGHT_PERSONA_REL WHERE insight_id = ?;" , [id])
+            data =[]
+            for item in request.json:
+                data.append([item['persona_id'],id])
+            c.executemany("INSERT INTO INSIGHT_PERSONA_REL (persona_id,insight_id) VALUES (?,?)",data)
+            conn.commit()
+            return 'success', 201
+        else:
+            return 'error' ,  401
 
 
-
-#### COMMENTS
+#### COMMENTS ---------------------------------------------
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
     with sqlite3.connect(db) as conn:

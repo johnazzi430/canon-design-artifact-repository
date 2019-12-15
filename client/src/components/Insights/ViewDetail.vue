@@ -29,15 +29,17 @@
         <p class="text-wrap"> {{form.journey}} </p>
         <label>Associated Personas</label>
         <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
-          <b-button pill variant="info">{{persona.persona_title}} </b-button>
+          <b-badge pill variant="success">{{persona.persona_title}} </b-badge>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
+        <br>
         <label>Associated products</label>
         <div v-for="product in form.products" v-bind:key="product.product_id">
-          <b-button pill variant="info">{{product.product_name}}</b-button>
+          <b-badge pill variant="success">{{product.product_name}}</b-badge>
           <!-- TODO: make it so clicking her routes to the product -->
         </div>
       </div>
+      <br>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
       <hr>
@@ -85,10 +87,27 @@
           <b-form-textarea v-model="form.journey" id="journey"
                 name="journey" @change="onInputChanged('journey')"/>
           <br>
+          <label for="persona-select">Add persona:    </label>
+          <br>
+          <multiselect
+                      @input="onInputChanged('personas')"
+                      v-model="form.personas" :options="persona_options"
+                      :multiple="true" :close-on-select="false"
+                      :clear-on-select="false" :preserve-search="true"
+                      placeholder="Pick some" label="persona_title"
+                      track-by="persona_id" :preselect-first="false">
+            <template slot="selection"
+                      slot-scope="{ values, search, isOpen }">
+              <span class="multiselect__single"
+                    v-if="values.length &amp;&amp; !isOpen">
+                          {{ values.length}} options selected
+              </span>
+            </template>
+          </multiselect>
           <label for="product-select">Add Product:    </label>
           <br>
           <multiselect
-                      @change="onInputChanged('products')"
+                      @input="onInputChanged('products')"
                       v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
@@ -169,13 +188,18 @@ export default {
 
       // SET OPTIONS
       axios.get("/api/products")
-        .then(response => {
-          self.product_options = response.data;
-        })
-        .catch(error => console.log(error))
+        .then(response => {self.product_options = response.data;})
+
+      axios.get("/api/personas")
+        .then(response => {self.persona_options = response.data;})
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('insight-selection-changed', function(selection){
+
+        //make sure when "add" button is pressed no errors are thrown
+        if (selection === null) {
+          return
+        }
 
         var get_url = "/api/insights/";
         get_url += selection;
@@ -192,13 +216,23 @@ export default {
             self.form.emotions = response.data[0].emotions;
             self.form.props = response.data[0].props;
             self.form.journey= response.data[0].journey;
-            self.form.personas= response.data[0].personas;
-            self.form.products = response.data[0].product;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
         )
         .catch(error => console.log(error))
+
+        //Get associated personas
+        axios.get( "/api/insights/" + selection + "/personas")
+        .then(response => {
+          self.form.personas = response.data
+        })
+        //Get associated products
+        axios.get("/api/insights/" + selection + "/products")
+        .then(response => {
+          self.form.products = response.data
+        })
+
         });
       },
       methods: {
@@ -209,17 +243,26 @@ export default {
         console.log(this.edited_fields)
       },
 
-      changeData() {
-        EventBus.$emit('data-changed',this.form.id)
-        console.log('send')
-      },
 
-      ///                 }
-
-       onEdit() {
+       async onEdit() {
          var key;
          for (key of this.edited_fields) {
-           axios({
+           if (key.match('products')) {
+             await axios({
+                 method: 'post',
+                 url: '/api/insights/'+ this.form.id +'/products',
+                 data: this.form.products,
+                 })
+           }
+           else if (key.match('personas')) {
+             await axios({
+                 method: 'post',
+                 url: '/api/insights/'+ this.form.id +'/personas',
+                 data: this.form.personas,
+                 })
+           }
+           else {
+           await axios({
                method: 'put',
                url: '/api/insights/' + this.form.id ,
                data: {
@@ -228,43 +271,33 @@ export default {
                }
                })
              };
-
-        if (this.edited_fields.match('products')) {
-          axios({
-              method: 'post',
-              url: '/api/insights',
-              data: this.form,
-              params : {
-                table : "persona"
-                }
-              })
-        };
+           };
 
         EventBus.$emit('insight-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
 
        },
 
-       onAdd() {
-         axios({
+       async onAdd() {
+         await axios({
              method: 'post',
              url: '/api/insights',
              data: this.form, })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
 
         if (this.edited_fields.match('products')) {
-               axios({
+               await axios({
                    method: 'post',
-                   url: '/api/insights',
-                   data: this.form,
-                   params : {
-                     table : "persona"
-                     }
+                   url: '/api/insights/'+ this.form.id +'/products',
+                   data: this.form.products,
                    })
-         };
+             }
+        else if (this.edited_fields.match('personas')) {
+               await axios({
+                   method: 'post',
+                   url: '/api/insights/'+ this.form.id +'/personas',
+                   data: this.form.personas,
+                   })
+        }
 
          EventBus.$emit('insight-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
