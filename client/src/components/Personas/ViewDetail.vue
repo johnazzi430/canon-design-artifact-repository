@@ -22,14 +22,22 @@
         <p> {{form.market_size}} </p>
         <label for="quote">Persona Quote</label>
         <p> {{form.quote}} </p>
-        <label for="function">Job Function</label>
-        <p class="text-wrap"> {{form.job_function}} </p>
-        <label for="needs" style="white-space: pre-line;">Needs</label>
-        <p> {{form.needs}} </p>
-        <label for="wants" style="white-space: pre-line;">Wants</label>
-        <p> {{form.wants}} </p>
-        <label for="pain_point">Pain Points</label>
-        <p> {{form.pain_point}} </p>
+        <div v-if="form.job_function !== ''">
+          <label for="function">Job Function</label>
+          <p class="text-wrap"> {{form.job_function}} </p>
+        </div>
+        <div v-if="form.needs !== ''">
+          <label for="needs" style="white-space: pre-line;">Needs</label>
+          <p> {{form.needs}} </p>
+        </div>
+        <div v-if="form.wants !== ''">
+          <label for="wants" style="white-space: pre-line;">Wants</label>
+          <p> {{form.wants}} </p>
+        </div>
+        <div v-if="form.pain_point !== ''">
+          <label for="pain_point">Pain Points</label>
+          <p> {{form.pain_point}} </p>
+        </div>
         <label for="buss_val">value to business</label>
         <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
         <label>Associated Products</label>

@@ -13,12 +13,18 @@
         <p class="text-wrap"> {{form.name}} </p>
         <label>Description</label>
         <p class="text-wrap"> {{form.description}} </p>
-        <label>Metrics</label>
-        <p class="text-wrap"> {{form.metrics}} </p>
-        <label>Product Features</label>
-        <p class="text-wrap"> {{form.features}} </p>
-        <label>Goals</label>
-        <p class="text-wrap"> {{form.goals}} </p>
+        <div v-if="form.metrics!== ''">
+          <label>Metrics</label>
+          <p class="text-wrap"> {{form.metrics}} </p>
+        </div>
+        <div v-if="form.features!== ''">
+          <label>Product Features</label>
+          <p class="text-wrap"> {{form.features}} </p>
+        </div>
+        <div v-if="form.goals!== ''">
+          <label>Goals</label>
+          <p class="text-wrap"> {{form.goals}} </p>
+        </div>
         <label for="function">Owner</label>
         <p class="text-wrap"> {{form.owner}} </p>
         <label> Product Homepage</label>
