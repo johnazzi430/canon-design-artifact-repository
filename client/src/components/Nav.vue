@@ -5,17 +5,16 @@
       <b-navbar class="navbar navbar-expand-md navbar-light bg-light"
           style="padding-left:30px">
         <div class="navbar-nav">
-          <b-navbar-brand>UTC Product Insight</b-navbar-brand>
+          <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
           <!-- <b-nav-item :to="{path :'/'}">Home</b-nav-item>
           <b-nav-item :to="{path :'/persona'}">Personas</b-nav-item >
           <b-nav-item :to="{path :'/product'}">Products</b-nav-item>
           <b-nav-item :to="{path :'/login'}">login</b-nav-item> -->
-          <b-nav-item to="/">Home</b-nav-item>
+          <b-nav-item to="/insights">Insights</b-nav-item>
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
-          <b-nav-item to="/insights">Insights</b-nav-item>
           <!-- <b-nav-item disabled to="/insights">Insights</b-nav-item> -->
-          <b-nav-item to="/login">Login</b-nav-item>
+          <b-nav-item to="/login">login</b-nav-item>
           <b-nav-item v-if="role === 'Admin'" to="/admin"></b-nav-item>
         </div>
       </b-navbar>

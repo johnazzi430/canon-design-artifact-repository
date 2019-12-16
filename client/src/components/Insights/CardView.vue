@@ -34,12 +34,12 @@ import {EventBus} from "../../index.js";
 
 export default {
   data() {return {
-    cards : {},
+    cards : [],
     search : '',
     columns: 4
   }
  },
-  beforeMount() {
+  beforeCreate() {
     const self = this;
     var get_url = `/api/insights`;
 

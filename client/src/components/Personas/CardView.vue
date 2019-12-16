@@ -53,7 +53,7 @@ import {EventBus} from "../../index.js";
 
 export default {
   data() {return {
-    cards : {},
+    cards : [],
     search : ''
   }
  },
