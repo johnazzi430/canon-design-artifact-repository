@@ -185,6 +185,16 @@ def persona_table_put_by_id(id):
     return request.json, 201
 
 
+@api.route("/personas/files/<int:id>/" , methods = ['POST'])
+def personas_file_upload(id):
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        data =[]
+        for item in request.json:
+            data.append([item['product_id'],id])
+        c.executemany("INSERT INTO INSIGHT_PRODUCT_REL (product_id,insight_id) VALUES (?,?)",data)
+        conn.commit()
+        return 'success', 201
 
 ##-------------------------- PRODUCT API
 

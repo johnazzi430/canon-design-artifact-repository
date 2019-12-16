@@ -2,7 +2,7 @@
 
 <template>
     <div>
-      <b-navbar class="navbar navbar-expand-md navbar-light bg-light"
+      <b-navbar class="navbar navbar-expand-md navbar-light "
           style="padding-left:30px">
         <div class="navbar-nav">
           <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
@@ -37,6 +37,7 @@ export default {
 <style >
 .navbar {
   z-index: 100;
-  margin-bottom: 0px;
+  margin-bottom: -15px;
+  background-color: #F0F0F0
 }
 </style>

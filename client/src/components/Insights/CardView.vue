@@ -16,7 +16,9 @@
         <b-card-text>
           <q>{{card.title}}</q>
           <br>
-          <span class="badge badge-pill badge-success">{{card.experience_vector}}</span>
+          <span class="badge badge-pill badge-success"
+            v-bind:class="card.experience_vector">
+            {{card.experience_vector}}</span>
           <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
               variant="outline-secondary">Open insight</b-button>
         </b-card-text>
@@ -83,6 +85,18 @@ export default {
   margin-left: auto;
   margin-right: auto;
   border-radius: 50%;
+}
+
+.badge.Negative{
+  background-color: red
+}
+
+.badge.Positive{
+  background-color: green
+}
+
+.badge.Neutral{
+  background-color: grey
 }
 
 </style>

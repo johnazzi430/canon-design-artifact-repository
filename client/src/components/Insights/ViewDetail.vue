@@ -16,11 +16,21 @@
         <label>Content</label>
         <p class="text-wrap"> {{form.content}} </p>
         <label>Experience vector</label>
-        <p class="text-wrap"> {{form.experience_vector}} </p>
+        <br>
+        <span class="badge badge-pill badge-success"
+          v-bind:class="form.experience_vector">
+          {{form.experience_vector}}</span>
+          <br>
         <label>Magnitude</label>
-        <p class="text-wrap"> {{form.magnitude}} </p>
+        <div class="barcont">
+          <div class="bar magnitude"
+          :style="{width:form.magnitude/ 5 *100 + '%'}">{{form.magnitude}}</div>
+        </div>
         <label>Frequency</label>
-        <p class="text-wrap"> {{form.frequency}} </p>
+        <div class="barcont">
+          <div class="bar frequency"
+          :style="{width:form.frequency/ 5 *100 + '%'}">{{form.frequency}}</div>
+        </div>
         <label>Emotions</label>
         <p class="text-wrap"> {{form.emotions}} </p>
         <label>Props</label>
@@ -312,7 +322,7 @@ export default {
              };
            };
 
-        EventBus.$emit('insight-table-changed','item-updated');
+        EventBus.$emit('insight-data-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
 
        },
@@ -340,7 +350,7 @@ export default {
           }
         }
 
-         EventBus.$emit('insight-table-changed','item-updated');
+         EventBus.$emit('insight-data-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
@@ -349,14 +359,14 @@ export default {
          this.editing = false;
        },
 
-       onArchive() {
+       async onArchive() {
          var get_url = '/api/insights/';
          get_url += this.form.id ;
 
          var archive_set = { 'archived': 1};
 
          console.log(get_url)
-         axios({
+         await axios({
              method: 'PUT',
              url: get_url,
              data: archive_set,
@@ -370,7 +380,7 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('insight-table-changed' , archive_set )
+         EventBus.$emit('insight-data-changed' , archive_set )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
      },
@@ -393,6 +403,39 @@ export default {
 
 p {
   white-space: pre-line;
+}
+
+.badge.Negative{
+  background-color: red
+}
+
+.badge.Positive{
+  background-color: green
+}
+
+.badge.Neutral{
+  background-color: grey
+}
+
+.barcont {
+  width: 100%; /* Full width */
+  background-color: #ddd; /* Grey background */
+  height: 20px;
+}
+
+.bar {
+    text-align: right; /* Right-align text */
+    vertical-align: center;
+    color: white; /* White text color */
+    height: 20px;
+}
+
+.bar.magnitude {
+    background-color: #4CAF50;
+}
+
+.bar.frequency{
+    background-color: #4CAF50;
 }
 
 </style>

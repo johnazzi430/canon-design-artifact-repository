@@ -125,9 +125,10 @@ function closeNav() {
   top: 0 ;
   z-index: 1; /* Stay on top */
   right: -16px;
-  background-color: #f7f7f7; /* Black*/
+  background-color: #F7F7F7; /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 75px; /* Place content 60px from the top */
+  padding-right: 15px;
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
@@ -142,7 +143,7 @@ function closeNav() {
   padding: 15px; /* 15px padding */
   padding-top: 100px;
   width: 60px; /* Set a specific width */
-  background-color: #f7f7f7;
+  background-color: #F7F7F7;
   text-decoration: none; /* Remove underline */
   overflow: hidden;
   font-size: 20px; /* Increase font size */

@@ -38,8 +38,11 @@
           <label for="pain_point">Pain Points</label>
           <p> {{form.pain_point}} </p>
         </div>
-        <label for="buss_val">value to business</label>
-        <b-form-input type="range" min="0" max="5" v-model="form.buss_val" />
+        <label for="buss_val">Market Value</label>
+        <div class="barcont">
+          <div class="bar buss_val"
+          :style="{width:form.buss_val / 5 *100 + '%'}">{{form.buss_val}}</div>
+        </div>
         <label>Associated Products</label>
         <div v-for="product in form.products" v-bind:key="product.product_id">
           <b-button pill variant="info">{{product.product_name}}</b-button>
@@ -49,7 +52,7 @@
         <div v-for="role in form.roles" v-bind:key="role.persona_role_id">
           <b-badge pill variant="success">{{role.persona_role_name}}</b-badge>
         </div>
-        <div class="mt-2">Market Value: {{ form.buss_val }}</div>
+
         <label for="persona_file">Add File</label>
         <p> {{form.persona_file}} </p>
       </div>
@@ -373,6 +376,24 @@ export default {
   width: 100px;
   height: 100px;
   border-radius: 50%;
+}
+
+.barcont {
+  width: 100%; /* Full width */
+  background-color: #ddd; /* Grey background */
+  height: 20px;
+}
+
+.bar {
+    text-align: right; /* Right-align text */
+    vertical-align: center;
+    color: white; /* White text color */
+    height: 20px;
+}
+
+.bar.buss_val {
+    width: 65%;
+    background-color: #4CAF50;
 }
 
 p {
