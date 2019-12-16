@@ -78,9 +78,19 @@
           <label for="function">Job Function</label>
           <b-form-textarea v-model="form.job_function" id="function"
                 name="function" @change="onInputChanged('job_function')"/>
+
           <label for="needs">Needs</label>
           <b-form-textarea v-model="form.needs" id="needs"
                 name="needs" @change="onInputChanged('needs')"/>
+<!--            THERE ARE SOME COMPLEX INTERACTIONS GOING ON HERE NEED TO CONSIDER FURTHER
+          <div variant="light" v-b-toggle="'collapse-needs'" class="m-1">
+                  <label for="needs">Needs</label>
+          </div>
+                <b-collapse id="collapse-needs">
+                  <b-form-textarea v-model="form.needs" id="needs"
+                        name="needs" @change="onInputChanged('needs')"/>
+                </b-collapse> -->
+
           <label for="wants">Wants</label>
           <b-form-textarea v-model="form.wants" id="wants"
                 name="wants" @change="onInputChanged('wants')"/>

@@ -61,15 +61,16 @@
             <label>description</label>
           </div>
           <b-collapse id="collapse-description">
-            <b-card><b-form-textarea v-model="form.description" id="description"
-            name="description" @change="onInputChanged('description')"/></b-card>
+            <b-form-input v-model="form.description" id="description"
+            name="description" @change="onInputChanged('description')"/>
           </b-collapse>
 
           <label>content</label>
           <b-form-textarea v-model="form.content" id="content"
                 name="content" @change="onInputChanged('content')"/>
           <label>Experience vector</label>
-          <b-form-textarea v-model="form.experience_vector" id="experience_vector"
+          <b-form-select :options="experience_options"
+                v-model="form.experience_vector" id="experience_vector"
                 name="experience_vector" @change="onInputChanged('experience_vector')"/>
           <label>Magnitude</label>
           <b-form-textarea v-model="form.magnitude" id="magnitude"
@@ -78,16 +79,23 @@
           <b-form-textarea v-model="form.frequency" id="frequency"
                 name="frequency" @change="onInputChanged('frequency')"/>
           <label>Emotions</label>
-          <b-form-textarea v-model="form.emotions" id="emotions"
+          <b-form-select v-model="form.emotions" id="emotions" :options='emotion_options'
                 name="emotions" @change="onInputChanged('emotions')"/>
           <label>Props</label>
           <b-form-textarea v-model="form.props" id="props"
                 name="props" @change="onInputChanged('props')"/>
           <label>Journey Location</label>
-          <b-form-textarea v-model="form.journey" id="journey"
-                name="journey" @change="onInputChanged('journey')"/>
+          <b-form-select v-model="form.journey" id="journey" :options="journey_options"
+          name="journey" @change="onInputChanged('journey')"/>
+
+          <div class="large-12 medium-12 small-12 cell">
+            <label>Files
+              <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()"/>
+            </label>
+            <button href="javascript:void(0)" v-on:click="submitFiles()">Submit</button>
+          </div>
           <br>
-          <label for="persona-select">Add persona:    </label>
+          <label for="persona-select">Persona:    </label>
           <br>
           <multiselect
                       @input="onInputChanged('personas')"
@@ -104,7 +112,7 @@
               </span>
             </template>
           </multiselect>
-          <label for="product-select">Add Product:    </label>
+          <label for="product-select">Product:    </label>
           <br>
           <multiselect
                       @input="onInputChanged('products')"
@@ -124,10 +132,10 @@
           <br>
         </div>
         <div>
-          <label for="persona_file">Add File</label>
-          <b-form-file v-model="form.persona_file"
-          :state="Boolean(form.persona_file)"
-          name="persona_file"
+          <label for="file">Add File</label>
+          <b-form-file v-model="form.file"
+          :state="Boolean(form.file)"
+          name="file"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."></b-form-file>
         </div>
@@ -178,6 +186,9 @@ export default {
       },
       editing: false,
       source: 'insights',
+      experience_options: ["Positive", "Neutral", "Negative"],
+      emotion_options: ["Pain", "Joyful", "Triumphiant", "Angry", "Calm", "Frustrated", "Surprised" , "Excited"],
+      journey_options: ["Aware", "Try", "Use", "Leave"],
       product_options: [],
       persona_options: [],
       edited_fields: [],
@@ -243,6 +254,34 @@ export default {
         console.log(this.edited_fields)
       },
 
+      submitFiles(){
+
+              let formData = new FormData();
+
+              for( var i = 0; i < this.files.length; i++ ){
+                let file = this.files[i];
+
+                formData.append('files[' + i + ']', file);
+              }
+
+              axios.post( '/api/insights/files',
+                formData,
+                {
+                  headers: {
+                      'Content-Type': 'multipart/form-data'
+                  }
+                }
+              ).then(function(){
+                console.log('SUCCESS!!');
+              })
+              .catch(function(){
+                console.log('FAILURE!!');
+              });
+      },
+
+      handleFilesUpload(){
+        this.files = this.$refs.files.files;
+      },
 
        async onEdit() {
          var key;
@@ -284,19 +323,21 @@ export default {
              url: '/api/insights',
              data: this.form, })
 
-        if (this.edited_fields.match('products')) {
-               await axios({
-                   method: 'post',
-                   url: '/api/insights/'+ this.form.id +'/products',
-                   data: this.form.products,
-                   })
-             }
-        else if (this.edited_fields.match('personas')) {
-               await axios({
-                   method: 'post',
-                   url: '/api/insights/'+ this.form.id +'/personas',
-                   data: this.form.personas,
-                   })
+        if (Array.isArray(this.edited_fields.length )) {
+          if (this.edited_fields.match('products')) {
+                 await axios({
+                     method: 'post',
+                     url: '/api/insights/'+ this.form.id +'/products',
+                     data: this.form.products,
+                     })
+               }
+          else if (this.edited_fields.match('personas')) {
+                 await axios({
+                     method: 'post',
+                     url: '/api/insights/'+ this.form.id +'/personas',
+                     data: this.form.personas,
+                     })
+          }
         }
 
          EventBus.$emit('insight-table-changed','item-updated');

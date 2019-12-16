@@ -14,10 +14,9 @@
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
         <b-card-text>
-          <p class="well">
-            {{card.title}}
-          </p>
-               <!-- class="stretched-link " -->
+          <q>{{card.title}}</q>
+          <br>
+          <span class="badge badge-pill badge-success">{{card.experience_vector}}</span>
           <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
               variant="outline-secondary">Open insight</b-button>
         </b-card-text>

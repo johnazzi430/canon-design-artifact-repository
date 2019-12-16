@@ -27,6 +27,9 @@ db = 'server/data/data.db'
 #
 
 
+
+
+
 ##-------------------------- PERSONA API
 
 
@@ -293,7 +296,7 @@ def insights_post():
                 request.json['title'],
                 request.json['description'] ,
                 request.json['content'],
-                None,                                   # content file
+                request.json['file'],                                   # content file
                 request.json['experience_vector'] ,
                 request.json['magnitude'] ,
                 request.json['frequency'] ,
@@ -304,7 +307,7 @@ def insights_post():
                 datetime.datetime.now(),               # Record Date
                 last_revision,
                 0]                                     # archived
-        c.execute("""INSERT INTO PRODUCT
+        c.execute("""INSERT INTO INSIGHT
         (id,
         title,
         description,
@@ -320,7 +323,7 @@ def insights_post():
         create_date,
         revision,
         archived)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
         conn.commit()
         return request.json, 201
 
@@ -421,8 +424,16 @@ def product_comments(id):
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
+@api.route("/insights/comments/<int:id>" , methods = ['GET'])
+def insights_comments(id):
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        result = c.execute("SELECT * FROM INSIGHT_COMMENTS WHERE source_id = ?", [id] )
+        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
+        return json.dumps(data)
 
-## COMMENTS
+
+## COMMENT ADD
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
 def persona_comments_post(id):
     with sqlite3.connect(db) as conn:
@@ -475,6 +486,28 @@ def product_comments_post(id):
         downchange,
         upchange)
         VALUES (?,?,?,?,?,?,?,?)""",data)
+        conn.commit()
+        return request.json, 201
+        return json.dumps(data)
+
+@api.route("/insights/comments/<int:id>" , methods = ['POST'])
+def insight_comments_post(id):
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_COMMENTS ").fetchall()[0][0]
+        data = [
+            last_id+1,
+            request.json['source_id'],
+            request.json['comment_body'],
+            None,       #creator id # TODO:
+            datetime.datetime.now()]
+        c.execute("""INSERT INTO INSIGHT_COMMENTS
+            (id,
+            source_id,
+            comment_body,
+            creator_id,
+            create_date)
+        VALUES (?,?,?,?,?)""",data)
         conn.commit()
         return request.json, 201
         return json.dumps(data)
