@@ -52,9 +52,18 @@
         <div v-for="role in form.roles" v-bind:key="role.persona_role_id">
           <b-badge pill variant="success">{{role.persona_role_name}}</b-badge>
         </div>
+        <br>
+        <label>Files</label>
+        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          {{uploadedFile.filename}}
+          <button :href="'/api/personas/files/1?file_id='+uploadedFile.id"
+            type="button" name="button" target="_blank">
+            <i class="fa fa-file"></i>
+            <button href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+            Retrieve</button>
+          </button>
+        </div>
 
-        <label for="persona_file">Add File</label>
-        <p> {{form.persona_file}} </p>
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
@@ -149,6 +158,14 @@
           </multiselect>
           <br>
         </div>
+        <!-- Single file -->
+        <div class="container" >
+          <label>Files
+            <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+          </label>
+          <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
+            <br>
+        </div>
         <div>
           <label for="persona_file">Add File</label>
           <b-form-file v-model="form.persona_file"
@@ -226,7 +243,6 @@ export default {
         .catch(error => console.log(error))
 
 
-
       // UPDATE DATA ON CHANGES
       EventBus.$on('persona-selection-changed', function(selection){
 
@@ -254,10 +270,18 @@ export default {
           }
         )
         .catch(error => console.log(error))
+
+        //GET FILES
+        axios({
+          method: 'get',
+          url: '/api/persona/files/' + selection,
+        }).then(function(response){
+          self.uploadedFiles = response.data;
+        })
+
         });
       },
       methods: {
-
 
       onInputChanged(field) {
         this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
@@ -361,6 +385,46 @@ export default {
          EventBus.$emit('persona-table-changed' , archive_set )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
+
+      getFile(file_id) {
+          const self = this;
+          axios({
+          method: 'get',
+          url: '/api/persona/files/'+this.form.id+'?file_id='+ file_id
+        }
+        ).then(function(response){
+          self.image = 'data:image/jpeg;base64,' + response.data[0]
+          console.log(response);
+        })
+      },
+
+      handleFileUpload(){
+        this.file = this.$refs.file.files[0];
+      },
+
+      submitFiles(){
+
+              let formData = new FormData();
+
+              formData.append('file', this.file);
+              formData.append('filename', 'blank');
+
+              axios({
+                method: 'post',
+                url: '/api/persona/files/' + this.form.id,
+                data : formData,
+                headers: {
+                      'Content-Type': 'multipart/form-data'
+                }
+              }
+              ).then(function(response){
+                console.log(response);
+              })
+              .catch(function(error){
+                console.log(error);
+              });
+      },
+
      },
   };
 

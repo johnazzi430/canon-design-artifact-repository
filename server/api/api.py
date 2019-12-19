@@ -191,7 +191,7 @@ def persona_table_put_by_id(id):
 ##-------------------------- FILE API
 
 ### TODO: WORKS! BUT NEEDS A LOT OF CLEANUP
-@api.route("/personas/files/<int:id>" , methods = ['GET'])
+@api.route("/persona/files/<int:id>" , methods = ['GET'])
 def personas_file_get(id):
     with sqlite3.connect(db) as conn:
         c = conn.cursor()
@@ -199,7 +199,7 @@ def personas_file_get(id):
             file_id = int(request.args.get('file_id'))
             record = c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id]).fetchall()
             filename = record[0][0]
-            file = record[0][1]
+            file = record[0][1].decode('utf-8')
             return send_file(file , attachment_filename=filename , as_attachment=True)
         else:
             #Return a Json containing the file descriptions
@@ -209,7 +209,7 @@ def personas_file_get(id):
             return json.dumps(data)
 
 
-@api.route("/personas/files/<int:id>" , methods = ['POST'])
+@api.route("/persona/files/<int:id>" , methods = ['POST'])
 def personas_file_upload(id):
     print(request.files['file'])
     with sqlite3.connect(db) as conn:
@@ -224,6 +224,7 @@ def personas_file_upload(id):
         conn.commit()
         return 'success', 201
 
+## TODO: delete files
 
 ##-------------------------- PRODUCT API
 
@@ -444,6 +445,40 @@ def insights_post_relationship(id,table):
             return 'success', 201
         else:
             return 'error' ,  401
+
+@api.route("/insights/<int:id>/files" , methods = ['GET'])
+def insight_file_get(id):
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        if request.args.get('file_id') != None:
+            file_id = int(request.args.get('file_id'))
+            record = c.execute("""SELECT filename, file FROM INSIGHT_FILES WHERE id = ?""",[file_id]).fetchall()
+            filename = record[0][0]
+            file = record[0][1].decode('utf-8')
+            return send_file(file , attachment_filename=filename , as_attachment=True)
+        else:
+            #Return a Json containing the file descriptions
+            c.execute("""SELECT id,filename,filetype,source_id FROM INSIGHT_FILES WHERE source_id = ?""",[id])
+            record = c.fetchall()
+            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
+            return json.dumps(data)
+
+
+@api.route("/personas/<int:id>/files" , methods = ['POST'])
+def insight_file_upload(id):
+    print(request.files['file'])
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        file = request.files["file"].read() #BLOB the data
+        filename = request.files["file"].filename
+        filetype = filename.rsplit('.', 1)[1].lower()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_FILES ").fetchall()[0][0]
+        c.execute("""INSERT INTO INSIGHT_FILES
+            (id,filename,file,filetype,source_id)
+            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
+        conn.commit()
+        return 'success', 201
+
 
 
 #### COMMENTS ---------------------------------------------
