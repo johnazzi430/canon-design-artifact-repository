@@ -82,11 +82,11 @@
           <b-form-select :options="experience_options"
                 v-model="form.experience_vector" id="experience_vector"
                 name="experience_vector" @change="onInputChanged('experience_vector')"/>
-          <label>Magnitude</label>
-          <b-form-textarea v-model="form.magnitude" id="magnitude"
+          <label>Magnitude: {{form.magnitude}}</label>
+          <b-form-input type="range" min="0" max="5" v-model="form.magnitude" id="magnitude"
                 name="magnitude" @change="onInputChanged('magnitude')"/>
-          <label>Frequency</label>
-          <b-form-textarea v-model="form.frequency" id="frequency"
+          <label>Frequency: {{form.frequency}}</label>
+          <b-form-input type="range" min="0" max="5" v-model="form.frequency" id="frequency"
                 name="frequency" @change="onInputChanged('frequency')"/>
           <label>Emotions</label>
           <b-form-select v-model="form.emotions" id="emotions" :options='emotion_options'

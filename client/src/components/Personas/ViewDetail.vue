@@ -258,6 +258,7 @@ export default {
       },
       methods: {
 
+
       onInputChanged(field) {
         this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
         console.log(this.edited_fields)

@@ -6,8 +6,11 @@ import datetime
 import sys
 from flask import Flask , flash, redirect, render_template, session
 from flask import Blueprint, jsonify, request, current_app
+from flask import send_file
 from flask_cors import CORS
 from sqlite3 import Error
+import base64
+import io
 
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
@@ -185,16 +188,42 @@ def persona_table_put_by_id(id):
     return request.json, 201
 
 
-@api.route("/personas/files/<int:id>/" , methods = ['POST'])
-def personas_file_upload(id):
+##-------------------------- FILE API
+
+### TODO: WORKS! BUT NEEDS A LOT OF CLEANUP
+@api.route("/personas/files/<int:id>" , methods = ['GET'])
+def personas_file_get(id):
     with sqlite3.connect(db) as conn:
         c = conn.cursor()
-        data =[]
-        for item in request.json:
-            data.append([item['product_id'],id])
-        c.executemany("INSERT INTO INSIGHT_PRODUCT_REL (product_id,insight_id) VALUES (?,?)",data)
+        if request.args.get('file_id') != None:
+            file_id = int(request.args.get('file_id'))
+            record = c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id]).fetchall()
+            filename = record[0][0]
+            file = record[0][1]
+            return send_file(file , attachment_filename=filename , as_attachment=True)
+        else:
+            #Return a Json containing the file descriptions
+            c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = ?""",[id])
+            record = c.fetchall()
+            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
+            return json.dumps(data)
+
+
+@api.route("/personas/files/<int:id>" , methods = ['POST'])
+def personas_file_upload(id):
+    print(request.files['file'])
+    with sqlite3.connect(db) as conn:
+        c = conn.cursor()
+        file = request.files["file"].read() #BLOB the data
+        filename = request.files["file"].filename
+        filetype = filename.rsplit('.', 1)[1].lower()
+        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_FILES ").fetchall()[0][0]
+        c.execute("""INSERT INTO PERSONA_FILES
+            (id,filename,file,filetype,source_id)
+            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
         conn.commit()
         return 'success', 201
+
 
 ##-------------------------- PRODUCT API
 
