@@ -56,11 +56,9 @@
         <label>Files</label>
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
-          <button :href="'/api/personas/files/1?file_id='+uploadedFile.id"
-            type="button" name="button" target="_blank">
+          <button
+            type="button" name="button" target="_blank" v-on:click="getFile(uploadedFile.id)">
             <i class="fa fa-file"></i>
-            <button href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
-            Retrieve</button>
           </button>
         </div>
 
@@ -393,7 +391,14 @@ export default {
           url: '/api/persona/files/'+this.form.id+'?file_id='+ file_id
         }
         ).then(function(response){
-          self.image = 'data:image/jpeg;base64,' + response.data[0]
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement('a');
+
+          fileLink.href = fileURL;
+          fileLink.setAttribute('download');
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
           console.log(response);
         })
       },

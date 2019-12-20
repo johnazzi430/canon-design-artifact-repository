@@ -30,6 +30,15 @@
           <i class="fas fa-chart-line"></i></a>
     </nav>
       <!-- MAIN -->
+    <div class="">
+        <label>Files
+          <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+        </label>
+        <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
+        <br>
+        <img src="/api/insights/1/files?file_id=2" alt=""
+        style="width:150px;height:150px;">
+    </div>
     <div class="" v-if="view === 'card'" v-bind:key="view">
       <insight-card v-bind:key = "dataKey">></insight-card>
     </div>
@@ -69,7 +78,6 @@ export default {
    }
   },
   methods: {
-
     expandDetail() {
     document.getElementById("right-sidepanel").style.width = "80%";
     },
@@ -88,6 +96,45 @@ export default {
     },
 
     changeView(view) { this.view = view},
+
+    getFile(file_id) {
+        const self = this;
+        axios({
+        method: 'get',
+        url: '/api/insights/1/files',
+      }
+      ).then(function(response){
+        self.image = 'data:image/jpeg;base64,' + response.data[0]
+        console.log(response);
+      })
+    },
+
+    handleFileUpload(){
+      this.file = this.$refs.file.files[0];
+    },
+
+    submitFiles(){
+
+            let formData = new FormData();
+
+            formData.append('file', this.file);
+            formData.append('filename', 'blank');
+
+            axios({
+              method: 'post',
+              url: '/api/insights/1/files',
+              data : formData,
+              headers: {
+                    'Content-Type': 'multipart/form-data'
+              }
+            }
+            ).then(function(response){
+              console.log(response);
+            })
+            .catch(function(error){
+              console.log(error);
+            });
+    },
   },
   mounted() {
 

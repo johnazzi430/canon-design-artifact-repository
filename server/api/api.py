@@ -6,7 +6,7 @@ import datetime
 import sys
 from flask import Flask , flash, redirect, render_template, session
 from flask import Blueprint, jsonify, request, current_app
-from flask import send_file
+from flask import send_file, make_response
 from flask_cors import CORS
 from sqlite3 import Error
 import base64
@@ -199,8 +199,12 @@ def personas_file_get(id):
             file_id = int(request.args.get('file_id'))
             record = c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id]).fetchall()
             filename = record[0][0]
-            file = record[0][1].decode('utf-8')
-            return send_file(file , attachment_filename=filename , as_attachment=True)
+            file = record[0][1]
+            response = make_response(file)
+            response.headers.set('Content-Type', 'multipart/form-data ')
+            response.headers.set(
+                    'Content-Disposition', 'attachment', filename=filename)
+            return response
         else:
             #Return a Json containing the file descriptions
             c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = ?""",[id])
@@ -454,8 +458,12 @@ def insight_file_get(id):
             file_id = int(request.args.get('file_id'))
             record = c.execute("""SELECT filename, file FROM INSIGHT_FILES WHERE id = ?""",[file_id]).fetchall()
             filename = record[0][0]
-            file = record[0][1].decode('utf-8')
-            return send_file(file , attachment_filename=filename , as_attachment=True)
+            file = record[0][1]
+            response = make_response(file)
+            response.headers.set('Content-Type', 'multipart/form-data ')
+            response.headers.set(
+                    'Content-Disposition', 'attachment', filename='%s.jpg' % id)
+            return response
         else:
             #Return a Json containing the file descriptions
             c.execute("""SELECT id,filename,filetype,source_id FROM INSIGHT_FILES WHERE source_id = ?""",[id])
@@ -464,7 +472,7 @@ def insight_file_get(id):
             return json.dumps(data)
 
 
-@api.route("/personas/<int:id>/files" , methods = ['POST'])
+@api.route("/insights/<int:id>/files" , methods = ['POST'])
 def insight_file_upload(id):
     print(request.files['file'])
     with sqlite3.connect(db) as conn:
