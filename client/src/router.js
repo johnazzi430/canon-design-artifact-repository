@@ -36,35 +36,53 @@ const router =  new Router({
       path: '/persona',
       name: 'persona default',
       component: PersonaPage,
+      children:[
+        {
+          path: ':id',
+          component: PersonaPage
+        }
+      ]
     },
     {
       path: '/product',
       name: 'product default',
       component: ProductPage,
+      children:[
+        {
+          path: ':id',
+          component: ProductPage
+        }
+      ]
     },
     {
       path: '/insights',
       name: 'insights default',
       component: InsightsPage,
+      children:[
+        {
+          path: ':id',
+          component: InsightsPage
+        }
+      ]
     },
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  if(to.name === "login") {
-    store.state.authenticated===false
-    next()
-    return
-  }
-  else {
-    if(store.state.authenticated === true && store.state.role != null) {
-      next()
-      return
-    }
-    else {
-      next('/login')
-    }
-  }
-})
+// router.beforeEach((to, from, next) => {
+//   if(to.name === "login") {
+//     store.state.authenticated===false
+//     next()
+//     return
+//   }
+//   else {
+//     if(store.state.authenticated === true && store.state.role != null) {
+//       next()
+//       return
+//     }
+//     else {
+//       next('/login')
+//     }
+//   }
+// })
 
 export default router

@@ -77,6 +77,11 @@ export default {
     selection: 0,
    }
   },
+  watch: {
+    $route(to, from) {
+      EventBus.$emit('insight-selection-changed',this.selectedRow = this.$route.params.id )
+    }
+  },
   methods: {
     expandDetail() {
     document.getElementById("right-sidepanel").style.width = "80%";

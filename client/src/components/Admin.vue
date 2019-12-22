@@ -78,10 +78,10 @@ export default {
     },
 
 
-    onCellValueChanged(params) {
+    async onCellValueChanged(params) {
       // var colId = params.column.getId();
       console.log( params.data.username,params.data.role,store.state.role)
-      axios({
+      await axios({
          method: 'put',
          url: '/api/users/admin',
          data: {

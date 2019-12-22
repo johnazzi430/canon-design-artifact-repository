@@ -71,6 +71,7 @@ export default {
   methods:{
     OpenDetail(id) {
       EventBus.$emit('persona-selection-changed' ,this.selectedRow = id)
+      this.$route.params.id = id
     },
 
     filterItems: function(cards) {

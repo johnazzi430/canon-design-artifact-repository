@@ -2,6 +2,7 @@
 import os
 from server import app
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     # If not set fall back to production for safety
