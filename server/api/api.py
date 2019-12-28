@@ -16,15 +16,13 @@ import io
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
-db = 'server/data/data.db'
-
-
 ## define database connection - should be moved to config
 def db_connect():
-#    conn = psycopg2.connect(host="localhost",dbname="test", user="postgres", password="mypass01", port=5111)
-    conn = sqlite3.connect('server/data/data.db')
+    conn = psycopg2.connect(host="localhost",dbname="test", user="postgres", password="mypass01", port=5111)
+#    conn = sqlite3.connect('server/data/data.db')
     return conn
 
+# pgloader
 
 ##-------------------------- PERSONA API
 
@@ -65,7 +63,7 @@ def persona_table():
                                 PERSONA.name = LAST.name AND
                                 PERSONA.revision = LAST.last_revision
                             WHERE
-                                PERSONA.archived = 0""")
+                                PERSONA.archived = False""")
             result = c.fetchall()
             data = [dict(zip([key[0] for key in c.description], row)) for row in result]
             return json.dumps(data)
@@ -75,7 +73,7 @@ def persona_table():
 def persona_list():
     with db_connect() as conn:
         c = conn.cursor()
-        c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = 0")
+        c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
         result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
@@ -137,23 +135,26 @@ def persona_post():
 def persona_table_by_id(id):
     with db_connect() as conn:
         c = conn.cursor()
-        persona = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
+        c.execute("SELECT * FROM PERSONA WHERE id = %s", (id,))
+        persona = c.fetchall()
         data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
         if id != 0 or id != None:
-            persona_products = c.execute("""SELECT
+            c.execute("""SELECT
                                         PERS_PROD_REL.product_id as product_id,
                                         PRODUCT.name as product_name
                                         FROM PERS_PROD_REL
                                         INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
-                                        WHERE persona_id = :id """, {'id' : id})
+                                        WHERE persona_id = %s""", (id,))
+            persona_products = c.fetchall()
             data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
             data[0]['products'] = data_add
-            persona_roles = c.execute("""SELECT
+            c.execute("""SELECT
                                         PERSONA_ROLES_REL.persona_role_id as persona_role_id,
                                         PERSONA_ROLES.name as persona_role_name
                                         FROM PERSONA_ROLES_REL
                                         INNER JOIN PERSONA_ROLES ON PERSONA_ROLES.id = PERSONA_ROLES_REL.persona_role_id
-                                        WHERE persona_id = :id """, {'id' : id})
+                                        WHERE persona_id = %s""", (id,))
+            persona_roles = c.fetchall()
             data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_roles]
             data[0]['roles'] = data_add
             return json.dumps(data), 201
@@ -194,7 +195,8 @@ def personas_file_get(id):
         c = conn.cursor()
         if request.args.get('file_id') != None:
             file_id = int(request.args.get('file_id'))
-            record = c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id]).fetchall()
+            c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id])
+            record = c.fetchall()
             filename = record[0][0]
             file = record[0][1]
             response = make_response(file)
@@ -204,7 +206,7 @@ def personas_file_get(id):
             return response
         else:
             #Return a Json containing the file descriptions
-            c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = ?""",[id])
+            c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = %s""",(id,))
             record = c.fetchall()
             data = [dict(zip([key[0] for key in c.description], row)) for row in record]
             return json.dumps(data)
@@ -234,7 +236,8 @@ def personas_file_upload(id):
 def product_list():
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
+        c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = FALSE") # TODO: WHERE archived = 0
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -243,7 +246,8 @@ def product_list():
 def product_table():
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
+        c.execute("SELECT * FROM PRODUCT WHERE archived = False") # TODO: WHERE archived = 0
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -292,7 +296,8 @@ def product_post():
 def product_table_by_id(id):
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT WHERE id = :id ", {'id' : id})
+        c.execute("SELECT * FROM PRODUCT WHERE id = ? ", [id])
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -307,7 +312,6 @@ def product_table_put_by_id(id):
     with db_connect() as conn:
         c = conn.cursor()
         SQL = "UPDATE PRODUCT SET " + key + " = ? WHERE id = ? "
-
         data_values = [value , data['id']]
         c.execute(SQL,data_values)
         conn.commit()
@@ -321,7 +325,8 @@ def product_table_put_by_id(id):
 def insights_get():
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT WHERE archived = 0") # TODO: WHERE archived = 0
+        c.execute("SELECT * FROM INSIGHT WHERE archived = False") # TODO: WHERE archived = 0
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -373,7 +378,8 @@ def insights_post():
 def insights_get_by_id(id):
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT WHERE id = :id ", {'id' : id})
+        c.execute("SELECT * FROM INSIGHT WHERE id = ? ", [id])
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -388,7 +394,6 @@ def insights_put(id):
     with db_connect() as conn:
         c = conn.cursor()
         SQL = "UPDATE INSIGHT SET " + key + " = ? WHERE id = ? "
-
         data_values = [value , data['id']]
         c.execute(SQL,data_values)
         conn.commit()
@@ -401,13 +406,14 @@ def insights_get_relationship(id,table):
     with db_connect() as conn:
         c = conn.cursor()
         if table == 'products':
-            insight_products = c.execute("""SELECT
+            c.execute("""SELECT
                                                 PRODUCT.id as product_id,
                                                 PRODUCT.name as product_name
                                             FROM INSIGHT
                                             INNER JOIN INSIGHT_PRODUCT_REL on INSIGHT_PRODUCT_REL.insight_id = INSIGHT.id
                                             INNER JOIN PRODUCT ON PRODUCT.id = INSIGHT_PRODUCT_REL.product_id
-                                            WHERE INSIGHT.id = :id """, {'id' : id})
+                                            WHERE INSIGHT.id = ? """, [id])
+            insight_products = c.fetchall()
             data = [dict(zip([key[0] for key in insight_products.description], row)) for row in insight_products]
             return json.dumps(data)
         elif table == 'personas':
@@ -417,7 +423,8 @@ def insights_get_relationship(id,table):
                                             FROM INSIGHT
                                             INNER JOIN INSIGHT_PERSONA_REL on INSIGHT_PERSONA_REL.insight_id = INSIGHT.id
                                             INNER JOIN PERSONA ON PERSONA.id = INSIGHT_PERSONA_REL.persona_id
-                                            WHERE INSIGHT.id = :id """, {'id' : id})
+                                            WHERE INSIGHT.id = ? """, [id])
+            insight_personas = c.fetchall()
             data = [dict(zip([key[0] for key in insight_personas.description], row)) for row in insight_personas]
             return json.dumps(data)
         else:
@@ -606,8 +613,9 @@ def persona_product_relationship_get():
 
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT * FROM PERS_PROD_REL")
+        c.execute("SELECT * FROM PERS_PROD_REL")
         #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
+        result = c.fetchall()
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)
 
@@ -642,7 +650,8 @@ def persona_product_rel_post():
 def persona_roles_get():
     with db_connect() as conn:
         c = conn.cursor()
-        result = c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
+        c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
+        result = c.fetchall()
         #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
         data = [dict(zip([key[0] for key in c.description], row)) for row in result]
         return json.dumps(data)

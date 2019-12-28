@@ -30,7 +30,7 @@
           <i class="fas fa-chart-line"></i></a>
     </nav>
       <!-- MAIN -->
-    <div class="">
+    <!-- <div class="">
         <label>Files
           <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
         </label>
@@ -38,7 +38,7 @@
         <br>
         <img src="/api/insights/1/files?file_id=2" alt=""
         style="width:150px;height:150px;">
-    </div>
+    </div> -->
     <div class="" v-if="view === 'card'" v-bind:key="view">
       <insight-card v-bind:key = "dataKey">></insight-card>
     </div>
