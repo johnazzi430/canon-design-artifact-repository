@@ -1,16 +1,18 @@
 
 import os
-from server import app
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     # If not set fall back to production for safety
+    DEBUG = True
+    TESTING = True
+
     FLASK_ENV =  os.getenv('FLASK_ENV', 'production')
     # Set FLASK_SECRET on your production Environment
     SECRET_KEY = os.getenv('FLASK_SECRET', 'Secret')
 
-    DATABASE = 'server/data/data.db'
+    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 
     APP_DIR = os.path.dirname(__file__)
     ROOT_DIR = os.path.dirname(APP_DIR)
@@ -20,23 +22,17 @@ class Config(object):
         raise Exception(
             'DIST_DIR not found: {}'.format(DIST_DIR))
 
-class BaseConfig(object):
- '''
- Base config class
- '''
- DEBUG = True
- TESTING = False
-class ProductionConfig(BaseConfig):
- """
- Production specific config
- """
+
+class ProductionConfig(Config):
  DEBUG = False
-class DevelopmentConfig(BaseConfig):
- """
- Development environment specific configuration
- """
+
+class StagingConfig(Config):
+    DEVELOPMENT = True
+    DEBUG = True
+
+class DevelopmentConfig(Config):
  DEBUG = True
  TESTING = True
 
-
-app.config.from_object('server.config.Config')
+class TestingConfig(Config):
+    TESTING = True

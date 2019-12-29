@@ -12,14 +12,15 @@ from flask_cors import CORS
 from sqlite3 import Error
 import base64
 import io
+from .models import *
 
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
 ## define database connection - should be moved to config
 def db_connect():
-    conn = psycopg2.connect(host="localhost",dbname="test", user="postgres", password="mypass01", port=5111)
-#    conn = sqlite3.connect('server/data/data.db')
+#    conn = psycopg2.connect(host="localhost",dbname="test", user="postgres", password="mypass01", port=5111)
+    conn = sqlite3.connect('server/data/data.db')
     return conn
 
 # pgloader
@@ -39,96 +40,45 @@ def convertToBinaryData(filename):
 @api.route("/persona-table", methods = ['GET'])
 def persona_table():
     if request.args.get('filter') == "False" :
-        with db_connect() as conn:
-            c = conn.cursor()
-            c.execute("SELECT * FROM PERSONA")
-            result = c.fetchall()# TODO: WHERE archived = 0
-            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-            return json.dumps(data)
-    else :
-        with db_connect() as conn:
-            c = conn.cursor()
-            ## ONLY GET THE LAST REVISION WHERE NOT ARCHIVED
-            c.execute("""SELECT
-                                PERSONA.*
-                            FROM
-                                ( SELECT
-                                    name,
-                                    MAX(revision) as last_revision
-                                FROM PERSONA
-                                GROUP BY name) AS LAST
-                            INNER JOIN
-                                PERSONA
-                            ON
-                                PERSONA.name = LAST.name AND
-                                PERSONA.revision = LAST.last_revision
-                            WHERE
-                                PERSONA.archived = False""")
-            result = c.fetchall()
-            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-            return json.dumps(data)
+        personas = Persona.query.order_by(Persona.id).all()
+        return json.dumps(PersonaSchema().dump(personas,many=True))
+    else:
+        personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+        return json.dumps(PersonaSchema().dump(personas,many=True))
 
 ## GET PERSONA LIST
 @api.route("/personas", methods = ['GET'])
 def persona_list():
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+#    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
+    personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+    return json.dumps(PersonaSchema(only=['id,name,tile']).dump(personas,many=True))
 
 
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
     current_app.logger.info(request.json['name'])
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT MAX(id) as last_id FROM PERSONA ")
-        last_id = c.fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['name'],
-                request.json['title'] ,
-                request.json['quote'],
-                request.json['job_function'] ,
-                request.json['needs'] ,
-                request.json['wants'] ,
-                request.json['pain_point'] ,
-                request.json['external'] ,
-                request.json['market_size'] ,
-                request.json['buss_val'] ,
-                datetime.datetime.now(),               # Record Date
-                0,                          # Revision
-                None,                                # creator_id   TODO
-                None,                                # access_group TODO
-                0,                                     # archived
-                request.json['persona_file'],
-                request.json['persona_picture']]
-
-        c.execute("""INSERT INTO PERSONA
-        (id,
-        name,
-        title,
-        quote,
-        job_function,
-        needs,
-        wants,
-        pain_point,
-        external,
-        market_size,
-        buss_val,
-        create_date,
-        revision,
-        creator_id,
-        access_group,
-        archived,
-        persona_file,
-        persona_picture)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        c.close()
-        return request.json, 201
+    persona = Persona(                          ## SET ID
+                name = request.json['name'],
+                title = request.json['title'] ,
+                quote = request.json['quote'])
+                # job_function = request.json['job_function'] ,
+                # needs = request.json['needs'] ,
+                # wants = request.json['wants'] ,
+                # pain_point = request.json['pain_point'] ,
+                # external = request.json['external'] ,
+                # market_size = request.json['market_size'] ,
+                # buss_val = request.json['buss_val'] ,
+                # create_date = datetime.now(),               # Record Date
+                # revision = 0,                          # Revision
+                # creator_id = None,          # creator_id   TODO
+                # access_group = 0,           # access_group TODO
+                # archived = False,      # archived
+                # persona_file = request.json['persona_file'],
+                # persona_picture = request.json['persona_picture'])
+    db.session.add(persona)
+    db.session.commit()
+    return request.json, 201
 
 ## GET BY ID
 @api.route("/persona-table/<int:id>" , methods = ['GET'])
@@ -231,25 +181,23 @@ def personas_file_upload(id):
 
 ##-------------------------- PRODUCT API
 
+
+
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
 def product_list():
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = FALSE") # TODO: WHERE archived = 0
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+    return json.dumps(ProductSchema(only=['id,name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product-table", methods = ['GET'])
 def product_table():
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM PRODUCT WHERE archived = False") # TODO: WHERE archived = 0
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    if request.args.get('filter') == "False" :
+        products = Product.query.order_by(Product.id).all()
+        return json.dumps(ProductSchema().dump(products,many=True))
+    else:
+        products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+        return json.dumps(ProductSchema().dump(products,many=True))
 
 ## POST NEW
 @api.route("/product-table" , methods = ['POST'])
@@ -294,12 +242,9 @@ def product_post():
 ## GET BY ID
 @api.route("/product-table/<int:id>" , methods = ['GET'])
 def product_table_by_id(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM PRODUCT WHERE id = ? ", [id])
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    products = Product.query.order_by(Product.id).filter(Product.id == id).all()
+    return json.dumps(ProductSchema().dump(products,many=True))
+
 
 
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
