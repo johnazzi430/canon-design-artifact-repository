@@ -29,14 +29,6 @@ def db_connect():
 ##-------------------------- PERSONA API
 
 
-## METHODS
-def convertToBinaryData(filename):
-    #Convert digital data to binary format
-    with open(filename, 'rb') as file:
-        blobData = file.read()
-    return blobData
-
-
 ## GET ALL
 @api.route("/persona-table", methods = ['GET'])
 def persona_table():
@@ -88,20 +80,26 @@ def persona_table_by_id(id):
     return json.dumps(PersonaSchema().dump(persona,many=True))
 
 
-
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with db_connect() as conn:
-        c = conn.cursor()
-        SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ? "
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    print(data)
+    key = list(data.keys())[0]
+    print(key)
+    upchange = data[key]
+    persona = Persona.query.filter(Persona.id == id).first()
+    downchange = getattr(persona, key) #GET DOWNCHANGE
+    setattr(persona, key , upchange) #SET UPCHANGE
+    setattr(persona, 'revision' , persona.revision + 1)
+    persona_comments = PersonaComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(persona_comments)
+    db.session.commit()
     return request.json, 201
 
 
@@ -168,45 +166,22 @@ def product_table():
         products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
         return json.dumps(ProductSchema().dump(products,many=True))
 
-## POST NEW
 @api.route("/product-table" , methods = ['POST'])
 def product_post():
     current_app.logger.info(request.json['name'])
-    with db_connect() as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT ").fetchall()[0][0]
-        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PRODUCT where name=?", [request.json['name']]).fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['name'],
-                request.json['description'] ,
-                request.json['metrics'],
-                request.json['goals'] ,
-                request.json['features'] ,
-                datetime.datetime.now(),               # Record Date
-                datetime.datetime.now(),               # Record Date
-                0,                                     # archived
-                None,                                # creator_id   TODO
-                request.json['owner'],                                # access_group TODO
-                last_revision,                          # Revision
-                request.json['product_homepage']        ]
+    product = Product(                          ## SET ID
+                name = request.json['name'],
+                description = request.json['description'] ,
+                metrics = request.json['metrics'],
+                goals = request.json['goals'] ,
+                features = request.json['features'] ,
+                owner = request.json['owner'],
+                product_homepage = request.json['product_homepage'] ,
+                creator_id = None)
+    db.session.add(product)
+    db.session.commit()
+    return request.json, 201
 
-        c.execute("""INSERT INTO PRODUCT
-        (id,
-        name,
-        description,
-        metrics,
-        goals,
-        features,
-        create_date,
-        last_update,
-        archived,
-        creator_id,
-        owner,
-        revision,
-        product_homepage)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
 
 ## GET BY ID
 @api.route("/product-table/<int:id>" , methods = ['GET'])
@@ -410,107 +385,60 @@ def insight_file_upload(id):
 #### COMMENTS ---------------------------------------------
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    persona_comments = PersonaComments.query.filter(PersonaComments.source_id == id).all()
+    return json.dumps(PersonaCommentsSchema().dump(persona_comments,many=True))
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
 def product_comments(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    product_comments = ProductComments.query.filter(ProductComments.source_id == id).all()
+    return json.dumps(ProductCommentsSchema().dump(product_comments,many=True))
+
 
 @api.route("/insights/comments/<int:id>" , methods = ['GET'])
 def insights_comments(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    insight_comments = InsightComments.query.filter(InsightComments.source_id == id).all()
+    return json.dumps(InsightCommentsSchema().dump(insight_comments,many=True))
 
 
 ## COMMENT ADD
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
 def persona_comments_post(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now(),
-            request.json['action'],
-            request.json['downchange'],
-            request.json['upchange']]
-        c.execute("""INSERT INTO PERSONA_COMMENTS
-        (id,
-        source_id,
-        comment_body,
-        creator_id,
-        create_date,
-        action,
-        downchange,
-        upchange)
-        VALUES (?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    persona_comments = PersonaComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(persona_comments)
+    db.session.commit()
+    return request.json, 201
 
 @api.route("/product/comments/<int:id>" , methods = ['POST'])
 def product_comments_post(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now(),
-            request.json['action'],
-            request.json['downchange'],
-            request.json['upchange']]
-        c.execute("""INSERT INTO PRODUCT_COMMENTS
-        (id,
-        source_id,
-        comment_body,
-        creator_id,
-        create_date,
-        action,
-        downchange,
-        upchange)
-        VALUES (?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    product_comments = ProductComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(product_comments)
+    db.session.commit()
+    return request.json, 201
 
 @api.route("/insights/comments/<int:id>" , methods = ['POST'])
 def insight_comments_post(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now()]
-        c.execute("""INSERT INTO INSIGHT_COMMENTS
-            (id,
-            source_id,
-            comment_body,
-            creator_id,
-            create_date)
-        VALUES (?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    insight_comments = InsightComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(insight_comments)
+    db.session.commit()
+    return request.json, 201
 
 ###### PERSONA RELATIONSHIPS
 @api.route("/persona-product" , methods = ['GET'])

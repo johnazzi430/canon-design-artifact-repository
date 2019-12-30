@@ -315,8 +315,7 @@ export default {
                method: 'put',
                url: '/api/insights/' + this.form.id ,
                data: {
-                 'id' : this.form.id,
-                  [key] : this.form[key]
+                 'id' : this.form.id
                }
                })
              };

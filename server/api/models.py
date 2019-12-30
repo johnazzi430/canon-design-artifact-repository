@@ -55,6 +55,22 @@ class ProductSchema(ma.ModelSchema):
         model = Product
         sqla_session = db.session
 
+class ProductComments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer,ForeignKey('product.id'))
+    comment_body = db.Column(db.Text)
+    creator_id = db.Column(db.Integer, default = None)
+    action = db.Column(db.Text)
+    downchange = db.Column(db.Text)
+    upchange = db.Column(db.Text)
+    create_date = db.Column(db.DateTime,
+                            default=datetime.utcnow)
+
+class ProductCommentsSchema(ma.ModelSchema):
+    class Meta:
+        model = ProductComments
+        sqla_session = db.session
+
 
 ## PERSONAS --------------------------------------------------------------------
 class Roles(db.Model):
@@ -66,6 +82,22 @@ class Roles(db.Model):
 class RoleSchema(ma.ModelSchema):
     class Meta:
         model = Roles
+        sqla_session = db.session
+
+class PersonaComments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer,ForeignKey('persona.id'))
+    comment_body = db.Column(db.Text)
+    creator_id = db.Column(db.Integer, default = None)
+    action = db.Column(db.Text)
+    downchange = db.Column(db.Text)
+    upchange = db.Column(db.Text)
+    create_date = db.Column(db.DateTime,
+                            default=datetime.utcnow)
+
+class PersonaCommentsSchema(ma.ModelSchema):
+    class Meta:
+        model = PersonaComments
         sqla_session = db.session
 
 class Persona(db.Model):
@@ -82,8 +114,8 @@ class Persona(db.Model):
     market_size = db.Column(db.Integer)
     buss_val = db.Column(db.Integer)
     create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
+                            default=datetime.utcnow)
+                            #onupdate=datetime.utcnow) # USE IN FUTURE
     revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer)
     access_group = db.Column(db.Integer)
@@ -106,26 +138,41 @@ class PersonaSchema(ma.ModelSchema):
 class Insight(db.Model):
     __tablename__ = 'insight'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text)
+    title = db.Column(db.Text)
     description = db.Column(db.Text)
-    metrics = db.Column(db.Text)
-    goals = db.Column(db.Text)
-    features = db.Column(db.Text)
-    archived = db.Column(db.Boolean)
-    owner = db.Column(db.Text)
-    last_update  = db.Column(db.DateTime,
-                            default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
+    content = db.Column(db.Text)
+    file = db.Column(db.Text)
+    experience_vector = db.Column(db.Text)
+    magnitude = db.Column(db.Integer)
+    frequency = db.Column(db.Text)
+    emotions = db.Column(db.Text)
+    props = db.Column(db.Text)
+    journey = db.Column(db.Text)
+    archived = db.Column(db.Boolean, default = False)
     create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
+                            default=datetime.utcnow)
     revision = db.Column(db.Integer, default = 0)
-    creator_id = db.Column(db.Integer)
-    product_homepage = db.Column(db.Text)
+    creator_id = db.Column(db.Integer, default = None)
 
 class InsightSchema(ma.ModelSchema):
     class Meta:
         model = Product
+        sqla_session = db.session
+
+class InsightComments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer,ForeignKey('persona.id'))
+    comment_body = db.Column(db.Text)
+    creator_id = db.Column(db.Integer, default = None)
+    action = db.Column(db.Text)
+    downchange = db.Column(db.Text)
+    upchange = db.Column(db.Text)
+    create_date = db.Column(db.DateTime,
+                            default=datetime.utcnow)
+
+class InsightCommentsSchema(ma.ModelSchema):
+    class Meta:
+        model = InsightComments
         sqla_session = db.session
 
 # USER -------------------------------------------------------------------------

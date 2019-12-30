@@ -316,7 +316,6 @@ export default {
                  method: 'put',
                  url: '/api/persona-table/' + this.form.id ,
                  data: {
-                   'id' : this.form.id,
                     [key] : this.form[key]
                  }
                  })

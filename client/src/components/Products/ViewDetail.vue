@@ -201,7 +201,6 @@ export default {
                   method: 'put',
                   url: '/api/product-table/' + this.form.id ,
                   data: {
-                    'id' : this.form.id,
                      [key] : this.form[key]
                   }
                   })
