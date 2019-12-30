@@ -73,15 +73,15 @@ class ProductCommentsSchema(ma.ModelSchema):
 
 
 ## PERSONAS --------------------------------------------------------------------
-class Roles(db.Model):
+class PersonaRoles(db.Model):
     __tablename__ = 'persona_roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
     description = db.Column(db.Text)
 
-class RoleSchema(ma.ModelSchema):
+class PersonaRoleSchema(ma.ModelSchema):
     class Meta:
-        model = Roles
+        model = PersonaRoles
         sqla_session = db.session
 
 class PersonaComments(db.Model):
@@ -122,11 +122,11 @@ class Persona(db.Model):
     archived = db.Column(db.Boolean, default=False)
     persona_file = db.Column(db.Binary)
     persona_picture = db.Column(db.Binary)
-    roles = relationship('Roles' , secondary = 'persona_roles_rel' , backref='personas' ,lazy="joined" )
+    roles = relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref='personas' ,lazy="joined" )
     products = relationship('Product' , secondary = 'pers_prod_rel' , backref='personas' ,lazy="joined" )
 
 class PersonaSchema(ma.ModelSchema):
-    roles = ma.Nested(RoleSchema, many=True)
+    roles = ma.Nested(PersonaRoleSchema, many=True)
     products = ma.Nested(ProductSchema, many=True)
 
     class Meta:

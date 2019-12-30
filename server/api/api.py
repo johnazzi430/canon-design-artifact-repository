@@ -44,7 +44,7 @@ def persona_table():
 def persona_list():
 #    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
     personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
-    return json.dumps(PersonaSchema(only=['id,name,tile']).dump(personas,many=True))
+    return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
 
 
 ## POST NEW
@@ -154,7 +154,7 @@ def personas_file_upload(id):
 @api.route("/products", methods = ['GET'])
 def product_list():
     products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
-    return json.dumps(ProductSchema(only=['id,name']).dump(products,many=True))
+    return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product-table", methods = ['GET'])
@@ -490,13 +490,8 @@ def persona_product_rel_post():
 ## pickup_roles
 @api.route("/persona/roles" , methods = ['GET'])
 def persona_roles_get():
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
-        result = c.fetchall()
-        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    persona_roles = PersonaRoles.query.all()
+    return json.dumps(PersonaRoleSchema().dump(persona_roles,many=True))
 
 
 @api.route("/persona/roles" , methods = ['POST'])
