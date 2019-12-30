@@ -9,6 +9,7 @@ from flask import Flask , flash, redirect, render_template, session
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
 from flask_cors import CORS
+from sqlalchemy.orm import joinedload
 from sqlite3 import Error
 import base64
 import io
@@ -61,21 +62,19 @@ def persona_post():
     persona = Persona(                          ## SET ID
                 name = request.json['name'],
                 title = request.json['title'] ,
-                quote = request.json['quote'])
-                # job_function = request.json['job_function'] ,
-                # needs = request.json['needs'] ,
-                # wants = request.json['wants'] ,
-                # pain_point = request.json['pain_point'] ,
-                # external = request.json['external'] ,
-                # market_size = request.json['market_size'] ,
-                # buss_val = request.json['buss_val'] ,
-                # create_date = datetime.now(),               # Record Date
-                # revision = 0,                          # Revision
-                # creator_id = None,          # creator_id   TODO
-                # access_group = 0,           # access_group TODO
-                # archived = False,      # archived
-                # persona_file = request.json['persona_file'],
-                # persona_picture = request.json['persona_picture'])
+                quote = request.json['quote'],
+                job_function = request.json['job_function'] ,
+                needs = request.json['needs'] ,
+                wants = request.json['wants'] ,
+                pain_point = request.json['pain_point'] ,
+                external = request.json['external'] ,
+                market_size = request.json['market_size'] ,
+                buss_val = request.json['buss_val'] ,
+                revision = 0,                          # Revision
+                creator_id = None,          # creator_id   TODO
+                access_group = 0,           # access_group TODO
+                persona_file = request.json['persona_file'],
+                persona_picture = request.json['persona_picture'])
     db.session.add(persona)
     db.session.commit()
     return request.json, 201
@@ -83,33 +82,11 @@ def persona_post():
 ## GET BY ID
 @api.route("/persona-table/<int:id>" , methods = ['GET'])
 def persona_table_by_id(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM PERSONA WHERE id = %s", (id,))
-        persona = c.fetchall()
-        data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
-        if id != 0 or id != None:
-            c.execute("""SELECT
-                                        PERS_PROD_REL.product_id as product_id,
-                                        PRODUCT.name as product_name
-                                        FROM PERS_PROD_REL
-                                        INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
-                                        WHERE persona_id = %s""", (id,))
-            persona_products = c.fetchall()
-            data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
-            data[0]['products'] = data_add
-            c.execute("""SELECT
-                                        PERSONA_ROLES_REL.persona_role_id as persona_role_id,
-                                        PERSONA_ROLES.name as persona_role_name
-                                        FROM PERSONA_ROLES_REL
-                                        INNER JOIN PERSONA_ROLES ON PERSONA_ROLES.id = PERSONA_ROLES_REL.persona_role_id
-                                        WHERE persona_id = %s""", (id,))
-            persona_roles = c.fetchall()
-            data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_roles]
-            data[0]['roles'] = data_add
-            return json.dumps(data), 201
-        else:
-            return json.dumps([{'id': None}])
+    persona = Persona.query.filter(Persona.id == id) \
+            .options(joinedload('roles') ,joinedload('products') ) \
+            .all()
+    return json.dumps(PersonaSchema().dump(persona,many=True))
+
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
@@ -122,14 +99,6 @@ def persona_table_put_by_id(id):
     with db_connect() as conn:
         c = conn.cursor()
         SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ? "
-        # SQL = SQL + "OUTPUT inserted.{}"
-        #
-        # SQL = """UPDATE PERSONA SET {} = ? WHERE id = ?
-        #         OUTPUT inserted.{}
-        #                inserted.persona_id
-        #                deleted.{}
-        #                INTO PERSONA_COMMENTS"
-        #
         data_values = [value , data['id']]
         c.execute(SQL,data_values)
         conn.commit()

@@ -1,53 +1,32 @@
 from server import db, ma
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
+from sqlalchemy import Table, Column, Integer, ForeignKey
 from datetime import datetime
 
 
-class Result(db.Model):
-    __tablename__ = 'results'
+# RELATIONSHIP TABLES ----------------------------------------------------------
+persona_roles_rel = db.Table('persona_roles_rel',
+    db.Column('persona_id',db.Integer, ForeignKey('persona.id')),
+    db.Column('persona_role_id',db.Integer, ForeignKey('persona_roles.id'))
+    )
 
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String())
-    result_all = db.Column(JSON)
-    result_no_stop_words = db.Column(JSON)
+pers_prod_rel = db.Table('pers_prod_rel',
+    db.Column('persona_id',db.Integer, ForeignKey('persona.id')),
+    db.Column('product_id',db.Integer, ForeignKey('product.id'))
+    )
 
-    def __init__(self, url, result_all, result_no_stop_words):
-        self.url = url
-        self.result_all = result_all
-        self.result_no_stop_words = result_no_stop_words
+insight_product_rel = db.Table('insight_product_rel',
+    db.Column('persona_id',db.Integer, ForeignKey('persona.id')),
+    db.Column('insight_id',db.Integer, ForeignKey('insight.id'))
+    )
 
-    def __repr__(self):
-        return '<id {}>'.format(self.id)
+insight_persona_rel = db.Table('insight_persona_rel',
+    db.Column('product_id',db.Integer, ForeignKey('product.id')),
+    db.Column('insight_id',db.Integer, ForeignKey('insight.id'))
+    )
 
-
-class Persona(db.Model):
-    __tablename__ = 'persona'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text)
-    title = db.Column(db.Text)
-    quote = db.Column(db.Text)
-    job_function = db.Column(db.Text)
-    needs = db.Column(db.Text)
-    wants = db.Column(db.Text)
-    pain_point = db.Column(db.Text)
-    external = db.Column(db.Integer, default=0)
-    market_size = db.Column(db.Integer)
-    buss_val = db.Column(db.Integer)
-    create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
-    revision = db.Column(db.Integer)
-    creator_id = db.Column(db.Integer)
-    access_group = db.Column(db.Integer)
-    archived = db.Column(db.Boolean, default=False)
-    persona_file = db.Column(db.Binary)
-    persona_picture = db.Column(db.Binary)
-
-
-class PersonaSchema(ma.ModelSchema):
-    class Meta:
-        model = Persona
-        sqla_session = db.session
+# PRODUCT ----------------------------------------------------------------------
 
 class Product(db.Model):
     __tablename__ = 'product'
@@ -66,12 +45,9 @@ class Product(db.Model):
     create_date = db.Column(db.DateTime,
                             default=datetime.utcnow,
                             onupdate=datetime.utcnow)
-    revision = db.Column(db.Integer)
+    revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer)
     product_homepage = db.Column(db.Text)
-
-    # def __init__(self,name,description,metrics,goals,features,archived,owner,last_update,create_date,revision,creator_id,product_homepage):
-    #     self.name = name
 
 
 class ProductSchema(ma.ModelSchema):
@@ -79,6 +55,54 @@ class ProductSchema(ma.ModelSchema):
         model = Product
         sqla_session = db.session
 
+
+## PERSONAS --------------------------------------------------------------------
+class Roles(db.Model):
+    __tablename__ = 'persona_roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+    description = db.Column(db.Text)
+
+class RoleSchema(ma.ModelSchema):
+    class Meta:
+        model = Roles
+        sqla_session = db.session
+
+class Persona(db.Model):
+    __tablename__ = 'persona'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+    title = db.Column(db.Text)
+    quote = db.Column(db.Text)
+    job_function = db.Column(db.Text)
+    needs = db.Column(db.Text)
+    wants = db.Column(db.Text)
+    pain_point = db.Column(db.Text)
+    external = db.Column(db.Integer, default=0)
+    market_size = db.Column(db.Integer)
+    buss_val = db.Column(db.Integer)
+    create_date = db.Column(db.DateTime,
+                            default=datetime.utcnow,
+                            onupdate=datetime.utcnow)
+    revision = db.Column(db.Integer, default = 0)
+    creator_id = db.Column(db.Integer)
+    access_group = db.Column(db.Integer)
+    archived = db.Column(db.Boolean, default=False)
+    persona_file = db.Column(db.Binary)
+    persona_picture = db.Column(db.Binary)
+    roles = relationship('Roles' , secondary = 'persona_roles_rel' , backref='personas' ,lazy="joined" )
+    products = relationship('Product' , secondary = 'pers_prod_rel' , backref='personas' ,lazy="joined" )
+
+class PersonaSchema(ma.ModelSchema):
+    roles = ma.Nested(RoleSchema, many=True)
+    products = ma.Nested(ProductSchema, many=True)
+
+    class Meta:
+        model = Persona
+        sqla_session = db.session
+
+
+# INSIGHTS ---------------------------------------------------------------------
 class Insight(db.Model):
     __tablename__ = 'insight'
     id = db.Column(db.Integer, primary_key=True)
@@ -95,7 +119,7 @@ class Insight(db.Model):
     create_date = db.Column(db.DateTime,
                             default=datetime.utcnow,
                             onupdate=datetime.utcnow)
-    revision = db.Column(db.Integer)
+    revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer)
     product_homepage = db.Column(db.Text)
 
@@ -103,3 +127,5 @@ class InsightSchema(ma.ModelSchema):
     class Meta:
         model = Product
         sqla_session = db.session
+
+# USER -------------------------------------------------------------------------

@@ -12,7 +12,7 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
+      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.id">
         <div>
                   <img alt="avatar" class="avatar"
                        src="../../../public/assets/img_avatar2.png" >

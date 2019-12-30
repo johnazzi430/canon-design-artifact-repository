@@ -3,6 +3,7 @@ include
 lib
 .DS_Store
 pyvenv.cfg
+utc-persona-db.sql
 
 node_modules/
 /dist/

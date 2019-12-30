@@ -1,0 +1,5 @@
+
+
+PGPASSWORD=mypass01 pg_dump --no-acl --no-owner -U postgres -p 5111 test > utc-persona-db.dump
+heroku login
+heroku pg:psql<utc-persona-db.sql --app utc-persona-app

@@ -44,13 +44,13 @@
           :style="{width:form.buss_val / 5 *100 + '%'}">{{form.buss_val}}</div>
         </div>
         <label>Associated Products</label>
-        <div v-for="product in form.products" v-bind:key="product.product_id">
-          <b-button pill variant="info">{{product.product_name}}</b-button>
+        <div v-for="product in form.products" v-bind:key="product.id">
+          <b-button pill variant="info">{{product.name}}</b-button>
           <!-- TODO: make it so clicking her routes to the product -->
         </div>
         <label>Associated Roles</label>
-        <div v-for="role in form.roles" v-bind:key="role.persona_role_id">
-          <b-badge pill variant="success">{{role.persona_role_name}}</b-badge>
+        <div v-for="role in form.roles" v-bind:key="role.id">
+          <b-badge pill variant="success">{{role.name}}</b-badge>
         </div>
         <br>
         <label>Files</label>
@@ -126,8 +126,8 @@
                       v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="product_name"
-                      track-by="product_id" :preselect-first="false"
+                      placeholder="Pick some" label="name"
+                      track-by="id" :preselect-first="false"
                       @input="onInputChanged('products')">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
@@ -143,8 +143,8 @@
                       v-model="form.roles" :options="role_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="persona_role_name"
-                      track-by="persona_role_id" :preselect-first="false"
+                      placeholder="Pick some" label="name"
+                      track-by="id" :preselect-first="false"
                       @input="onInputChanged('roles')">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
@@ -270,14 +270,14 @@ export default {
         .catch(error => console.log(error))
 
         //GET FILES
-        axios({
-          method: 'get',
-          url: '/api/persona/files/' + selection,
-        }).then(function(response){
-          self.uploadedFiles = response.data;
-        })
-
-        });
+      //   axios({
+      //     method: 'get',
+      //     url: '/api/persona/files/' + selection,
+      //   }).then(function(response){
+      //     self.uploadedFiles = response.data;
+      //   })
+      //
+         });
       },
       methods: {
 
