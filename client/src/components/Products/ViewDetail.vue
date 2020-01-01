@@ -29,8 +29,8 @@
         <p class="text-wrap"> {{form.owner}} </p>
         <label> Product Homepage</label>
         <p> {{form.product_homepage}} </p>
-        <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
-          <b-button pill variant="info">{{persona.persona_title}} </b-button>
+        <div v-for="persona in form.personas" v-bind:key="persona.id">
+          <b-button pill variant="info">{{persona.title}} </b-button>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
@@ -85,7 +85,7 @@
             </template>
           </multiselect>
           <br>
-          <div >Selected: <strong>{{ form.persona}}</strong></div>
+          <div >Selected: <strong>{{form.personas}}</strong></div>
         </div>
         <div >
           <label for="product_file">Add File</label>
@@ -168,7 +168,8 @@ export default {
             self.form.features = response.data[0].features;
             self.form.owner = response.data[0].owner;
             self.form.product_homepage = response.data[0].product_homepage;
-            self.form.revision= response.data[0].revision;
+            self.form.revision = response.data[0].revision;
+            self.form.personas = response.data[0].personas;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }

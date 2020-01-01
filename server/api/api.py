@@ -46,6 +46,14 @@ def persona_list():
     personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
     return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
 
+## GET BY ID
+@api.route("/persona-table/<int:id>" , methods = ['GET'])
+def persona_table_by_id(id):
+    persona = Persona.query.filter(Persona.id == id) \
+            .options(joinedload('roles') ,joinedload('products') ) \
+            .all()
+    return json.dumps(PersonaSchema().dump(persona,many=True))
+
 
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
@@ -71,13 +79,6 @@ def persona_post():
     db.session.commit()
     return request.json, 201
 
-## GET BY ID
-@api.route("/persona-table/<int:id>" , methods = ['GET'])
-def persona_table_by_id(id):
-    persona = Persona.query.filter(Persona.id == id) \
-            .options(joinedload('roles') ,joinedload('products') ) \
-            .all()
-    return json.dumps(PersonaSchema().dump(persona,many=True))
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
@@ -166,6 +167,16 @@ def product_table():
         products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
         return json.dumps(ProductSchema().dump(products,many=True))
 
+## GET BY ID
+@api.route("/product-table/<int:id>" , methods = ['GET'])
+def product_table_by_id(id):
+    products = Product.query.filter(Product.id == id) \
+            .options(joinedload('personas')) \
+            .all()
+    return json.dumps(ProductSchema().dump(products,many=True))
+
+
+
 @api.route("/product-table" , methods = ['POST'])
 def product_post():
     current_app.logger.info(request.json['name'])
@@ -183,141 +194,88 @@ def product_post():
     return request.json, 201
 
 
-## GET BY ID
-@api.route("/product-table/<int:id>" , methods = ['GET'])
-def product_table_by_id(id):
-    products = Product.query.order_by(Product.id).filter(Product.id == id).all()
-    return json.dumps(ProductSchema().dump(products,many=True))
-
-
-
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with db_connect() as conn:
-        c = conn.cursor()
-        SQL = "UPDATE PRODUCT SET " + key + " = ? WHERE id = ? "
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    print(data)
+    key = list(data.keys())[0]
+    print(key)
+    upchange = data[key]
+    product = Product.query.filter(Product.id == id).first()
+    downchange = getattr(product, key) #GET DOWNCHANGE
+    setattr(product, key , upchange) #SET UPCHANGE
+    setattr(product, 'revision' , product.revision + 1)
+    product_comments = ProductComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(product_comments)
+    db.session.commit()
     return request.json, 201
 
 ##-------------------------- INSIGHTS API
 
-
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
 def insights_get():
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM INSIGHT WHERE archived = False") # TODO: WHERE archived = 0
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    insights = Insight.query.order_by(Insight.id).filter(Insight.archived.is_(False)).all()
+    return json.dumps(InsightSchema().dump(insights,many=True))
+
+## GET BY ID
+@api.route("/insights/<int:id>" , methods = ['GET'])
+def insights_get_by_id(id):
+    insight = Insight.query.filter(Insight.id == id )\
+                .options(joinedload('personas') ,joinedload('products') ) \
+                .all()
+    return json.dumps(InsightSchema().dump(insight,many=True))
 
 ## POST NEW
 @api.route("/insights" , methods = ['POST'])
 def insights_post():
     current_app.logger.info(request.json['title'])
-    with db_connect() as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT ").fetchall()[0][0]
-        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM INSIGHT where title=?", [request.json['title']]).fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['title'],
-                request.json['description'] ,
-                request.json['content'],
-                request.json['file'],                                   # content file
-                request.json['experience_vector'] ,
-                request.json['magnitude'] ,
-                request.json['frequency'] ,
-                request.json['emotions'] ,
-                request.json['props'] ,
-                request.json['journey'] ,
-                request.json['creator_id'],
-                datetime.datetime.now(),               # Record Date
-                last_revision,
-                0]                                     # archived
-        c.execute("""INSERT INTO INSIGHT
-        (id,
-        title,
-        description,
-        content,
-        file,
-        experience_vector,
-        magnitude,
-        frequency,
-        emotions,
-        props,
-        journey,
-        creator_id,
-        create_date,
-        revision,
-        archived)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-
-## GET BY ID
-@api.route("/insights/<int:id>" , methods = ['GET'])
-def insights_get_by_id(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM INSIGHT WHERE id = ? ", [id])
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    insight = Insight(
+            title = request.json['title'],
+            description = request.json['description'] ,
+            content = request.json['content'],
+            file = request.json['file'],                                   # content file
+            experience_vector = request.json['experience_vector'] ,
+            magnitude = request.json['magnitude'] ,
+            frequency = request.json['frequency'] ,
+            emotions = request.json['emotions'] ,
+            props = request.json['props'] ,
+            journey = request.json['journey'])                             # archived
+    db.session.add(insight)
+    db.session.commit()
+    return request.json, 201
 
 
 @api.route("/insights/<int:id>" , methods = ['PUT'])
 def insights_put(id):
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with db_connect() as conn:
-        c = conn.cursor()
-        SQL = "UPDATE INSIGHT SET " + key + " = ? WHERE id = ? "
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    print(data)
+    key = list(data.keys())[0]
+    print(key)
+    upchange = data[key]
+    insight = Insight.query.filter(Insight.id == id).first()
+    downchange = getattr(insight, key) #GET DOWNCHANGE
+    setattr(insight, key , upchange) #SET UPCHANGE
+    setattr(insight, 'revision' ,insight.revision + 1)
+    insight_comments = InsightComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(insight_comments)
+    db.session.commit()
     return request.json, 201
 
 ## relationshops
 # TODO: this
-@api.route("/insights/<int:id>/<table>" , methods = ['GET'])
-def insights_get_relationship(id,table):
-    with db_connect() as conn:
-        c = conn.cursor()
-        if table == 'products':
-            c.execute("""SELECT
-                                                PRODUCT.id as product_id,
-                                                PRODUCT.name as product_name
-                                            FROM INSIGHT
-                                            INNER JOIN INSIGHT_PRODUCT_REL on INSIGHT_PRODUCT_REL.insight_id = INSIGHT.id
-                                            INNER JOIN PRODUCT ON PRODUCT.id = INSIGHT_PRODUCT_REL.product_id
-                                            WHERE INSIGHT.id = ? """, [id])
-            insight_products = c.fetchall()
-            data = [dict(zip([key[0] for key in insight_products.description], row)) for row in insight_products]
-            return json.dumps(data)
-        elif table == 'personas':
-            insight_personas = c.execute("""SELECT
-                                                PERSONA.id as persona_id,
-                                                PERSONA.title as persona_title
-                                            FROM INSIGHT
-                                            INNER JOIN INSIGHT_PERSONA_REL on INSIGHT_PERSONA_REL.insight_id = INSIGHT.id
-                                            INNER JOIN PERSONA ON PERSONA.id = INSIGHT_PERSONA_REL.persona_id
-                                            WHERE INSIGHT.id = ? """, [id])
-            insight_personas = c.fetchall()
-            data = [dict(zip([key[0] for key in insight_personas.description], row)) for row in insight_personas]
-            return json.dumps(data)
-        else:
-            return 'error' ,  401
 
 
 @api.route("/insights/<int:id>/<table>" , methods = ['POST'])

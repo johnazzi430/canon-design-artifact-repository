@@ -38,14 +38,14 @@
         <label>Journey Location</label>
         <p class="text-wrap"> {{form.journey}} </p>
         <label>Associated Personas</label>
-        <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
-          <b-badge pill variant="success">{{persona.persona_title}} </b-badge>
+        <div v-for="persona in form.personas" v-bind:key="persona.id">
+          <b-badge pill variant="success">{{persona.title}} </b-badge>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
         <br>
         <label>Associated products</label>
-        <div v-for="product in form.products" v-bind:key="product.product_id">
-          <b-badge pill variant="success">{{product.product_name}}</b-badge>
+        <div v-for="product in form.products" v-bind:key="product.id">
+          <b-badge pill variant="success">{{product.name}}</b-badge>
           <!-- TODO: make it so clicking her routes to the product -->
         </div>
       </div>
@@ -237,22 +237,13 @@ export default {
             self.form.emotions = response.data[0].emotions;
             self.form.props = response.data[0].props;
             self.form.journey= response.data[0].journey;
+            self.form.personas = response.data[0].personas;
+            self.form.products = response.data[0].products;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
         )
         .catch(error => console.log(error))
-
-        //Get associated personas
-        axios.get( "/api/insights/" + selection + "/personas")
-        .then(response => {
-          self.form.personas = response.data
-        })
-        //Get associated products
-        axios.get("/api/insights/" + selection + "/products")
-        .then(response => {
-          self.form.products = response.data
-        })
 
         });
       },

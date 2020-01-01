@@ -16,12 +16,12 @@ pers_prod_rel = db.Table('pers_prod_rel',
     db.Column('product_id',db.Integer, ForeignKey('product.id'))
     )
 
-insight_product_rel = db.Table('insight_product_rel',
+insight_persona_rel = db.Table('insight_persona_rel',
     db.Column('persona_id',db.Integer, ForeignKey('persona.id')),
     db.Column('insight_id',db.Integer, ForeignKey('insight.id'))
     )
 
-insight_persona_rel = db.Table('insight_persona_rel',
+insight_product_rel = db.Table('insight_product_rel',
     db.Column('product_id',db.Integer, ForeignKey('product.id')),
     db.Column('insight_id',db.Integer, ForeignKey('insight.id'))
     )
@@ -30,7 +30,6 @@ insight_persona_rel = db.Table('insight_persona_rel',
 
 class Product(db.Model):
     __tablename__ = 'product'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
     description = db.Column(db.Text)
@@ -49,13 +48,15 @@ class Product(db.Model):
     creator_id = db.Column(db.Integer)
     product_homepage = db.Column(db.Text)
 
-
 class ProductSchema(ma.ModelSchema):
+    personas = ma.Nested('PersonaSchema', many=True, exclude=('products',))
+
     class Meta:
         model = Product
         sqla_session = db.session
 
 class ProductComments(db.Model):
+    __tablename__ = 'product_comments'
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer,ForeignKey('product.id'))
     comment_body = db.Column(db.Text)
@@ -85,6 +86,7 @@ class PersonaRoleSchema(ma.ModelSchema):
         sqla_session = db.session
 
 class PersonaComments(db.Model):
+    __tablename__ = 'persona_comments'
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer,ForeignKey('persona.id'))
     comment_body = db.Column(db.Text)
@@ -122,17 +124,16 @@ class Persona(db.Model):
     archived = db.Column(db.Boolean, default=False)
     persona_file = db.Column(db.Binary)
     persona_picture = db.Column(db.Binary)
-    roles = relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref='personas' ,lazy="joined" )
-    products = relationship('Product' , secondary = 'pers_prod_rel' , backref='personas' ,lazy="joined" )
+    roles = db.relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref=db.backref('personas')  )
+    products = db.relationship('Product' , secondary = 'pers_prod_rel' ,backref=db.backref('personas')  )
 
 class PersonaSchema(ma.ModelSchema):
-    roles = ma.Nested(PersonaRoleSchema, many=True)
-    products = ma.Nested(ProductSchema, many=True)
+    roles = ma.Nested('PersonaRoleSchema', many=True)
+    products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
 
     class Meta:
         model = Persona
         sqla_session = db.session
-
 
 # INSIGHTS ---------------------------------------------------------------------
 class Insight(db.Model):
@@ -143,7 +144,7 @@ class Insight(db.Model):
     content = db.Column(db.Text)
     file = db.Column(db.Text)
     experience_vector = db.Column(db.Text)
-    magnitude = db.Column(db.Integer)
+    magnitude = db.Column(db.Integer, default = None)
     frequency = db.Column(db.Text)
     emotions = db.Column(db.Text)
     props = db.Column(db.Text)
@@ -153,20 +154,23 @@ class Insight(db.Model):
                             default=datetime.utcnow)
     revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer, default = None)
+    personas = relationship('Persona' , secondary = 'insight_persona_rel' , backref=db.backref('insights') )
+    products = relationship('Product' , secondary = 'insight_product_rel' , backref=db.backref('insights') )
 
 class InsightSchema(ma.ModelSchema):
+    personas = ma.Nested('PersonaSchema', many=True , exclude=('products',))
+    products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
+
     class Meta:
-        model = Product
+        model = Insight
         sqla_session = db.session
 
 class InsightComments(db.Model):
+    __tablename__ = 'insight_comments'
     id = db.Column(db.Integer, primary_key=True)
-    source_id = db.Column(db.Integer,ForeignKey('persona.id'))
+    source_id = db.Column(db.Integer,ForeignKey('insight.id'))
     comment_body = db.Column(db.Text)
     creator_id = db.Column(db.Integer, default = None)
-    action = db.Column(db.Text)
-    downchange = db.Column(db.Text)
-    upchange = db.Column(db.Text)
     create_date = db.Column(db.DateTime,
                             default=datetime.utcnow)
 
