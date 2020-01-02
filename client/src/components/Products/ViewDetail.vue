@@ -74,8 +74,8 @@
                       v-model="form.personas" :options="persona_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="persona_title"
-                      track-by="persona_id" :preselect-first="false">
+                      placeholder="Pick some" label="title"
+                      track-by="id" :preselect-first="false">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -85,7 +85,7 @@
             </template>
           </multiselect>
           <br>
-          <div >Selected: <strong>{{form.personas}}</strong></div>
+          <div >Selected: <strong>{{form.personas.title}}</strong></div>
         </div>
         <div >
           <label for="product_file">Add File</label>
@@ -186,26 +186,14 @@ export default {
         async onEdit() {
           var key;
           for (key of this.edited_fields) {
-            if (key === 'personas') {
-              const resp = await axios({
-                  method: 'post',
-                  url: '/api/persona-product',
-                  data: this.form,
-                  params : {
-                    table : "product"
-                    }
-                  })
-            }
-            else {
              await axios({
                   method: 'put',
                   url: '/api/product-table/' + this.form.id ,
                   data: {
                      [key] : this.form[key]
-                  }
+                   }
                   })
                 };
-            }
 
          EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -214,7 +202,7 @@ export default {
 
        async onAdd(evt) {
          evt.preventDefault()
-         await xios({
+         await axios({
              method: 'post',
              url: '/api/product-table',
              data: this.form, })
@@ -222,17 +210,6 @@ export default {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
-
-        if (this.edited_fields.match('personas')) {
-              await axios({
-                   method: 'post',
-                   url: '/api/persona-product',
-                   data: this.form,
-                   params : {
-                     table : "product"
-                     }
-                   })
-         };
 
          EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";

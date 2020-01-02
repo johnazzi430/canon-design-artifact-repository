@@ -117,7 +117,6 @@ class Persona(db.Model):
     buss_val = db.Column(db.Integer)
     create_date = db.Column(db.DateTime,
                             default=datetime.utcnow)
-                            #onupdate=datetime.utcnow) # USE IN FUTURE
     revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer)
     access_group = db.Column(db.Integer)

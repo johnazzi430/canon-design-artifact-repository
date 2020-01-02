@@ -58,7 +58,6 @@ def persona_table_by_id(id):
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
-
     persona = Persona(                          ## SET ID
                 name = request.json['name'],
                 title = request.json['title'] ,
@@ -73,15 +72,23 @@ def persona_post():
                 revision = 0,                          # Revision
                 creator_id = None,          # creator_id   TODO
                 access_group = 0,           # access_group TODO
-                persona_file = request.json['persona_file'],
-                persona_picture = request.json['persona_picture'])
-    print('test')
-    print(request.json['roles'])
-    if request.json['roles'] != None:
+                persona_file = None,
+                persona_picture = None)
+
+    if request.json.get('roles') != None:
+        roles = []
         for role in request.json['roles']:
-            persona.append(role.id)
-    # db.session.add(persona)
-    # db.session.commit()
+            roles.append(PersonaRoles.query.get(role['id']))
+        persona.roles = roles
+
+    if request.json.get('products') != None:
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        persona.products = products
+
+    db.session.add(persona)
+    db.session.commit()
     return request.json, 201
 
 
@@ -111,6 +118,8 @@ def persona_table_put_by_id(id):
         upchange = data[key]
         downchange = getattr(persona, key) #GET DOWNCHANGE
         setattr(persona, key , upchange) #SET UPCHANGE
+
+    ## Add comment to log changes and edits
     setattr(persona, 'revision' , persona.revision + 1)
     persona_comments = PersonaComments(                          ## SET ID
                 source_id = id,
@@ -209,6 +218,13 @@ def product_post():
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
                 creator_id = None)
+
+    if request.json.get('personas') != None:
+        personas =[]
+        for persona in request.json['personas']:
+            personas.append(Personas.query.get(persona['id']))
+        product.personas = personas
+
     db.session.add(product)
     db.session.commit()
     return request.json, 201
@@ -218,10 +234,21 @@ def product_post():
 def product_table_put_by_id(id):
     data = request.get_json()
     key = list(data.keys())[0]
-    upchange = data[key]
     product = Product.query.filter(Product.id == id).first()
-    downchange = getattr(product, key) #GET DOWNCHANGE
-    setattr(product, key , upchange) #SET UPCHANGE
+
+    if key == 'personas':
+        personas = []
+        for persona in request.json['personas']:
+            personas.append(Persona.query.get(persona['id']))
+        product.roles = roles
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(product, key) #GET DOWNCHANGE
+        setattr(product, key , upchange) #SET UPCHANGE
+
+    ## Add comment to log changes and edits
     setattr(product, 'revision' , product.revision + 1)
     product_comments = ProductComments(                          ## SET ID
                 source_id = id,
@@ -264,7 +291,21 @@ def insights_post():
             frequency = request.json['frequency'] ,
             emotions = request.json['emotions'] ,
             props = request.json['props'] ,
-            journey = request.json['journey'])                             # archived
+            journey = request.json['journey'])
+
+    ## Relatonships
+    if request.json.get('products') != None:
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        insight.products = products
+
+    if request.json.get('personas') != None:
+        personas =[]
+        for persona in request.json['personas']:
+            personas.append(Personas.query.get(persona['id']))
+        insight.personas = personas
+
     db.session.add(insight)
     db.session.commit()
     return request.json, 201
@@ -274,11 +315,30 @@ def insights_post():
 def insights_put(id):
     data = request.get_json()
     key = list(data.keys())[0]
-    upchange = data[key]
     insight = Insight.query.filter(Insight.id == id).first()
-    downchange = getattr(insight, key) #GET DOWNCHANGE
-    setattr(insight, key , upchange) #SET UPCHANGE
+
+    ## Relatonships
+    if key == 'personas':
+        personas = []
+        for persona in request.json['personas']:
+            personas.append(Persona.query.get(persona['id']))
+        insight.roles = roles
+        upchange = ""
+        downchange = ""
+    elif key == 'products' :
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        insight.products = products
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(persona, key) #GET DOWNCHANGE
+        setattr(persona, key , upchange) #SET UPCHANGE
     setattr(insight, 'revision' ,insight.revision + 1)
+
+    ## Add comment to log changes and edits
     insight_comments = InsightComments(                          ## SET ID
                 source_id = id,
                 comment_body= None,
@@ -290,32 +350,7 @@ def insights_put(id):
     db.session.commit()
     return request.json, 201
 
-## relationshops
-# TODO: this
 
-
-@api.route("/insights/<int:id>/<table>" , methods = ['POST'])
-def insights_post_relationship(id,table):
-    with db_connect() as conn:
-        c = conn.cursor()
-        if table == 'products':
-            c.execute( "DELETE FROM INSIGHT_PRODUCT_REL WHERE insight_id = ?;" , [id])
-            data =[]
-            for item in request.json:
-                data.append([item['product_id'],id])
-            c.executemany("INSERT INTO INSIGHT_PRODUCT_REL (product_id,insight_id) VALUES (?,?)",data)
-            conn.commit()
-            return 'success', 201
-        elif table == 'personas':
-            c.execute( "DELETE FROM INSIGHT_PERSONA_REL WHERE insight_id = ?;" , [id])
-            data =[]
-            for item in request.json:
-                data.append([item['persona_id'],id])
-            c.executemany("INSERT INTO INSIGHT_PERSONA_REL (persona_id,insight_id) VALUES (?,?)",data)
-            conn.commit()
-            return 'success', 201
-        else:
-            return 'error' ,  401
 
 @api.route("/insights/<int:id>/files" , methods = ['GET'])
 def insight_file_get(id):
@@ -414,72 +449,6 @@ def insight_comments_post(id):
     db.session.commit()
     return request.json, 201
 
-###### PERSONA RELATIONSHIPS
-@api.route("/persona-product" , methods = ['GET'])
-def persona_product_relationship_get():
-    if request.args.get('persona_id') != None and request.args.get('product_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id;"
-        id = request.args.get('persona_id')
-    elif request.args.get('product_id') != None and request.args.get('persona_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE product_id = :id;"
-        id = request.args.get('product_id')
-    else:
-        SQL = "SELECT * FROM PERS_PROD_REL"
-        id = None
-
-    with db_connect() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM PERS_PROD_REL")
-        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
-        result = c.fetchall()
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-
-@api.route("/persona-product" , methods = ['POST'])
-def persona_product_rel_post():
-    with db_connect() as conn:
-        c = conn.cursor()
-        if request.args.get('table') == 'persona':
-            id = request.json.get('id')
-            c.execute( "DELETE FROM PERS_PROD_REL WHERE persona_id = ?;" , [id])
-            data =[]
-            for item in request.json.get('products'):
-                 data.append([id,item['product_id']])
-            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
-            conn.commit()
-            return request.json, 201
-        elif request.args.get('table') == 'product':
-            id = request.json.get('id')
-            c.execute( "DELETE FROM PERS_PROD_REL WHERE product_id = ?;" , [id])
-            data =[]
-            for item in request.json.get('personas'):
-                 data.append([item['persona_id'],id])
-            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
-            conn.commit()
-            return request.json, 201
-        else:
-            return "error"
-
-## pickup_roles
-@api.route("/persona/roles" , methods = ['GET'])
-def persona_roles_get():
-    persona_roles = PersonaRoles.query.all()
-    return json.dumps(PersonaRoleSchema().dump(persona_roles,many=True))
-
-
-@api.route("/persona/roles" , methods = ['POST'])
-def persona_role_post():
-    with db_connect() as conn:
-        c = conn.cursor()
-        id = request.json.get('id')
-        c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
-        data =[]
-        for item in request.json.get('roles'):
-            data.append([id,item['persona_role_id']])
-        c.executemany("INSERT INTO PERSONA_ROLES_REL (persona_id,persona_role_id) VALUES (?,?)",data)
-        conn.commit()
-        return request.json, 201
 
 # PLACEHOLDER FOR API TO PUT NEW ROLES
 # @api.route("/persona/roles" , methods = ['POST'])

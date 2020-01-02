@@ -296,8 +296,7 @@ export default {
                     [key] : this.form[key]
                     }
                  })
-
-           }
+           };
 
         EventBus.$emit('persona-table-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
@@ -313,7 +312,7 @@ export default {
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('persona-table-changed','item-updated');
+         EventBus.$emit('persona-table-changed','item-added');
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
