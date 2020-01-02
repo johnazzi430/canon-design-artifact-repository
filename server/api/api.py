@@ -135,44 +135,33 @@ def persona_table_put_by_id(id):
 
 ##-------------------------- FILE API
 
-### TODO: WORKS! BUT NEEDS A LOT OF CLEANUP
+
 @api.route("/persona/files/<int:id>" , methods = ['GET'])
 def personas_file_get(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        if request.args.get('file_id') != None:
-            file_id = int(request.args.get('file_id'))
-            c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id])
-            record = c.fetchall()
-            filename = record[0][0]
-            file = record[0][1]
-            response = make_response(file)
-            response.headers.set('Content-Type', 'multipart/form-data ')
-            response.headers.set(
-                    'Content-Disposition', 'attachment', filename=filename)
-            return response
-        else:
-            #Return a Json containing the file descriptions
-            c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = %s""",(id,))
-            record = c.fetchall()
-            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
-            return json.dumps(data)
-
+    if request.args.get('file_id') != None:
+        file = PersonaFile.query \
+                .filter(PersonaFile.id == request.args.get('file_id')) \
+                .first()
+        response = make_response(file.file)
+        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
+        return response
+    else:
+        files = PersonaFile.query.filter(PersonaFile.source_id == id).all()
+        return json.dumps(PersonaFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/persona/files/<int:id>" , methods = ['POST'])
 def personas_file_upload(id):
-    print(request.files['file'])
-    with db_connect() as conn:
-        c = conn.cursor()
-        file = request.files["file"].read() #BLOB the data
-        filename = request.files["file"].filename
-        filetype = filename.rsplit('.', 1)[1].lower()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_FILES ").fetchall()[0][0]
-        c.execute("""INSERT INTO PERSONA_FILES
-            (id,filename,file,filetype,source_id)
-            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
-        conn.commit()
-        return 'success', 201
+    file = PersonaFile(
+            source_id = id,
+            file = request.files['file'].read(),
+            filename = request.files['file'].filename,
+            filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
+    db.session.add(file)
+    db.session.commit()
+    return 'success', 201
+
+
 
 ## TODO: delete files
 
@@ -218,7 +207,6 @@ def product_post():
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
                 creator_id = None)
-
     if request.json.get('personas') != None:
         personas =[]
         for persona in request.json['personas']:

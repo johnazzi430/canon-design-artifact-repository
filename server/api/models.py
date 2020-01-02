@@ -102,6 +102,19 @@ class PersonaCommentsSchema(ma.ModelSchema):
         model = PersonaComments
         sqla_session = db.session
 
+class PersonaFile(db.Model):
+    __tablename__ = 'persona_files'
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer, ForeignKey('persona.id'))
+    filename = db.Column(db.Text)
+    file = db.Column(db.LargeBinary)
+    filetype = db.Column(db.Text)
+
+class PersonaFileSchema(ma.ModelSchema):
+    class Meta:
+        model = PersonaFile
+        sqla_session = db.session
+
 class Persona(db.Model):
     __tablename__ = 'persona'
     id = db.Column(db.Integer, primary_key=True)
