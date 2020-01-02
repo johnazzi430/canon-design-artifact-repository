@@ -161,6 +161,18 @@ def personas_file_upload(id):
     db.session.commit()
     return 'success', 201
 
+@api.route("/persona/files/<int:id>" , methods = ['DELETE'])
+def persona_file_delete(id):
+    if request.args.get('file_id') != None:
+        file = PersonaFile.query \
+                .filter(PersonaFile.id == request.args.get('file_id')) \
+                .first()
+        db.session.delete(file)
+        db.session.flush()
+        db.session.commit()
+        return 'success', 201
+    else:
+        return 'A file id must be selected' , 404
 
 
 ## TODO: delete files
