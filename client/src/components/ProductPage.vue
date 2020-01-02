@@ -110,6 +110,9 @@ export default {
       document.getElementById("right-sidepanel").style.width = "500px"
       self.selection = selection
     });
+
+    if(this.$route.params.id)
+      {EventBus.$emit('product-selection-changed',this.selectedRow = this.$route.params.id)};
   }
 }
 

@@ -39,14 +39,14 @@
         <p class="text-wrap"> {{form.journey}} </p>
         <label>Associated Personas</label>
         <div v-for="persona in form.personas" v-bind:key="persona.id">
-          <b-badge pill variant="success">{{persona.title}} </b-badge>
-          <!-- TODO: make it so clicking her routes to the persona -->
+          <b-badge :to="{ path: 'persona/' + persona.id }" pill
+          variant="success">{{persona.title}} </b-badge>
         </div>
         <br>
         <label>Associated products</label>
         <div v-for="product in form.products" v-bind:key="product.id">
-          <b-badge pill variant="success">{{product.name}}</b-badge>
-          <!-- TODO: make it so clicking her routes to the product -->
+          <b-badge :to="{ path: 'product/' + product.id }" pill
+          variant="success">{{product.name}}</b-badge>
         </div>
       </div>
       <br>
@@ -124,7 +124,7 @@
           </multiselect>
           <label for="product-select">Product:    </label>
           <br>
-          <label for="">Choose Products</label>
+          <label>Choose Products</label>
           <multiselect
                       @input="onInputChanged('products')"
                       v-model="form.products" :options="product_options"
@@ -184,7 +184,7 @@ export default {
         description: '',
         content: '',
         file: null,
-        experience_vector: Neutral,
+        experience_vector: 'Neutral',
         magnitude: null,
         frequency: null,
         emotions: null,

@@ -18,15 +18,6 @@ export default {
   components: {
     'app-nav': Nav,
   },
-  data() {
-    return {
-        authenticated: true,
-        mockAccount: {
-            username: "unitedtech",
-            password: "password"
-        }
-    }
-  },
 }
 </script>
 

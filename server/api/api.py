@@ -165,7 +165,10 @@ def persona_file_delete(id):
     else:
         return 'A file id must be selected' , 404
 
-
+@api.route("/persona/roles" , methods = ['GET'])
+def persona_get_roles():
+    persona_roles = PersonaRoles.query.all()
+    return json.dumps(PersonaRoleSchema().dump(persona_roles,many=True))
 
 ##-------------------------- PRODUCT API
 
@@ -440,6 +443,8 @@ def insight_comments_post(id):
     db.session.add(insight_comments)
     db.session.commit()
     return request.json, 201
+
+
 
 
 # PLACEHOLDER FOR API TO PUT NEW ROLES

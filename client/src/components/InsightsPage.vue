@@ -74,11 +74,11 @@ export default {
     detailKey: 0,
     dataKey: 0,
     view:'card',
-    selection: 0,
+    selection: null,
    }
   },
   watch: {
-    $route(to, from) {
+    '$route.params.id ' (to, from) {
       EventBus.$emit('insight-selection-changed',this.selectedRow = this.$route.params.id )
     }
   },
@@ -154,6 +154,8 @@ export default {
       self.dataKey =+ 1;
     })
 
+    if(this.$route.params.id)
+      {EventBus.$emit('insight-selection-changed',this.selectedRow = this.$route.params.id)};
   },
 }
 

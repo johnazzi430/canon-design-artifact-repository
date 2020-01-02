@@ -32,7 +32,7 @@
         <br>
         <label>Personas: </label>
         <div v-for="persona in form.personas" v-bind:key="persona.id">
-          <b-button pill variant="info">{{persona.title}} </b-button>
+          <b-button :to='"/persona/" +persona.id' pill variant="info">{{persona.title}} </b-button>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
@@ -136,6 +136,7 @@ export default {
         owner: '',
         product_homepage: '',
         personas: [],
+        products:[],
         product_photo: '',
         product_file: null},
       editing: false,

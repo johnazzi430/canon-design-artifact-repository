@@ -46,7 +46,7 @@
         <br>
         <label>Associated Products:</label>
         <div v-for="product in form.products" v-bind:key="product.id">
-          <b-button pill variant="info">{{product.name}}</b-button>
+          <b-button :to='"/product/" +product.id' pill variant="info">{{product.name}}</b-button>
           <!-- TODO: make it so clicking her routes to the product -->
         </div>
         <br>

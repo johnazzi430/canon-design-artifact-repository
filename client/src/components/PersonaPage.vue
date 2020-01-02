@@ -74,13 +74,14 @@ export default {
     detailKey: 0,
     dataKey: 0,
     view:'card',
-    selection: 0,
+    selection: null,
    }
   },
   watch: {
     $route(to, from) {
+      document.getElementById("right-sidepanel").style.width = "80%";
       EventBus.$emit('persona-selection-changed',this.selectedRow = this.$route.params.id )
-    }
+    },
   },
   methods: {
 
@@ -111,6 +112,9 @@ export default {
       document.getElementById("right-sidepanel").style.width = "500px"
       self.selection = selection
     })
+
+    if(this.$route.params.id)
+      {EventBus.$emit('persona-selection-changed',this.selectedRow = this.$route.params.id)};
   },
 }
 

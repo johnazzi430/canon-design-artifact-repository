@@ -61,7 +61,7 @@ const router =  new Router({
       children:[
         {
           path: ':id',
-          component: InsightsPage
+          component: InsightsPage,
         }
       ]
     },
