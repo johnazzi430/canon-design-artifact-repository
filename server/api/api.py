@@ -3,14 +3,15 @@ import secrets
 import json
 import sqlite3
 import psycopg2
-import datetime
 import sys
-from flask import Flask , flash, redirect, render_template, session
+from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
 from flask_cors import CORS
 from sqlalchemy.orm import joinedload
-from sqlite3 import Error
+from datetime import datetime, timedelta
+from functools import wraps
+import jwt
 import base64
 import io
 from .models import *
@@ -18,16 +19,8 @@ from .models import *
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
-## define database connection - should be moved to config
-def db_connect():
-#    conn = psycopg2.connect(host="localhost",dbname="test", user="postgres", password="mypass01", port=5111)
-    conn = sqlite3.connect('server/data/data.db')
-    return conn
-
-# pgloader
 
 ##-------------------------- PERSONA API
-
 
 ## GET ALL
 @api.route("/persona-table", methods = ['GET'])
@@ -135,7 +128,6 @@ def persona_table_put_by_id(id):
 
 ##-------------------------- FILE API
 
-
 @api.route("/persona/files/<int:id>" , methods = ['GET'])
 def personas_file_get(id):
     if request.args.get('file_id') != None:
@@ -175,7 +167,6 @@ def persona_file_delete(id):
         return 'A file id must be selected' , 404
 
 
-## TODO: delete files
 
 ##-------------------------- PRODUCT API
 
@@ -260,6 +251,8 @@ def product_table_put_by_id(id):
     db.session.add(product_comments)
     db.session.commit()
     return request.json, 201
+
+
 
 ##-------------------------- INSIGHTS API
 
@@ -351,43 +344,43 @@ def insights_put(id):
     return request.json, 201
 
 
+@api.route("/insights/files/<int:id>" , methods = ['GET'])
+def insights_file_get(id):
+    if request.args.get('file_id') != None:
+        file = InsightFile.query \
+                .filter(InsightFile.id == request.args.get('file_id')) \
+                .first()
+        response = make_response(file.file)
+        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
+        return response
+    else:
+        files = InsightFile.query.filter(InsightFile.source_id == id).all()
+        return json.dumps(insightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
-@api.route("/insights/<int:id>/files" , methods = ['GET'])
-def insight_file_get(id):
-    with db_connect() as conn:
-        c = conn.cursor()
-        if request.args.get('file_id') != None:
-            file_id = int(request.args.get('file_id'))
-            record = c.execute("""SELECT filename, file FROM INSIGHT_FILES WHERE id = ?""",[file_id]).fetchall()
-            filename = record[0][0]
-            file = record[0][1]
-            response = make_response(file)
-            response.headers.set('Content-Type', 'multipart/form-data ')
-            response.headers.set(
-                    'Content-Disposition', 'attachment', filename='%s.jpg' % id)
-            return response
-        else:
-            #Return a Json containing the file descriptions
-            c.execute("""SELECT id,filename,filetype,source_id FROM INSIGHT_FILES WHERE source_id = ?""",[id])
-            record = c.fetchall()
-            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
-            return json.dumps(data)
+@api.route("/insights/files/<int:id>" , methods = ['POST'])
+def insights_file_upload(id):
+    file = InsightFile(
+            source_id = id,
+            file = request.files['file'].read(),
+            filename = request.files['file'].filename,
+            filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
+    db.session.add(file)
+    db.session.commit()
+    return 'success', 201
 
-
-@api.route("/insights/<int:id>/files" , methods = ['POST'])
-def insight_file_upload(id):
-    print(request.files['file'])
-    with db_connect() as conn:
-        c = conn.cursor()
-        file = request.files["file"].read() #BLOB the data
-        filename = request.files["file"].filename
-        filetype = filename.rsplit('.', 1)[1].lower()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_FILES ").fetchall()[0][0]
-        c.execute("""INSERT INTO INSIGHT_FILES
-            (id,filename,file,filetype,source_id)
-            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
-        conn.commit()
+@api.route("/insights/files/<int:id>" , methods = ['DELETE'])
+def insight_file_delete(id):
+    if request.args.get('file_id') != None:
+        file = InsightFile.query \
+                .filter(InsightFile.id == request.args.get('file_id')) \
+                .first()
+        db.session.delete(file)
+        db.session.flush()
+        db.session.commit()
         return 'success', 201
+    else:
+        return 'A file id must be selected' , 404
 
 
 
@@ -468,40 +461,64 @@ def insight_comments_post(id):
 ## AUTHORIZATION
 from werkzeug.security import generate_password_hash , check_password_hash
 
-@api.route('/users/auth', methods = ['POST'])
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+
+        if not token:
+            return jsonify({"message" : "token is missing"})
+
+        try:
+            data = jwt.decode(token, app_config['SECRET_KEY'])
+        except:
+            return jsonify({"message" : "token is invalid"})
+
+        return f(*args, **kwargs)
+    return decorated
+
+@api.route('/login', methods = ['GET'])
+@token_required
+def protected():
+    foo = "foo"
+    return 'did it work?'
+
+@api.route('/login', methods = ['POST'])
 def authenticate_user():
     username = request.json.get('username')
     password = request.json.get('password')
-    # if username is None or password is None:
-    #     return "missing information"
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
-        conn.commit()
-        if result != []:
-            if check_password_hash(result[0][1],password) == True:
-                return jsonify( { 'username': username , 'authenticated' : True , 'role': result[0][2]} )
-            else:
-                return jsonify( { 'username': username , 'authenticated' : False} )
-        else:
-            return jsonify( { 'username': username , 'authenticated' : False} )
+    user = User.query.filter_by(username = username).first()
+    if not user or not user.verify_password(password):
+        return jsonify( { 'username': username , 'authenticated' : False} )
+    g.user = user
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    return jsonify( {"token" : token.decode('UTF-8')})
+
+@api.route('/refresh', methods = ['GET'])
+@token_required
+def refresh_token():
+    request.json.get('username')
+    user = User.query.filter_by(username = username).first()
+    g.user = user
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+    return jsonify( {"token" : token.decode('UTF-8')})
+
 #
 @api.route('/users', methods = ['POST'])
 def add_user():
     username = request.json.get('username')
     password = request.json.get('password')
-    password_hash = generate_password_hash(password)
-    with db_connect() as conn:
-        c = conn.cursor()
-        check_username = (c.execute("SELECT user_id FROM USERS where username =?" , [username]).fetchall() == [])
-        if check_username == True:
-            last_id = c.execute("SELECT MAX(user_id) as last_id FROM USERS ").fetchall()[0][0]
-            data = [ last_id +1 , username , password_hash , None]
-            c.execute(""" INSERT INTO USERS (user_id,username,password_hash,role) VALUES (?,?,?,?)""" , data)
-            conn.commit()
-            return jsonify( { 'username': username  , 'authenticated' : True} )
-        else:
-            return 'this user already exists'
+    if username is None or password is None:
+        abort(400) # missing arguments
+    if User.query.filter_by(username = username).first() is not None:
+        abort(400) # existing user
+    user = User(username = username)
+    user.hash_password(password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify( { 'username': username  , 'authenticated' : True} )
 
 
 ## TODO NOT WORKING?
@@ -510,36 +527,32 @@ def reset_password():
     username = request.json.get('username')
     current_password = request.json.get('current_password')
     new_password = request.json.get('new_password')
-    password_hash = generate_password_hash(new_password)
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT username, password_hash FROM USERS where username =?" , [username]).fetchall()
-        if check_password_hash(result[0][1], current_password ) == True:
-            c = conn.cursor()
-            c.execute("UPDATE USERS  SET password_hash = ? WHERE username = ?", [ password_hash , username ])
-            conn.commit()
-            return jsonify( { 'username': username  , 'authenticated' : True , 'password_changed' : True} )
-        else:
-            return 'password incorrect'
+    user = User.query.filter_by(username = username).first()
+    if not user or not user.verify_password(current_password):
+        return jsonify( { 'message': "current password incorrect"} )
+    user.hash_password(new_password)
+    db.session.commit()
+
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    return jsonify( {"token" : token.decode('UTF-8')})
 
 @api.route('/users', methods = ['GET'])
 def get_user_data():
-    with db_connect() as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT user_id , username, role FROM USERS ")
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    users = User.query.all()
+    return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
+
+@api.route('/users/<int:user_id>', methods = ['GET'])
+def get_user_data_by_id(user_id):
+    user = User.query.filter_by(user_id = user_id).all()
+    return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
 
 
-@api.route('/users/admin', methods = ['PUT'])
-def admin_user():
-    username = request.json.get('username')
-    new_role = request.json.get('role')
-    if request.json.get('admin').lower() == 'admin':
-        with db_connect() as conn:
-            c = conn.cursor()
-            c.execute("UPDATE USERS SET role = ? WHERE username = ?", [ new_role, username])
-            conn.commit()
-            return jsonify( { 'username': username  , 'role' : new_role})
-    else:
-        return "user must be an admin" , 401
+@api.route('/users/<int:user_id>', methods = ['PUT'])
+def admin_user(user_id):
+    data = request.get_json()
+    user = User.query.filter_by(user_id = user_id).first()
+    for key in list(data.keys()):
+        setattr(user, key , data[key]) #SET UPCHANGE
+    db.session.commit()
+    return request.json, 201

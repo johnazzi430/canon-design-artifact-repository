@@ -81,7 +81,7 @@ export default {
       if(self.input.username != "" && self.input.password != "") {
         axios({
             method: 'post',
-            url: '/api/users/auth',
+            url: '/api/login',
             data: self.input,
             header: {
               "Content-Type":"application/json"
@@ -89,7 +89,7 @@ export default {
           })
         .then(function (response) {
             console.log(response);
-            self.input.authenticated = response.data.authenticated
+            self.input.authenticated = response.data
             if ( self.input.authenticated === true) {
               self.$emit("authenticated", true);
               store.state.authenticated = true;
