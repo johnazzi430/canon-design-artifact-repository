@@ -27,21 +27,22 @@
         </div>
         <label for="function">Owner</label>
         <p class="text-wrap"> {{form.owner}} </p>
-        <label> Product Homepage</label>
+        <label>Product Homepage</label>
         <p> {{form.product_homepage}} </p>
+        <br>
+        <label>Personas: </label>
         <div v-for="persona in form.personas" v-bind:key="persona.id">
           <b-button pill variant="info">{{persona.title}} </b-button>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
+      <hr>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
-
       <hr>
       <h4>Comments</h4>
       <comment-view :key='form.id'
                     v-bind:sourceTable="source"
                     v-bind:itemId='form.id'></comment-view>
-
     </div>
       <div  id='product-detail-edit' v-else>
         <h1 v-if='form.id !== null'>Edit</h1>
@@ -65,10 +66,11 @@
           <label for="function">Owner</label>
           <b-form-input v-model="form.owner"
               @change="onInputChanged('owner')"></b-form-input>
-          <label> Product Homepage</label>
+          <label>Product Homepage</label>
           <b-form-input v-model="form.product_homepage"
               @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
+          <label>Choose Personas</label>
           <multiselect
                       @change="onInputChanged('personas')"
                       v-model="form.personas" :options="persona_options"

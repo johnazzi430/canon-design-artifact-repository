@@ -8,8 +8,10 @@
       </b-alert>
       <div id="login" v-if='form_mode === "login"'>
         <h1>Login</h1>
-          <input type="text" name="username" v-model="input.username" placeholder="Email" />
-          <input type="password" name="password" v-model="input.password" placeholder="Password" />
+          <input required type="text" name="username"
+            v-model="input.username" placeholder="Email" />
+          <input required id='password' type="password" name="password"
+            v-model="input.password" placeholder="Password" />
           <div class="row">
             <button type="button" class="btn btn-outline-secondary"
               v-on:click="login()">login</button>
@@ -21,10 +23,9 @@
       </div>
       <div id="login" v-else-if='form_mode === "register"'>
         <h1>Register</h1>
-        <div class="row">
-          <input type="text" name="username" v-model="input.username" placeholder="Email" />
-          <input type="password" name="password" v-model="input.password" placeholder="Password" />
-        </div>
+        <input type="text" name="username" v-model="input.username" placeholder="Email" />
+        <input id='password' type="password" name="password"
+          v-model="input.password" placeholder="Password" />
         <div class="row">
           <button type="button" class="btn btn-outline-secondary"
             v-on:click="changeView('login')">cancel</button>
@@ -34,13 +35,18 @@
       </div>
       <div id="login" v-else-if='form_mode === "reset_password"'>
         <h1>Reset Password</h1>
-          <input type="text" name="username" v-model="input.username" placeholder="Email" />
-          <input type="password" name="password" v-model="input.password" placeholder="Password" />
+          <input type="text" name="username" v-model="input.username" placeholder="Email" /><br>
+          <input id='password' type="password" name="password"
+              v-model="input.password" placeholder="Current Password" /><br>
+          <input type="password" name="password"
+              v-model="input.new_password" placeholder="New Password" /><br>
           <div class="row">
             <button type="button" class="btn btn-outline-secondary"
             v-on:click="changeView('login')">back</button>
             <button type="button" class="btn btn-outline-secondary"
             v-on:click="changeView('reset_password')">reset password</button>
+            <button type="button" class="btn btn-outline-secondary"
+            v-on:click="changeView('reset_password')">forgot password?</button>
           </div>
       </div>
 
@@ -58,7 +64,8 @@ export default {
     return {
       input: {
         username: "",
-        password: ""
+        password: "",
+        new_password:""
       },
       alert : {
         show : false,
@@ -75,47 +82,65 @@ export default {
     },
 
 
-    login() {
-      const self = this
+    login: function() {
+      const self = this;
 
-      if(self.input.username != "" && self.input.password != "") {
-        axios({
-            method: 'post',
-            url: '/api/login',
-            data: self.input,
-            header: {
-              "Content-Type":"application/json"
-            }
-          })
-        .then(function (response) {
-            console.log(response);
-            self.input.authenticated = response.data
-            if ( self.input.authenticated === true) {
-              self.$emit("authenticated", true);
-              store.state.authenticated = true;
-              store.state.role= response.data.role;
-              console.log("succesfull login")
-              self.alert.show = true;
-              self.alert.text = "logged in...";
-              self.alert.variant = 'success';
-              self.$router.push("/")
-            }
-            else {
-              self.alert.show = true;
-              self.alert.text = "The username and / or password is incorrect";
-              self.alert.variant = 'danger';
-              console.log("The username and / or password is incorrect");
-            }
-          })
-        .catch(function (error) {
-            console.log(error);})
-      }
-      else {
-        self.alert.show = true;
-        self.alert.text = "A username and password must be present";
-        self.alert.variant = 'danger';
-        console.log("A username and password must be present");
-      }
+      let username = this.input.username
+      let password = this.input.password
+
+      this.$store.dispatch('login',{username,password})
+      .then(function (response) {
+           self.alert.show = true;
+           self.alert.text = "logged in...";
+           self.alert.variant = 'success';
+           self.$router.push("/")
+      })
+      .catch(function (error) {
+          console.log(error);
+          self.alert.show = true;
+          self.alert.text = "The username and / or password is incorrect";
+          self.alert.variant = 'danger';
+          console.log("The username and / or password is incorrect");
+           })
+
+      // if(self.input.username != "" && self.input.password != "") {
+      //   axios({
+      //       method: 'post',
+      //       url: '/api/login',
+      //       data: self.input,
+      //       header: {
+      //         "Content-Type":"application/json"
+      //       }
+      //     })
+      //   .then(function (response) {
+      //       console.log(response);
+      //       self.input.authenticated = response.data
+      //       if ( self.input.authenticated === true) {
+      //         self.$emit("authenticated", true);
+      //         store.state.authenticated = true;
+      //         store.state.role= response.data.role;
+      //         console.log("succesfull login")
+      //         self.alert.show = true;
+      //         self.alert.text = "logged in...";
+      //         self.alert.variant = 'success';
+      //         self.$router.push("/")
+      //       }
+      //       else {
+      //         self.alert.show = true;
+      //         self.alert.text = "The username and / or password is incorrect";
+      //         self.alert.variant = 'danger';
+      //         console.log("The username and / or password is incorrect");
+      //       }
+      //     })
+      //   .catch(function (error) {
+      //       console.log(error);})
+      // }
+      // else {
+      //   self.alert.show = true;
+      //   self.alert.text = "A username and password must be present";
+      //   self.alert.variant = 'danger';
+      //   console.log("A username and password must be present");
+      // }
     },
 
     register() {

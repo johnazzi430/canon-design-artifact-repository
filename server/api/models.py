@@ -36,7 +36,7 @@ class Product(db.Model):
     metrics = db.Column(db.Text)
     goals = db.Column(db.Text)
     features = db.Column(db.Text)
-    archived = db.Column(db.Boolean)
+    archived = db.Column(db.Boolean, default=False)
     owner = db.Column(db.Text)
     last_update  = db.Column(db.DateTime,
                             default=datetime.utcnow,

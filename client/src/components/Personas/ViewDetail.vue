@@ -43,17 +43,19 @@
           <div class="bar buss_val"
           :style="{width:form.buss_val / 5 *100 + '%'}">{{form.buss_val}}</div>
         </div>
-        <label>Associated Products</label>
+        <br>
+        <label>Associated Products:</label>
         <div v-for="product in form.products" v-bind:key="product.id">
           <b-button pill variant="info">{{product.name}}</b-button>
           <!-- TODO: make it so clicking her routes to the product -->
         </div>
-        <label>Associated Roles</label>
+        <br>
+        <label>Associated Roles:</label>
         <div v-for="role in form.roles" v-bind:key="role.id">
           <b-badge pill variant="success">{{role.name}}</b-badge>
         </div>
         <br>
-        <label>Files</label>
+        <label>Files:</label>
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
           <button
@@ -61,6 +63,7 @@
             <i class="fa fa-file"></i>
           </button>
         </div>
+        <hr>
 
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
@@ -204,14 +207,14 @@ export default {
         id : null,
         name: '',
         title: '',
-        external: '',
-        market_size: '',
+        external: null,
+        market_size: null,
         quote: '',
         job_function: '',
         needs: '',
         wants: '',
         pain_point: '',
-        buss_val: '',
+        buss_val: null,
         revision: '',
         products: [],
         roles: [] ,
@@ -243,41 +246,40 @@ export default {
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('persona-selection-changed', function(selection){
+          var get_url = "/api/persona-table/";
+          get_url += selection;
 
-        var get_url = "/api/persona-table/";
-        get_url += selection;
+          axios.get(get_url)
+          .then(response => {
+              self.form.id = selection;
+              self.form.name = response.data[0].name;
+              self.form.title= response.data[0].title;
+              self.form.external= response.data[0].external;
+              self.form.market_size= response.data[0].market_size;
+              self.form.quote = response.data[0].quote;
+              self.form.job_function = response.data[0].job_function;
+              self.form.needs = response.data[0].needs;
+              self.form.wants = response.data[0].wants;
+              self.form.pain_point= response.data[0].pain_point;
+              self.form.buss_val= response.data[0].buss_val;
+              self.form.revision= response.data[0].revision;
+              self.form.products = response.data[0].products;
+              self.form.roles = response.data[0].roles;
+              self.editing = false;
+              self.edited_fields.length = 0 ;
+            }
+          )
+          .catch(error => console.log(error))
 
-        axios.get(get_url)
-        .then(response => {
-            self.form.id = selection;
-            self.form.name = response.data[0].name;
-            self.form.title= response.data[0].title;
-            self.form.external= response.data[0].external;
-            self.form.market_size= response.data[0].market_size;
-            self.form.quote = response.data[0].quote;
-            self.form.job_function = response.data[0].job_function;
-            self.form.needs = response.data[0].needs;
-            self.form.wants = response.data[0].wants;
-            self.form.pain_point= response.data[0].pain_point;
-            self.form.buss_val= response.data[0].buss_val;
-            self.form.revision= response.data[0].revision;
-            self.form.products = response.data[0].products;
-            self.form.roles = response.data[0].roles;
-            self.editing = false;
-            self.edited_fields.length = 0 ;
-          }
-        )
-        .catch(error => console.log(error))
+          //GET FILES
+          axios({
+            method: 'get',
+            url: '/api/persona/files/' + selection,
+          }).then(function(response){
+            self.uploadedFiles = response.data;
+          })
 
-        //GET FILES
-      //   axios({
-      //     method: 'get',
-      //     url: '/api/persona/files/' + selection,
-      //   }).then(function(response){
-      //     self.uploadedFiles = response.data;
-      //   })
-      //
-         });
+        });
       },
       methods: {
 

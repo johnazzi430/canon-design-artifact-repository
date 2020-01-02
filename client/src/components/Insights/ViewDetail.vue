@@ -105,7 +105,7 @@
             <button href="javascript:void(0)" v-on:click="submitFiles()">Submit</button>
           </div>
           <br>
-          <label for="persona-select">Persona:    </label>
+          <label for="persona-select">Choose Personas: </label>
           <br>
           <multiselect
                       @input="onInputChanged('personas')"
@@ -124,6 +124,7 @@
           </multiselect>
           <label for="product-select">Product:    </label>
           <br>
+          <label for="">Choose Products</label>
           <multiselect
                       @input="onInputChanged('products')"
                       v-model="form.products" :options="product_options"
@@ -183,14 +184,14 @@ export default {
         description: '',
         content: '',
         file: null,
-        experience_vector: '',
-        magnitude: '',
-        frequency: '',
-        emotions: '',
+        experience_vector: Neutral,
+        magnitude: null,
+        frequency: null,
+        emotions: null,
         props: '',
         journey: '',
-        creator_id: '',
-        revision: '',
+        creator_id: null,
+        revision: null,
         products: [],
         personas: []
       },
