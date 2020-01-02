@@ -1,9 +1,9 @@
 /*eslint-disable */
 import Vue from 'vue';
 import App from './App.vue';
-import BootstrapVue from 'bootstrap-vue'
+import BootstrapVue from 'bootstrap-vue';
 import Multiselect from 'vue-multiselect';
-import axios from 'axios'
+import Axios from 'axios';
 import router from './router';
 import store from './store';
 
@@ -20,6 +20,12 @@ Vue.config.productionTip = false;
 Vue.use(BootstrapVue)
 
 Vue.component('multiselect', Multiselect)
+
+Vue.prototype.$http = Axios;
+const token = localStorage.getItem('token')
+if (token) {
+  Vue.prototype.$http.defaults.headers.common['Authorization'] = token;
+}
 
 new Vue({
   router,

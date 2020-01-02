@@ -76,6 +76,11 @@ export default {
      selection : null
    }
   },
+  watch: {
+    $route(to, from) {
+      EventBus.$emit('product-selection-changed',this.selectedRow = this.$route.params.id )
+    }
+  },
   methods: {
 
     expandDetail() {

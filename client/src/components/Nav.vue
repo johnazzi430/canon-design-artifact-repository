@@ -14,8 +14,10 @@
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
           <!-- <b-nav-item disabled to="/insights">Insights</b-nav-item> -->
-          <b-nav-item to="/login">Login</b-nav-item>
-          <b-nav-item v-if="role === 'admin'" to="/admin"></b-nav-item>
+          <b-nav-item>Playlist</b-nav-item>
+          <b-nav-item to="/login">About</b-nav-item>
+          <b-nav-item v-if="isLoggedIn" @click='logout'>Logout</b-nav-item>
+          <b-nav-item v-if="userRole === 'admin'" to="/admin">Admin</b-nav-item>
         </div>
       </b-navbar>
     </div>
@@ -30,6 +32,16 @@ export default {
     return {
       role : null
     }
+  },
+  computed :{
+    isLoggedIn : function() {return this.$store.getters.isLoggedIn},
+    userRole : function() {return this.$store.getters.userRole}
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logout')
+      this.$router.push('/login')
+    },
   },
   mounted() {
     this.role = this.$store.state.role

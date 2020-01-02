@@ -4,7 +4,7 @@
   <div class="container" :key="commentKey">
     <div class="col-5" v-for="comment in comments" v-bind:key="comment.id">
       <div class="" v-if="comment.action === null">
-        <span> {{comment.creator_id}} commented on {{comment.create_date}}
+        <span> {{comment.creator_id}} commented on {{comment.create_date | formatDate}}
         </span>
         <br>
         <p class="well">
@@ -13,7 +13,8 @@
       </div>
       <div class="" v-else>
         <i class="fa fa-edit"></i>
-        <span> {{comment.creator_id}} {{comment.action}} {{comment.create_date}}
+        <span> {{comment.creator_id}} {{comment.action}}
+          {{comment.create_date | formatDate}}
         </span>
       </div>
     </div>
@@ -62,6 +63,13 @@ export default {
     });
   },
   methods:{
+
+    formatDate(value) {
+      if (value) {
+        return moment(String(value)).format('MM/DD/YYYY')
+      }
+    },
+
      async addComment() {
 
         var None = null

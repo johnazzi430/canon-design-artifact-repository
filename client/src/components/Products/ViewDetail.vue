@@ -27,21 +27,22 @@
         </div>
         <label for="function">Owner</label>
         <p class="text-wrap"> {{form.owner}} </p>
-        <label> Product Homepage</label>
+        <label>Product Homepage</label>
         <p> {{form.product_homepage}} </p>
-        <div v-for="persona in form.personas" v-bind:key="persona.persona_id">
-          <b-button pill variant="info">{{persona.persona_title}} </b-button>
+        <br>
+        <label>Personas: </label>
+        <div v-for="persona in form.personas" v-bind:key="persona.id">
+          <b-button pill variant="info">{{persona.title}} </b-button>
           <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
+      <hr>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
-
       <hr>
       <h4>Comments</h4>
       <comment-view :key='form.id'
                     v-bind:sourceTable="source"
                     v-bind:itemId='form.id'></comment-view>
-
     </div>
       <div  id='product-detail-edit' v-else>
         <h1 v-if='form.id !== null'>Edit</h1>
@@ -65,17 +66,18 @@
           <label for="function">Owner</label>
           <b-form-input v-model="form.owner"
               @change="onInputChanged('owner')"></b-form-input>
-          <label> Product Homepage</label>
+          <label>Product Homepage</label>
           <b-form-input v-model="form.product_homepage"
               @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
+          <label>Choose Personas</label>
           <multiselect
                       @change="onInputChanged('personas')"
                       v-model="form.personas" :options="persona_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="persona_title"
-                      track-by="persona_id" :preselect-first="false">
+                      placeholder="Pick some" label="title"
+                      track-by="id" :preselect-first="false">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -85,7 +87,7 @@
             </template>
           </multiselect>
           <br>
-          <div >Selected: <strong>{{ form.persona}}</strong></div>
+          <div >Selected: <strong>{{form.personas.title}}</strong></div>
         </div>
         <div >
           <label for="product_file">Add File</label>
@@ -168,7 +170,8 @@ export default {
             self.form.features = response.data[0].features;
             self.form.owner = response.data[0].owner;
             self.form.product_homepage = response.data[0].product_homepage;
-            self.form.revision= response.data[0].revision;
+            self.form.revision = response.data[0].revision;
+            self.form.personas = response.data[0].personas;
             self.editing = false;
             self.edited_fields.length = 0 ;
           }
@@ -184,29 +187,15 @@ export default {
 
         async onEdit() {
           var key;
-          var key;
           for (key of this.edited_fields) {
-            if (key === 'personas') {
-              const resp = await axios({
-                  method: 'post',
-                  url: '/api/persona-product',
-                  data: this.form,
-                  params : {
-                    table : "product"
-                    }
-                  })
-            }
-            else {
              await axios({
                   method: 'put',
                   url: '/api/product-table/' + this.form.id ,
                   data: {
-                    'id' : this.form.id,
                      [key] : this.form[key]
-                  }
+                   }
                   })
                 };
-            }
 
          EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -215,7 +204,7 @@ export default {
 
        async onAdd(evt) {
          evt.preventDefault()
-         await xios({
+         await axios({
              method: 'post',
              url: '/api/product-table',
              data: this.form, })
@@ -223,17 +212,6 @@ export default {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
-
-        if (this.edited_fields.match('personas')) {
-              await axios({
-                   method: 'post',
-                   url: '/api/persona-product',
-                   data: this.form,
-                   params : {
-                     table : "product"
-                     }
-                   })
-         };
 
          EventBus.$emit('product-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";

@@ -2,672 +2,450 @@ import os
 import secrets
 import json
 import sqlite3
-import datetime
+import psycopg2
 import sys
-from flask import Flask , flash, redirect, render_template, session
+from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
 from flask_cors import CORS
-from sqlite3 import Error
+from sqlalchemy.orm import joinedload
+from datetime import datetime, timedelta
+from functools import wraps
+import jwt
 import base64
 import io
+from .models import *
 
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
-db = 'server/data/data.db'
-
-
-## ---------------- SERVE STATIC
-#
-# @api.route('/', defaults={'path': ''})
-# @api.route('/<path:path>')
-# def catch_all(path):
-#     if app.debug:
-#         return requests.get('http://localhost:8080/{}'.format(path)).text
-#     return render_template("index.html")
-#
-#
-
-
-
-
-
 ##-------------------------- PERSONA API
-
-
-## METHODS
-def convertToBinaryData(filename):
-    #Convert digital data to binary format
-    with open(filename, 'rb') as file:
-        blobData = file.read()
-    return blobData
-
 
 ## GET ALL
 @api.route("/persona-table", methods = ['GET'])
 def persona_table():
     if request.args.get('filter') == "False" :
-        with sqlite3.connect(db) as conn:
-            c = conn.cursor()
-            result = c.execute("SELECT * FROM PERSONA") # TODO: WHERE archived = 0
-            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-            return json.dumps(data)
-    else :
-        with sqlite3.connect(db) as conn:
-            c = conn.cursor()
-            ## ONLY GET THE LAST REVISION WHERE NOT ARCHIVED
-            result = c.execute("""SELECT
-                                PERSONA.*
-                            FROM
-                                ( SELECT
-                                    name,
-                                    MAX(revision) as last_revision
-                                FROM PERSONA
-                                GROUP BY name) AS LAST
-                            INNER JOIN
-                                PERSONA
-                            ON
-                                PERSONA.name = LAST.name AND
-                                PERSONA.revision = LAST.last_revision
-                            WHERE
-                                PERSONA.archived = 0""")
-            data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-            return json.dumps(data)
+        personas = Persona.query.order_by(Persona.id).all()
+        return json.dumps(PersonaSchema().dump(personas,many=True))
+    else:
+        personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+        return json.dumps(PersonaSchema().dump(personas,many=True))
 
 ## GET PERSONA LIST
 @api.route("/personas", methods = ['GET'])
 def persona_list():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = 0")
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+#    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
+    personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+    return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
+
+## GET BY ID
+@api.route("/persona-table/<int:id>" , methods = ['GET'])
+def persona_table_by_id(id):
+    persona = Persona.query.filter(Persona.id == id) \
+            .options(joinedload('roles') ,joinedload('products') ) \
+            .all()
+    return json.dumps(PersonaSchema().dump(persona,many=True))
 
 
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
-    current_app.logger.info(request.json['name'])
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA ").fetchall()[0][0]
-        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PERSONA where name=?", [request.json['name']]).fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['name'],
-                request.json['title'] ,
-                request.json['quote'],
-                request.json['job_function'] ,
-                request.json['needs'] ,
-                request.json['wants'] ,
-                request.json['pain_point'] ,
-                request.json['external'] ,
-                request.json['market_size'] ,
-                request.json['buss_val'] ,
-                datetime.datetime.now(),               # Record Date
-                last_revision,                          # Revision
-                None,                                # creator_id   TODO
-                None,                                # access_group TODO
-                0,                                     # archived
-                request.json['persona_file'],
-                request.json['persona_picture']]
+    persona = Persona(                          ## SET ID
+                name = request.json['name'],
+                title = request.json['title'] ,
+                quote = request.json['quote'],
+                job_function = request.json['job_function'] ,
+                needs = request.json['needs'] ,
+                wants = request.json['wants'] ,
+                pain_point = request.json['pain_point'] ,
+                external = request.json['external'] ,
+                market_size = request.json['market_size'] ,
+                buss_val = request.json['buss_val'] ,
+                revision = 0,                          # Revision
+                creator_id = None,          # creator_id   TODO
+                access_group = 0,           # access_group TODO
+                persona_file = None,
+                persona_picture = None)
 
-        c.execute("""INSERT INTO PERSONA
-        (id,
-        name,
-        title,
-        quote,
-        job_function,
-        needs,
-        wants,
-        pain_point,
-        external,
-        market_size,
-        buss_val,
-        create_date,
-        revision,
-        creator_id,
-        access_group,
-        archived,
-        persona_file,
-        persona_picture)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
+    if request.json.get('roles') != None:
+        roles = []
+        for role in request.json['roles']:
+            roles.append(PersonaRoles.query.get(role['id']))
+        persona.roles = roles
 
-## GET BY ID
-@api.route("/persona-table/<int:id>" , methods = ['GET'])
-def persona_table_by_id(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        persona = c.execute("SELECT * FROM PERSONA WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in persona.description], row)) for row in persona]
-        if id != 0 or id != None:
-            persona_products = c.execute("""SELECT
-                                        PERS_PROD_REL.product_id as product_id,
-                                        PRODUCT.name as product_name
-                                        FROM PERS_PROD_REL
-                                        INNER JOIN PRODUCT ON PRODUCT.id = PERS_PROD_REL.product_id
-                                        WHERE persona_id = :id """, {'id' : id})
-            data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_products]
-            data[0]['products'] = data_add
-            persona_roles = c.execute("""SELECT
-                                        PERSONA_ROLES_REL.persona_role_id as persona_role_id,
-                                        PERSONA_ROLES.name as persona_role_name
-                                        FROM PERSONA_ROLES_REL
-                                        INNER JOIN PERSONA_ROLES ON PERSONA_ROLES.id = PERSONA_ROLES_REL.persona_role_id
-                                        WHERE persona_id = :id """, {'id' : id})
-            data_add = [dict(zip([key[0] for key in persona.description], row)) for row in persona_roles]
-            data[0]['roles'] = data_add
-            return json.dumps(data), 201
-        else:
-            return json.dumps([{'id': None}])
+    if request.json.get('products') != None:
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        persona.products = products
+
+    db.session.add(persona)
+    db.session.commit()
+    return request.json, 201
+
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
+
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        SQL = "UPDATE PERSONA SET " + key + " = ? WHERE id = ? "
-        # SQL = SQL + "OUTPUT inserted.{}"
-        #
-        # SQL = """UPDATE PERSONA SET {} = ? WHERE id = ?
-        #         OUTPUT inserted.{}
-        #                inserted.persona_id
-        #                deleted.{}
-        #                INTO PERSONA_COMMENTS"
-        #
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    key = list(data.keys())[0]
+    persona = Persona.query.filter(Persona.id == id).first()
+
+    if key == 'roles':
+        roles = []
+        for role in request.json['roles']:
+            roles.append(PersonaRoles.query.get(role['id']))
+        persona.roles = roles
+        upchange = ""
+        downchange = ""
+    elif key == 'products' :
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        persona.products = products
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(persona, key) #GET DOWNCHANGE
+        setattr(persona, key , upchange) #SET UPCHANGE
+
+    ## Add comment to log changes and edits
+    setattr(persona, 'revision' , persona.revision + 1)
+    persona_comments = PersonaComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(persona_comments)
+    db.session.commit()
     return request.json, 201
 
 
 ##-------------------------- FILE API
 
-### TODO: WORKS! BUT NEEDS A LOT OF CLEANUP
 @api.route("/persona/files/<int:id>" , methods = ['GET'])
 def personas_file_get(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        if request.args.get('file_id') != None:
-            file_id = int(request.args.get('file_id'))
-            record = c.execute("""SELECT filename, file FROM PERSONA_FILES WHERE id = ?""",[file_id]).fetchall()
-            filename = record[0][0]
-            file = record[0][1]
-            response = make_response(file)
-            response.headers.set('Content-Type', 'multipart/form-data ')
-            response.headers.set(
-                    'Content-Disposition', 'attachment', filename=filename)
-            return response
-        else:
-            #Return a Json containing the file descriptions
-            c.execute("""SELECT id,filename,filetype,source_id FROM PERSONA_FILES WHERE source_id = ?""",[id])
-            record = c.fetchall()
-            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
-            return json.dumps(data)
-
+    if request.args.get('file_id') != None:
+        file = PersonaFile.query \
+                .filter(PersonaFile.id == request.args.get('file_id')) \
+                .first()
+        response = make_response(file.file)
+        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
+        return response
+    else:
+        files = PersonaFile.query.filter(PersonaFile.source_id == id).all()
+        return json.dumps(PersonaFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/persona/files/<int:id>" , methods = ['POST'])
 def personas_file_upload(id):
-    print(request.files['file'])
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        file = request.files["file"].read() #BLOB the data
-        filename = request.files["file"].filename
-        filetype = filename.rsplit('.', 1)[1].lower()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_FILES ").fetchall()[0][0]
-        c.execute("""INSERT INTO PERSONA_FILES
-            (id,filename,file,filetype,source_id)
-            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
-        conn.commit()
-        return 'success', 201
+    file = PersonaFile(
+            source_id = id,
+            file = request.files['file'].read(),
+            filename = request.files['file'].filename,
+            filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
+    db.session.add(file)
+    db.session.commit()
+    return 'success', 201
 
-## TODO: delete files
+@api.route("/persona/files/<int:id>" , methods = ['DELETE'])
+def persona_file_delete(id):
+    if request.args.get('file_id') != None:
+        file = PersonaFile.query \
+                .filter(PersonaFile.id == request.args.get('file_id')) \
+                .first()
+        db.session.delete(file)
+        db.session.flush()
+        db.session.commit()
+        return 'success', 201
+    else:
+        return 'A file id must be selected' , 404
+
+
 
 ##-------------------------- PRODUCT API
+
+
 
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
 def product_list():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT id as product_id, name as product_name FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+    return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product-table", methods = ['GET'])
 def product_table():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT WHERE archived = 0") # TODO: WHERE archived = 0
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-## POST NEW
-@api.route("/product-table" , methods = ['POST'])
-def product_post():
-    current_app.logger.info(request.json['name'])
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT ").fetchall()[0][0]
-        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM PRODUCT where name=?", [request.json['name']]).fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['name'],
-                request.json['description'] ,
-                request.json['metrics'],
-                request.json['goals'] ,
-                request.json['features'] ,
-                datetime.datetime.now(),               # Record Date
-                datetime.datetime.now(),               # Record Date
-                0,                                     # archived
-                None,                                # creator_id   TODO
-                request.json['owner'],                                # access_group TODO
-                last_revision,                          # Revision
-                request.json['product_homepage']        ]
-
-        c.execute("""INSERT INTO PRODUCT
-        (id,
-        name,
-        description,
-        metrics,
-        goals,
-        features,
-        create_date,
-        last_update,
-        archived,
-        creator_id,
-        owner,
-        revision,
-        product_homepage)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
+    if request.args.get('filter') == "False" :
+        products = Product.query.order_by(Product.id).all()
+        return json.dumps(ProductSchema().dump(products,many=True))
+    else:
+        products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+        return json.dumps(ProductSchema().dump(products,many=True))
 
 ## GET BY ID
 @api.route("/product-table/<int:id>" , methods = ['GET'])
 def product_table_by_id(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    products = Product.query.filter(Product.id == id) \
+            .options(joinedload('personas')) \
+            .all()
+    return json.dumps(ProductSchema().dump(products,many=True))
+
+
+
+@api.route("/product-table" , methods = ['POST'])
+def product_post():
+    current_app.logger.info(request.json['name'])
+    product = Product(                          ## SET ID
+                name = request.json['name'],
+                description = request.json['description'] ,
+                metrics = request.json['metrics'],
+                goals = request.json['goals'] ,
+                features = request.json['features'] ,
+                owner = request.json['owner'],
+                product_homepage = request.json['product_homepage'] ,
+                creator_id = None)
+    if request.json.get('personas') != None:
+        personas =[]
+        for persona in request.json['personas']:
+            personas.append(Personas.query.get(persona['id']))
+        product.personas = personas
+
+    db.session.add(product)
+    db.session.commit()
+    return request.json, 201
 
 
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        SQL = "UPDATE PRODUCT SET " + key + " = ? WHERE id = ? "
+    key = list(data.keys())[0]
+    product = Product.query.filter(Product.id == id).first()
 
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    if key == 'personas':
+        personas = []
+        for persona in request.json['personas']:
+            personas.append(Persona.query.get(persona['id']))
+        product.roles = roles
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(product, key) #GET DOWNCHANGE
+        setattr(product, key , upchange) #SET UPCHANGE
+
+    ## Add comment to log changes and edits
+    setattr(product, 'revision' , product.revision + 1)
+    product_comments = ProductComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(product_comments)
+    db.session.commit()
     return request.json, 201
 
-##-------------------------- INSIGHTS API
 
+
+##-------------------------- INSIGHTS API
 
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
 def insights_get():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT WHERE archived = 0") # TODO: WHERE archived = 0
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    insights = Insight.query.order_by(Insight.id).filter(Insight.archived.is_(False)).all()
+    return json.dumps(InsightSchema().dump(insights,many=True))
+
+## GET BY ID
+@api.route("/insights/<int:id>" , methods = ['GET'])
+def insights_get_by_id(id):
+    insight = Insight.query.filter(Insight.id == id )\
+                .options(joinedload('personas') ,joinedload('products') ) \
+                .all()
+    return json.dumps(InsightSchema().dump(insight,many=True))
 
 ## POST NEW
 @api.route("/insights" , methods = ['POST'])
 def insights_post():
     current_app.logger.info(request.json['title'])
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT ").fetchall()[0][0]
-        last_revision = c.execute("SELECT IFNULL(MAX(revision),0)+1 as last_revision FROM INSIGHT where title=?", [request.json['title']]).fetchall()[0][0]
-        data = [last_id+1,                              ## SET ID
-                request.json['title'],
-                request.json['description'] ,
-                request.json['content'],
-                request.json['file'],                                   # content file
-                request.json['experience_vector'] ,
-                request.json['magnitude'] ,
-                request.json['frequency'] ,
-                request.json['emotions'] ,
-                request.json['props'] ,
-                request.json['journey'] ,
-                request.json['creator_id'],
-                datetime.datetime.now(),               # Record Date
-                last_revision,
-                0]                                     # archived
-        c.execute("""INSERT INTO INSIGHT
-        (id,
-        title,
-        description,
-        content,
-        file,
-        experience_vector,
-        magnitude,
-        frequency,
-        emotions,
-        props,
-        journey,
-        creator_id,
-        create_date,
-        revision,
-        archived)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
+    insight = Insight(
+            title = request.json['title'],
+            description = request.json['description'] ,
+            content = request.json['content'],
+            file = request.json['file'],                                   # content file
+            experience_vector = request.json['experience_vector'] ,
+            magnitude = request.json['magnitude'] ,
+            frequency = request.json['frequency'] ,
+            emotions = request.json['emotions'] ,
+            props = request.json['props'] ,
+            journey = request.json['journey'])
 
-## GET BY ID
-@api.route("/insights/<int:id>" , methods = ['GET'])
-def insights_get_by_id(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    ## Relatonships
+    if request.json.get('products') != None:
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        insight.products = products
+
+    if request.json.get('personas') != None:
+        personas =[]
+        for persona in request.json['personas']:
+            personas.append(Personas.query.get(persona['id']))
+        insight.personas = personas
+
+    db.session.add(insight)
+    db.session.commit()
+    return request.json, 201
 
 
 @api.route("/insights/<int:id>" , methods = ['PUT'])
 def insights_put(id):
     data = request.get_json()
-    key = list(data.keys())[1]
-        #has to take an index of a list of keys because we dont know what the key that is changing is
-        #we could modify the json being sent from the front end but idk
-    value = data[key]
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        SQL = "UPDATE INSIGHT SET " + key + " = ? WHERE id = ? "
+    key = list(data.keys())[0]
+    insight = Insight.query.filter(Insight.id == id).first()
 
-        data_values = [value , data['id']]
-        c.execute(SQL,data_values)
-        conn.commit()
+    ## Relatonships
+    if key == 'personas':
+        personas = []
+        for persona in request.json['personas']:
+            personas.append(Persona.query.get(persona['id']))
+        insight.roles = roles
+        upchange = ""
+        downchange = ""
+    elif key == 'products' :
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        insight.products = products
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(persona, key) #GET DOWNCHANGE
+        setattr(persona, key , upchange) #SET UPCHANGE
+    setattr(insight, 'revision' ,insight.revision + 1)
+
+    ## Add comment to log changes and edits
+    insight_comments = InsightComments(                          ## SET ID
+                source_id = id,
+                comment_body= None,
+                creator_id = None,
+                action = 'edited '+ key,
+                downchange = downchange,
+                upchange = upchange)
+    db.session.add(insight_comments)
+    db.session.commit()
     return request.json, 201
 
-## relationshops
-# TODO: this
-@api.route("/insights/<int:id>/<table>" , methods = ['GET'])
-def insights_get_relationship(id,table):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        if table == 'products':
-            insight_products = c.execute("""SELECT
-                                                PRODUCT.id as product_id,
-                                                PRODUCT.name as product_name
-                                            FROM INSIGHT
-                                            INNER JOIN INSIGHT_PRODUCT_REL on INSIGHT_PRODUCT_REL.insight_id = INSIGHT.id
-                                            INNER JOIN PRODUCT ON PRODUCT.id = INSIGHT_PRODUCT_REL.product_id
-                                            WHERE INSIGHT.id = :id """, {'id' : id})
-            data = [dict(zip([key[0] for key in insight_products.description], row)) for row in insight_products]
-            return json.dumps(data)
-        elif table == 'personas':
-            insight_personas = c.execute("""SELECT
-                                                PERSONA.id as persona_id,
-                                                PERSONA.title as persona_title
-                                            FROM INSIGHT
-                                            INNER JOIN INSIGHT_PERSONA_REL on INSIGHT_PERSONA_REL.insight_id = INSIGHT.id
-                                            INNER JOIN PERSONA ON PERSONA.id = INSIGHT_PERSONA_REL.persona_id
-                                            WHERE INSIGHT.id = :id """, {'id' : id})
-            data = [dict(zip([key[0] for key in insight_personas.description], row)) for row in insight_personas]
-            return json.dumps(data)
-        else:
-            return 'error' ,  401
 
+@api.route("/insights/files/<int:id>" , methods = ['GET'])
+def insights_file_get(id):
+    if request.args.get('file_id') != None:
+        file = InsightFile.query \
+                .filter(InsightFile.id == request.args.get('file_id')) \
+                .first()
+        response = make_response(file.file)
+        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
+        return response
+    else:
+        files = InsightFile.query.filter(InsightFile.source_id == id).all()
+        return json.dumps(insightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
-@api.route("/insights/<int:id>/<table>" , methods = ['POST'])
-def insights_post_relationship(id,table):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        if table == 'products':
-            c.execute( "DELETE FROM INSIGHT_PRODUCT_REL WHERE insight_id = ?;" , [id])
-            data =[]
-            for item in request.json:
-                data.append([item['product_id'],id])
-            c.executemany("INSERT INTO INSIGHT_PRODUCT_REL (product_id,insight_id) VALUES (?,?)",data)
-            conn.commit()
-            return 'success', 201
-        elif table == 'personas':
-            c.execute( "DELETE FROM INSIGHT_PERSONA_REL WHERE insight_id = ?;" , [id])
-            data =[]
-            for item in request.json:
-                data.append([item['persona_id'],id])
-            c.executemany("INSERT INTO INSIGHT_PERSONA_REL (persona_id,insight_id) VALUES (?,?)",data)
-            conn.commit()
-            return 'success', 201
-        else:
-            return 'error' ,  401
+@api.route("/insights/files/<int:id>" , methods = ['POST'])
+def insights_file_upload(id):
+    file = InsightFile(
+            source_id = id,
+            file = request.files['file'].read(),
+            filename = request.files['file'].filename,
+            filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
+    db.session.add(file)
+    db.session.commit()
+    return 'success', 201
 
-@api.route("/insights/<int:id>/files" , methods = ['GET'])
-def insight_file_get(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        if request.args.get('file_id') != None:
-            file_id = int(request.args.get('file_id'))
-            record = c.execute("""SELECT filename, file FROM INSIGHT_FILES WHERE id = ?""",[file_id]).fetchall()
-            filename = record[0][0]
-            file = record[0][1]
-            response = make_response(file)
-            response.headers.set('Content-Type', 'multipart/form-data ')
-            response.headers.set(
-                    'Content-Disposition', 'attachment', filename='%s.jpg' % id)
-            return response
-        else:
-            #Return a Json containing the file descriptions
-            c.execute("""SELECT id,filename,filetype,source_id FROM INSIGHT_FILES WHERE source_id = ?""",[id])
-            record = c.fetchall()
-            data = [dict(zip([key[0] for key in c.description], row)) for row in record]
-            return json.dumps(data)
-
-
-@api.route("/insights/<int:id>/files" , methods = ['POST'])
-def insight_file_upload(id):
-    print(request.files['file'])
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        file = request.files["file"].read() #BLOB the data
-        filename = request.files["file"].filename
-        filetype = filename.rsplit('.', 1)[1].lower()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_FILES ").fetchall()[0][0]
-        c.execute("""INSERT INTO INSIGHT_FILES
-            (id,filename,file,filetype,source_id)
-            VALUES (?,?,?,?,?)""",[last_id+1,filename,file,filetype,id])
-        conn.commit()
+@api.route("/insights/files/<int:id>" , methods = ['DELETE'])
+def insight_file_delete(id):
+    if request.args.get('file_id') != None:
+        file = InsightFile.query \
+                .filter(InsightFile.id == request.args.get('file_id')) \
+                .first()
+        db.session.delete(file)
+        db.session.flush()
+        db.session.commit()
         return 'success', 201
+    else:
+        return 'A file id must be selected' , 404
 
 
 
 #### COMMENTS ---------------------------------------------
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PERSONA_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    persona_comments = PersonaComments.query.filter(PersonaComments.source_id == id).all()
+    return json.dumps(PersonaCommentsSchema().dump(persona_comments,many=True))
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
 def product_comments(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PRODUCT_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    product_comments = ProductComments.query.filter(ProductComments.source_id == id).all()
+    return json.dumps(ProductCommentsSchema().dump(product_comments,many=True))
+
 
 @api.route("/insights/comments/<int:id>" , methods = ['GET'])
 def insights_comments(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM INSIGHT_COMMENTS WHERE source_id = ?", [id] )
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    insight_comments = InsightComments.query.filter(InsightComments.source_id == id).all()
+    return json.dumps(InsightCommentsSchema().dump(insight_comments,many=True))
 
 
 ## COMMENT ADD
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
 def persona_comments_post(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PERSONA_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now(),
-            request.json['action'],
-            request.json['downchange'],
-            request.json['upchange']]
-        c.execute("""INSERT INTO PERSONA_COMMENTS
-        (id,
-        source_id,
-        comment_body,
-        creator_id,
-        create_date,
-        action,
-        downchange,
-        upchange)
-        VALUES (?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    persona_comments = PersonaComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(persona_comments)
+    db.session.commit()
+    return request.json, 201
 
 @api.route("/product/comments/<int:id>" , methods = ['POST'])
 def product_comments_post(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM PRODUCT_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now(),
-            request.json['action'],
-            request.json['downchange'],
-            request.json['upchange']]
-        c.execute("""INSERT INTO PRODUCT_COMMENTS
-        (id,
-        source_id,
-        comment_body,
-        creator_id,
-        create_date,
-        action,
-        downchange,
-        upchange)
-        VALUES (?,?,?,?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    product_comments = ProductComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(product_comments)
+    db.session.commit()
+    return request.json, 201
 
 @api.route("/insights/comments/<int:id>" , methods = ['POST'])
 def insight_comments_post(id):
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        last_id = c.execute("SELECT MAX(id) as last_id FROM INSIGHT_COMMENTS ").fetchall()[0][0]
-        data = [
-            last_id+1,
-            request.json['source_id'],
-            request.json['comment_body'],
-            None,       #creator id # TODO:
-            datetime.datetime.now()]
-        c.execute("""INSERT INTO INSIGHT_COMMENTS
-            (id,
-            source_id,
-            comment_body,
-            creator_id,
-            create_date)
-        VALUES (?,?,?,?,?)""",data)
-        conn.commit()
-        return request.json, 201
-        return json.dumps(data)
+    insight_comments = InsightComments(                          ## SET ID
+                source_id = id,
+                comment_body= request.json['comment_body'],
+                creator_id = None,
+                action = None,
+                downchange = None,
+                upchange = None)
+    db.session.add(insight_comments)
+    db.session.commit()
+    return request.json, 201
 
-###### PERSONA RELATIONSHIPS
-@api.route("/persona-product" , methods = ['GET'])
-def persona_product_relationship_get():
-    if request.args.get('persona_id') != None and request.args.get('product_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE persona_id = :id;"
-        id = request.args.get('persona_id')
-    elif request.args.get('product_id') != None and request.args.get('persona_id') == None:
-        SQL = "SELECT * FROM PERS_PROD_REL WHERE product_id = :id;"
-        id = request.args.get('product_id')
-    else:
-        SQL = "SELECT * FROM PERS_PROD_REL"
-        id = None
-
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT * FROM PERS_PROD_REL")
-        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-
-@api.route("/persona-product" , methods = ['POST'])
-def persona_product_rel_post():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        if request.args.get('table') == 'persona':
-            id = request.json.get('id')
-            c.execute( "DELETE FROM PERS_PROD_REL WHERE persona_id = ?;" , [id])
-            data =[]
-            for item in request.json.get('products'):
-                 data.append([id,item['product_id']])
-            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
-            conn.commit()
-            return request.json, 201
-        elif request.args.get('table') == 'product':
-            id = request.json.get('id')
-            c.execute( "DELETE FROM PERS_PROD_REL WHERE product_id = ?;" , [id])
-            data =[]
-            for item in request.json.get('personas'):
-                 data.append([item['persona_id'],id])
-            c.executemany("INSERT INTO PERS_PROD_REL(persona_id,product_id) VALUES (?,?)",data)
-            conn.commit()
-            return request.json, 201
-        else:
-            return "error"
-
-## pickup_roles
-@api.route("/persona/roles" , methods = ['GET'])
-def persona_roles_get():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT id as persona_role_id, name as persona_role_name FROM PERSONA_ROLES")
-        #result = c.execute("SELECT * FROM PERS_PROD_REL WHERE id = :id ", {'id' : id})
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
-
-
-@api.route("/persona/roles" , methods = ['POST'])
-def persona_role_post():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        id = request.json.get('id')
-        c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
-        data =[]
-        for item in request.json.get('roles'):
-            data.append([id,item['persona_role_id']])
-        c.executemany("INSERT INTO PERSONA_ROLES_REL (persona_id,persona_role_id) VALUES (?,?)",data)
-        conn.commit()
-        return request.json, 201
 
 # PLACEHOLDER FOR API TO PUT NEW ROLES
 # @api.route("/persona/roles" , methods = ['POST'])
 # def persona_role_post():
-#     with sqlite3.connect(db) as conn:
+#     with db_connect() as conn:
 #         c = conn.cursor()
 #         id = request.json.get('id')
 #         c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
@@ -682,40 +460,65 @@ def persona_role_post():
 ## AUTHORIZATION
 from werkzeug.security import generate_password_hash , check_password_hash
 
-@api.route('/users/auth', methods = ['POST'])
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+
+        if not token:
+            return jsonify({"message" : "token is missing"})
+
+        try:
+            data = jwt.decode(token, app_config['SECRET_KEY'])
+        except:
+            return jsonify({"message" : "token is invalid"})
+
+        return f(*args, **kwargs)
+    return decorated
+
+@api.route('/login', methods = ['GET'])
+@token_required
+def protected():
+    foo = "foo"
+    return 'did it work?'
+
+@api.route('/login', methods = ['POST'])
 def authenticate_user():
+    print(request.json)
     username = request.json.get('username')
     password = request.json.get('password')
-    # if username is None or password is None:
-    #     return "missing information"
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT username, password_hash, role FROM USERS where username =?" , [username]).fetchall()
-        conn.commit()
-        if result != []:
-            if check_password_hash(result[0][1],password) == True:
-                return jsonify( { 'username': username , 'authenticated' : True , 'role': result[0][2]} )
-            else:
-                return jsonify( { 'username': username , 'authenticated' : False} )
-        else:
-            return jsonify( { 'username': username , 'authenticated' : False} )
+    user = User.query.filter_by(username = username).first()
+    if not user or not user.verify_password(password):
+        return jsonify( { 'username': username , 'authenticated' : False} ) , 401
+    g.user = user
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    return jsonify( {"token" : token.decode('UTF-8') , "user" : username, "role" : user.role}) , 200
+
+@api.route('/refresh', methods = ['GET'])
+@token_required
+def refresh_token():
+    request.json.get('username')
+    user = User.query.filter_by(username = username).first()
+    g.user = user
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+    return jsonify( {"token" : token.decode('UTF-8')})
+
 #
 @api.route('/users', methods = ['POST'])
 def add_user():
     username = request.json.get('username')
     password = request.json.get('password')
-    password_hash = generate_password_hash(password)
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        check_username = (c.execute("SELECT user_id FROM USERS where username =?" , [username]).fetchall() == [])
-        if check_username == True:
-            last_id = c.execute("SELECT MAX(user_id) as last_id FROM USERS ").fetchall()[0][0]
-            data = [ last_id +1 , username , password_hash , None]
-            c.execute(""" INSERT INTO USERS (user_id,username,password_hash,role) VALUES (?,?,?,?)""" , data)
-            conn.commit()
-            return jsonify( { 'username': username  , 'authenticated' : True} )
-        else:
-            return 'this user already exists'
+    if username is None or password is None:
+        abort(400) # missing arguments
+    if User.query.filter_by(username = username).first() is not None:
+        abort(400) # existing user
+    user = User(username = username)
+    user.hash_password(password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify( { 'username': username  , 'authenticated' : True} )
 
 
 ## TODO NOT WORKING?
@@ -724,36 +527,32 @@ def reset_password():
     username = request.json.get('username')
     current_password = request.json.get('current_password')
     new_password = request.json.get('new_password')
-    password_hash = generate_password_hash(new_password)
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT username, password_hash FROM USERS where username =?" , [username]).fetchall()
-        if check_password_hash(result[0][1], current_password ) == True:
-            c = conn.cursor()
-            c.execute("UPDATE USERS  SET password_hash = ? WHERE username = ?", [ password_hash , username ])
-            conn.commit()
-            return jsonify( { 'username': username  , 'authenticated' : True , 'password_changed' : True} )
-        else:
-            return 'password incorrect'
+    user = User.query.filter_by(username = username).first()
+    if not user or not user.verify_password(current_password):
+        return jsonify( { 'message': "current password incorrect"} )
+    user.hash_password(new_password)
+    db.session.commit()
+
+    token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    return jsonify( {"token" : token.decode('UTF-8') , "user" : username})
 
 @api.route('/users', methods = ['GET'])
 def get_user_data():
-    with sqlite3.connect(db) as conn:
-        c = conn.cursor()
-        result = c.execute("SELECT user_id , username, role FROM USERS ")
-        data = [dict(zip([key[0] for key in c.description], row)) for row in result]
-        return json.dumps(data)
+    users = User.query.all()
+    return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
+
+@api.route('/users/<int:user_id>', methods = ['GET'])
+def get_user_data_by_id(user_id):
+    user = User.query.filter_by(user_id = user_id).all()
+    return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
 
 
-@api.route('/users/admin', methods = ['PUT'])
-def admin_user():
-    username = request.json.get('username')
-    new_role = request.json.get('role')
-    if request.json.get('admin').lower() == 'admin':
-        with sqlite3.connect(db) as conn:
-            c = conn.cursor()
-            c.execute("UPDATE USERS SET role = ? WHERE username = ?", [ new_role, username])
-            conn.commit()
-            return jsonify( { 'username': username  , 'role' : new_role})
-    else:
-        return "user must be an admin" , 401
+@api.route('/users/<int:user_id>', methods = ['PUT'])
+def admin_user(user_id):
+    data = request.get_json()
+    user = User.query.filter_by(user_id = user_id).first()
+    for key in list(data.keys()):
+        setattr(user, key , data[key]) #SET UPCHANGE
+    db.session.commit()
+    return request.json, 201
