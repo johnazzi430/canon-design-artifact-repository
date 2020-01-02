@@ -288,40 +288,15 @@ export default {
 
        async onEdit() {
          var key;
-         var success = 1 ;
          for (key of this.edited_fields) {
-           if (key === 'products') {
-             await axios({
-                 method: 'post',
-                 url: '/api/persona-product',
-                 data: this.form,
-                 params : {
-                   table : "persona"
-                   }
-                 })
-                 .then(function (response) {
-                   success = 1 * success ;})
-           }
-           else if (key === 'roles') {
-             await axios({
-                 method: 'post',
-                 url: '/api/persona/roles',
-                 data: this.form,
-                 })
-                 .then(function (response) {
-                   success = 1 * success ;})
-           }
-           else {
              await axios({
                  method: 'put',
                  url: '/api/persona-table/' + this.form.id ,
                  data: {
                     [key] : this.form[key]
-                 }
+                    }
                  })
-                 .then(function (response) {
-                   success = 1 * success ;})
-               };
+
            }
 
         EventBus.$emit('persona-table-changed','item-updated');
@@ -337,17 +312,6 @@ export default {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
-
-        if (this.edited_fields.includes('products')) {
-               await axios({
-                   method: 'post',
-                   url: '/api/persona-product',
-                   data: this.form,
-                   params : {
-                     table : "persona"
-                     }
-                   })
-         };
 
          EventBus.$emit('persona-table-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";

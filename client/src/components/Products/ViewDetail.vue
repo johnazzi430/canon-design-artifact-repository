@@ -185,7 +185,6 @@ export default {
 
         async onEdit() {
           var key;
-          var key;
           for (key of this.edited_fields) {
             if (key === 'personas') {
               const resp = await axios({

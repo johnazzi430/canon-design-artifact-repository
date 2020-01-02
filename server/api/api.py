@@ -58,7 +58,7 @@ def persona_table_by_id(id):
 ## POST NEW
 @api.route("/persona-table" , methods = ['POST'])
 def persona_post():
-    current_app.logger.info(request.json['name'])
+
     persona = Persona(                          ## SET ID
                 name = request.json['name'],
                 title = request.json['title'] ,
@@ -75,22 +75,42 @@ def persona_post():
                 access_group = 0,           # access_group TODO
                 persona_file = request.json['persona_file'],
                 persona_picture = request.json['persona_picture'])
-    db.session.add(persona)
-    db.session.commit()
+    print('test')
+    print(request.json['roles'])
+    if request.json['roles'] != None:
+        for role in request.json['roles']:
+            persona.append(role.id)
+    # db.session.add(persona)
+    # db.session.commit()
     return request.json, 201
 
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
 def persona_table_put_by_id(id):
+
     data = request.get_json()
-    print(data)
     key = list(data.keys())[0]
-    print(key)
-    upchange = data[key]
     persona = Persona.query.filter(Persona.id == id).first()
-    downchange = getattr(persona, key) #GET DOWNCHANGE
-    setattr(persona, key , upchange) #SET UPCHANGE
+
+    if key == 'roles':
+        roles = []
+        for role in request.json['roles']:
+            roles.append(PersonaRoles.query.get(role['id']))
+        persona.roles = roles
+        upchange = ""
+        downchange = ""
+    elif key == 'products' :
+        products =[]
+        for product in request.json['products']:
+            products.append(Product.query.get(product['id']))
+        persona.products = products
+        upchange = ""
+        downchange = ""
+    else:
+        upchange = data[key]
+        downchange = getattr(persona, key) #GET DOWNCHANGE
+        setattr(persona, key , upchange) #SET UPCHANGE
     setattr(persona, 'revision' , persona.revision + 1)
     persona_comments = PersonaComments(                          ## SET ID
                 source_id = id,
@@ -197,9 +217,7 @@ def product_post():
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
 def product_table_put_by_id(id):
     data = request.get_json()
-    print(data)
     key = list(data.keys())[0]
-    print(key)
     upchange = data[key]
     product = Product.query.filter(Product.id == id).first()
     downchange = getattr(product, key) #GET DOWNCHANGE
@@ -255,9 +273,7 @@ def insights_post():
 @api.route("/insights/<int:id>" , methods = ['PUT'])
 def insights_put(id):
     data = request.get_json()
-    print(data)
     key = list(data.keys())[0]
-    print(key)
     upchange = data[key]
     insight = Insight.query.filter(Insight.id == id).first()
     downchange = getattr(insight, key) #GET DOWNCHANGE
