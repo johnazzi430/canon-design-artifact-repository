@@ -348,7 +348,7 @@ def insights_file_get(id):
         return response
     else:
         files = InsightFile.query.filter(InsightFile.source_id == id).all()
-        return json.dumps(insightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
+        return json.dumps(InsightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/insights/files/<int:id>" , methods = ['POST'])
 def insights_file_upload(id):
@@ -426,10 +426,7 @@ def insight_comments_post(id):
     insight_comments = InsightComments(                          ## SET ID
                 source_id = id,
                 comment_body= request.json['comment_body'],
-                creator_id = None,
-                action = None,
-                downchange = None,
-                upchange = None)
+                creator_id = None)
     db.session.add(insight_comments)
     db.session.commit()
     return request.json, 201

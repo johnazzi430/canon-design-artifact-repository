@@ -33,5 +33,4 @@ new Vue({
   render: h => h(App),
 }).$mount('#app');
 
-
 router.start(App, '#Entry');

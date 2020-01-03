@@ -15,7 +15,7 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100%; height: 500px;"
+    <ag-grid-vue style="width: 100vh; height: 100vh;"
         class="ag-theme-balham"
         :columnDefs="columnDefs"
         :rowData="rowData"
@@ -128,7 +128,6 @@ export default {
     });
   },
 };
-
 
     var externalCellRender = function(params) {
         return '<span style="color: '+params.color+'">' + params.value + '</span>';

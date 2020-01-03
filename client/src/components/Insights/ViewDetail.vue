@@ -48,6 +48,15 @@
           <b-badge :to="{ path: 'product/' + product.id }" pill
           variant="success">{{product.name}}</b-badge>
         </div>
+        <br>
+        <label>Files:</label>
+        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          {{uploadedFile.filename}}
+          <button
+            type="button" name="button" target="_blank" v-on:click="getFile(uploadedFile.id)">
+            <i class="fa fa-file"></i>
+          </button>
+        </div>
       </div>
       <br>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
@@ -195,6 +204,7 @@ export default {
         products: [],
         personas: []
       },
+      uploadedFiles: [],
       editing: false,
       source: 'insights',
       experience_options: ["Positive", "Neutral", "Negative"],
@@ -245,6 +255,13 @@ export default {
           }
         )
         .catch(error => console.log(error))
+
+        axios({
+          method: 'get',
+          url: '/api/insights/files/' + selection,
+        }).then(function(response){
+          self.uploadedFiles = response.data;
+        })
 
         });
       },

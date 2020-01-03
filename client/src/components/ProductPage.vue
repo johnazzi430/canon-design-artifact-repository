@@ -2,43 +2,40 @@
 <template>
   <div class="wrapper">
     <!-- LEFT SIDEPANEL -->
-    <nav id="left-sidepanel" class="sidepanel-left">
-      <a href="javascript:void(0)" id="Cards"
+    <b-nav id="left-sidepanel" vertical class="sidepanel-left">
+      <b-nav-item href="javascript:void(0)" id="Cards"
         class="nav-link active" v-on:click="changeView('card'); closeNav()">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-laptop"></i></a>
-      <a href="javascript:void(0)" id="Table"
+        <i class="fa fa-laptop"></i></b-nav-item>
+      <b-nav-item href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
-        <i class="fa fa-list"></i></a>
+        <i class="fa fa-list"></i></b-nav-item>
         <!-- v-if start -->
-        <div v-if="this.selection !== null">
-          <a href="javascript:void(0)" id="Detail"
+      <b-nav-item v-if="this.selection !== null"
+            href="javascript:void(0)" id="Detail"
             class="nav-link active" v-on:click="expandDetail()">
             <i class="fa fa-align-left"></i>
-          </a>
-        </div>
-        <div v-else>
-          <a href="javascript:void(0)" id="Detail"
+      </b-nav-item>
+      <b-nav-item v-else href="javascript:void(0)" id="Detail"
               class="nav-link disabled" v-on:click="expandDetail() ">
               <i class="fa fa-align-left"></i>
-          </a>
-        </div>
+      </b-nav-item>
         <!-- v-if start -->
-      <a href="javascript:void(0)" id="Add"
+      <b-nav-item href="javascript:void(0)" id="Add"
           class="nav-link active" v-on:click=" addDataAction(); expandDetail()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
-      </a>
-    </nav>
+      </b-nav-item>
+    </b-nav>
       <!-- MAIN -->
-    <div id="product-panel" class="container-fluid" v-if="view === 'table'" v-bind:key="view">
-      <div >
-        <product-data v-bind:key = "dataKey"></product-data>
+      <div id = "main" class ="main">
+        <div id="product-panel"  v-if="view === 'table'" v-bind:key="view">
+            <product-data v-bind:key = "dataKey"></product-data>
+        </div>
+        <div v-if="view === 'card'" v-bind:key="view">
+          <product-card v-bind:key = "dataKey">></product-card>
+        </div>
       </div>
-    </div>
-    <div class="" v-if="view === 'card'" v-bind:key="view">
-      <product-card v-bind:key = "dataKey"></product-card>
-    </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
       <h1><a href="javascript:void(0)"
@@ -118,7 +115,7 @@ export default {
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 .sidepanel-right{
   height: 100%; /* Specify a height */
@@ -127,7 +124,7 @@ export default {
   top: 0 ;
   z-index: 1; /* Stay on top */
   right: -16px;
-  background-color: #f7f7f7; /* Black*/
+  background-color: #FFFFFF; /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 75px; /* Place content 60px from the top */
   padding-right: 15px;
@@ -135,36 +132,30 @@ export default {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-/* Style the links inside the sidenav */
 .sidepanel-left{
-  height: 100vh;
-  z-index: 2;
-  top: 0 ;
-  left: -115px; /* Position them outside of the screen */
-  transition: 0.3s; /* Add transition on hover */
-  padding: 15px; /* 15px padding */
-  padding-top: 100px;
-  width: 60px; /* Set a specific width */
-  background-color: #f7f7f7;
-  text-decoration: none; /* Remove underline */
-  overflow: hidden;
-  font-size: 20px; /* Increase font size */
-  color: white; /* White text color */
-  align-content: left;
+  z-index:1;
+  left:0;
+  position:fixed;
+  width: 60px;
+  height:100%;
+  background-color: #F7F7F7;
+  border-right-style: solid;
+  border-right-color: #D1D1D1;
+  border-right-width: thin;
 }
 
 .sidepanel-left:hover {
-  left: 0; /* On mouse-over, make the elements appear as they should */
+  width: 160px; /* On mouse-over, make the elements appear as they should */
+  transition: 0.25s;
 }
 
-// #product_panel {
-//   padding-left:15px;
-//   margin-left:15px;
-//   padding-right:15px;
-//   margin-right:15px;
-//   margin-top:-15px;
-//   padding-top:-15px;
-// }
+
+.main{
+  width: 100%;
+  margin-left: 60px;
+  padding: 0px 10px;
+  background-color: #F7F7F7
+}
 
 .wrapper {
     display: flex;
@@ -173,5 +164,4 @@ export default {
     margin-top:-16px;
     padding-top:-16px;
 }
-
 </style>

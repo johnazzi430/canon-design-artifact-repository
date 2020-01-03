@@ -1,46 +1,36 @@
-<template>
+b-nav-item<template>
   <div class="wrapper">
     <!-- LEFT SIDEPANEL -->
-    <nav id="left-sidepanel" class="sidepanel-left">
-      <a href="javascript:void(0)" id="Cards"
+    <b-nav id="left-sidepanel" vertical class="sidepanel-left">
+      <b-nav-item href="javascript:void(0)" id="Cards"
         class="nav-link active" v-on:click="changeView('card'); closeNav()">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-exclamation"></i></a>
+        <i class="fa fa-exclamation"></i>
+      </b-nav-item>
       <!-- v-if start -->
-      <div v-if="this.selection !== null">
-        <a href="javascript:void(0)" id="Detail"
+      <b-nav-item v-if="this.selection !== null"
+          href="javascript:void(0)" id="Detail"
           class="nav-link active" v-on:click="expandDetail()">
           <i class="fa fa-align-left"></i>
-        </a>
-      </div>
-      <div v-else>
-        <a href="javascript:void(0)" id="Detail"
+      </b-nav-item>
+      <b-nav-item v-else href="javascript:void(0)" id="Detail"
             class="nav-link disabled" v-on:click="expandDetail()">
             <i class="fa fa-align-left"></i>
-        </a>
-      </div>
+      </b-nav-item>
       <!-- v-if start -->
-      <a href="javascript:void(0)" id="Add"
+      <b-nav-item href="javascript:void(0)" id="Add"
           class="nav-link active"
           v-on:click=" addDataAction();  expandDetail()"
           data-toggle="tooltip" title="Add">
-      <i class="fa fa-plus"></i></a>
-      <a href="javascript:void(0)" id="Dashboard"
+          <i class="fa fa-plus"></i>
+      </b-nav-item>
+      <b-nav-item href="javascript:void(0)" id="Dashboard"
           class="nav-link disabled" v-on:click="expandDetail()">
-          <i class="fas fa-chart-line"></i></a>
-    </nav>
-      <!-- MAIN -->
-    <!-- <div class="">
-        <label>Files
-          <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
-        </label>
-        <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
-        <br>
-        <img src="/api/insights/1/files?file_id=2" alt=""
-        style="width:150px;height:150px;">
-    </div> -->
-    <div class="" v-if="view === 'card'" v-bind:key="view">
-      <insight-card v-bind:key = "dataKey">></insight-card>
+          <i class="fas fa-chart-line"></i>
+        </b-nav-item>
+    </b-nav>
+    <div class ="main">
+        <insight-card v-bind:key = "dataKey">></insight-card>
     </div>
     <!-- RIGHT SIDEPANEL -->
     <div id="right-sidepanel" class="sidepanel-right">
@@ -128,7 +118,6 @@ function closeNav() {
 </script>
 
 <style lang="scss" scoped>
-
 .sidepanel-right{
   height: 100%; /* Specify a height */
   width: 0; /* 0 width - change this with JavaScript */
@@ -136,7 +125,7 @@ function closeNav() {
   top: 0 ;
   z-index: 1; /* Stay on top */
   right: -16px;
-  background-color: #f7f7f7; /* Black*/
+  background-color: #FFFFFF; /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 75px; /* Place content 60px from the top */
   padding-right: 15px;
@@ -144,36 +133,34 @@ function closeNav() {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-/* Style the links inside the sidenav */
 .sidepanel-left{
-  height: 100vh;
-  z-index: 2;
-  top: 0 ;
-  left: -115px; /* Position them outside of the screen */
-  transition: 0.3s; /* Add transition on hover */
-  padding: 15px; /* 15px padding */
-  padding-top: 100px;
-  width: 60px; /* Set a specific width */
-  background-color: #f7f7f7;
-  text-decoration: none; /* Remove underline */
-  overflow: hidden;
-  font-size: 20px; /* Increase font size */
-  color: white; /* White text color */
-  align-content: left;
+  z-index:1;
+  left:0;
+  position:fixed;
+  width: 60px;
+  height:100%;
+  background-color: #F7F7F7;
+  border-right-style: solid;
+  border-right-color: #D1D1D1;
+  border-right-width: thin;
 }
 
 .sidepanel-left:hover {
-  left: 0; /* On mouse-over, make the elements appear as they should */
+  width: 160px; /* On mouse-over, make the elements appear as they should */
+  transition: 0.25s;
 }
 
-// #insight_panel {
-//   padding-left:15px;
-//   margin-left:15px;
-//   padding-right:15px;
-//   margin-right:15px;
-//   margin-top:-15px;
-//   padding-top:-15px;
+
+// .sidepanel-left:hover {
+//   width: 160px; /* On mouse-over, make the elements appear as they should */
 // }
+
+.main{
+  width: 100%;
+  margin-left: 60px;
+  padding: 0px 10px;
+  background-color: #F7F7F7
+}
 
 .wrapper {
     display: flex;

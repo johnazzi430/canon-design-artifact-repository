@@ -2,9 +2,9 @@
 
 <template>
     <div>
-      <b-navbar class="navbar navbar-expand-md navbar-light "
+      <b-navbar class="navbar-dark"
           style="padding-left:30px">
-        <div class="navbar-nav">
+        <b-navbar-nav>
           <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
           <b-nav-item to="/insights">Insights</b-nav-item>
           <b-nav-item to="/persona">Persona</b-nav-item>
@@ -13,7 +13,7 @@
           <b-nav-item disabled>About</b-nav-item>
           <b-nav-item v-if="isLoggedIn" @click='logout'>Logout</b-nav-item>
           <b-nav-item v-if="userRole === 'admin'" to="/admin">Admin</b-nav-item>
-        </div>
+        </b-navbar-nav>
       </b-navbar>
     </div>
 </template>
@@ -44,10 +44,14 @@ export default {
 </script>
 
 
-<style >
+<style>
 .navbar {
   z-index: 100;
   margin-bottom: -15px;
-  background-color: #F0F0F0
+  background-color: #000000;
+  color: #FFFFFF;
+  border-radius: 0;
 }
+
+
 </style>

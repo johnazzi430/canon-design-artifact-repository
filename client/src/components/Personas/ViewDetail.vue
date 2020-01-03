@@ -222,6 +222,7 @@ export default {
         roles: [] ,
         persona_picture: null,
         persona_file: null},
+      uploadedFiles: [],
       editing: false,
       source: 'persona',
       product_options: [],
@@ -251,7 +252,7 @@ export default {
           var get_url = "/api/persona-table/";
           get_url += selection;
 
-          axios.get(get_url)
+           axios.get(get_url)
           .then(response => {
               self.form.id = selection;
               self.form.name = response.data[0].name;

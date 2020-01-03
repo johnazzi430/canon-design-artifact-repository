@@ -191,6 +191,19 @@ class InsightCommentsSchema(ma.ModelSchema):
         model = InsightComments
         sqla_session = db.session
 
+class InsightFile(db.Model):
+    __tablename__ = 'insight_files'
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer, ForeignKey('insight.id'))
+    filename = db.Column(db.Text)
+    file = db.Column(db.LargeBinary)
+    filetype = db.Column(db.Text)
+
+class InsightFileSchema(ma.ModelSchema):
+    class Meta:
+        model = InsightFile
+        sqla_session = db.session
+
 # USER -------------------------------------------------------------------------
 
 from werkzeug.security import generate_password_hash , check_password_hash
