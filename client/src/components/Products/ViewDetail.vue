@@ -42,7 +42,8 @@
       <h4>Comments</h4>
       <comment-view :key='form.id'
                     v-bind:sourceTable="source"
-                    v-bind:itemId='form.id'></comment-view>
+                    v-bind:itemId='form.id'>
+      </comment-view>
     </div>
       <div  id='product-detail-edit' v-else>
         <h1 v-if='form.id !== null'>Edit</h1>

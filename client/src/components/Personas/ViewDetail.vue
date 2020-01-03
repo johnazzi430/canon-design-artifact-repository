@@ -70,7 +70,10 @@
 
       <hr>
       <h4>Comments</h4>
-      <comment-view v-bind:sourceTable="source" v-bind:itemId='form.id'></comment-view>
+      <comment-view :key='form.id'
+                    v-bind:sourceTable="source"
+                    v-bind:itemId='form.id'>
+      </comment-view>
 
     </div>
       <div  id='persona-detail-edit' v-else>
