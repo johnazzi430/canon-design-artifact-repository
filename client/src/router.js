@@ -9,6 +9,7 @@ import Admin from './components/Admin.vue';
 import Login from './components/Login.vue';
 import NotFound from './components/NotFound.vue';
 import Home from './components/Home.vue';
+import About from './components/About.vue';
 import {EventBus} from  "./index.js";
 import store from  "./store";
 
@@ -68,6 +69,11 @@ const router =  new Router({
           component: InsightsPage,
         }
       ]
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: About,
     },
   ],
 });

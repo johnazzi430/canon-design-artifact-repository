@@ -6,16 +6,19 @@ b-nav-item<template>
         class="nav-link active" v-on:click="changeView('card')">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
         <i class="fa fa-exclamation"></i>
+        <span class="nav-text">    Cards</span>
       </b-nav-item>
       <!-- v-if start -->
       <b-nav-item v-if="this.selection !== null"
           href="javascript:void(0)" id="Detail"
           class="nav-link active" v-on:click="expandDetail()">
           <i class="fa fa-align-left"></i>
+          <span class="nav-text">Details</span>
       </b-nav-item>
       <b-nav-item v-else href="javascript:void(0)" id="Detail"
             class="nav-link disabled" v-on:click="expandDetail()">
             <i class="fa fa-align-left"></i>
+            <span class="nav-text">Details</span>
       </b-nav-item>
       <!-- v-if start -->
       <b-nav-item href="javascript:void(0)" id="Add"
@@ -23,6 +26,7 @@ b-nav-item<template>
           v-on:click=" addDataAction();  expandDetail()"
           data-toggle="tooltip" title="Add">
           <i class="fa fa-plus"></i>
+          <span class="nav-text">Add New</span>
       </b-nav-item>
       <b-nav-item href="javascript:void(0)" id="Dashboard"
           class="nav-link disabled" v-on:click="expandDetail()">
@@ -145,6 +149,12 @@ function closeNav() {
   border-right-style: solid;
   border-right-color: #D1D1D1;
   border-right-width: thin;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+.nav-text{
+  margin-left: 25px;
 }
 
 .sidepanel-left:hover {

@@ -10,7 +10,7 @@
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
           <b-nav-item disabled>Playlist</b-nav-item>
-          <b-nav-item disabled>About</b-nav-item>
+          <b-nav-item to="/about">About</b-nav-item>
           <b-nav-item v-if="isLoggedIn" @click='logout'>Logout</b-nav-item>
           <b-nav-item v-if="userRole === 'admin'" to="/admin">Admin</b-nav-item>
         </b-navbar-nav>

@@ -63,7 +63,8 @@
 
       <hr>
       <h4>Comments</h4>
-      <comment-view v-bind:sourceTable="source"
+      <comment-view :key='form.id'
+                    v-bind:sourceTable="source"
                     v-bind:itemId='form.id'></comment-view>
 
     </div>
@@ -121,8 +122,8 @@
                       v-model="form.personas" :options="persona_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="persona_title"
-                      track-by="persona_id" :preselect-first="false">
+                      placeholder="Pick some" label="title"
+                      track-by="id" :preselect-first="false">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -139,8 +140,8 @@
                       v-model="form.products" :options="product_options"
                       :multiple="true" :close-on-select="false"
                       :clear-on-select="false" :preserve-search="true"
-                      placeholder="Pick some" label="product_name"
-                      track-by="product_id" :preselect-first="false">
+                      placeholder="Pick some" label="name"
+                      track-by="id" :preselect-first="false">
             <template slot="selection"
                       slot-scope="{ values, search, isOpen }">
               <span class="multiselect__single"
@@ -325,22 +326,6 @@ export default {
              url: '/api/insights',
              data: this.form, })
 
-        if (Array.isArray(this.edited_fields.length )) {
-          if (this.edited_fields.match('products')) {
-                 await axios({
-                     method: 'post',
-                     url: '/api/insights/'+ this.form.id +'/products',
-                     data: this.form.products,
-                     })
-               }
-          else if (this.edited_fields.match('personas')) {
-                 await axios({
-                     method: 'post',
-                     url: '/api/insights/'+ this.form.id +'/personas',
-                     data: this.form.personas,
-                     })
-          }
-        }
 
          EventBus.$emit('insight-data-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";

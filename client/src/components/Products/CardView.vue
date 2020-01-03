@@ -78,16 +78,13 @@ export default {
 };
 
 </script>
-<!--
+
 <style lang="css" scoped>
 
-.avatar {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-};
-
-</style> -->
+.card{
+  border: 0px;
+  border-top-style: solid;
+  border-top-width: medium;
+  border-image: linear-gradient(to right,#7799FF,purple) 1;
+}
+</style>

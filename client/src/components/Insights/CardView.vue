@@ -12,13 +12,14 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
+      <b-card class="card" v-for="card in filterItems(cards)"
+              v-bind:key="card.name" v-bind:class="card.experience_vector">
         <b-card-text>
-          <q>{{card.title}}</q>
-          <br>
           <span class="badge badge-pill badge-success"
             v-bind:class="card.experience_vector">
             {{card.experience_vector}}</span>
+                    <br>
+          <q style="text-align:center">{{card.title}}</q>
           <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
               variant="outline-secondary">Open insight</b-button>
         </b-card-text>
@@ -76,6 +77,11 @@ export default {
     column-count: 4;
 }
 
+.card{
+  border-left-style: solid;
+  border-left-width: thick;
+}
+
 .avatar {
   min-width: 50px;
   max-width: 50px;
@@ -88,7 +94,7 @@ export default {
 }
 
 .badge.Negative{
-  background-color: red
+  background-color: #FF5C42
 }
 
 .badge.Positive{
@@ -98,5 +104,18 @@ export default {
 .badge.Neutral{
   background-color: grey
 }
+
+.card.Negative{
+  border-left-color: #FF5C42
+}
+
+.card.Positive{
+  border-left-color: green
+}
+
+.card.Neutral{
+  border-left-color: grey
+}
+
 
 </style>

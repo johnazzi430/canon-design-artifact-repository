@@ -215,7 +215,7 @@ def product_post():
     if request.json.get('personas') != None:
         personas =[]
         for persona in request.json['personas']:
-            personas.append(Personas.query.get(persona['id']))
+            personas.append(Persona.query.get(persona['id']))
         product.personas = personas
 
     db.session.add(product)
@@ -298,7 +298,7 @@ def insights_post():
     if request.json.get('personas') != None:
         personas =[]
         for persona in request.json['personas']:
-            personas.append(Personas.query.get(persona['id']))
+            personas.append(Persona.query.get(persona['id']))
         insight.personas = personas
 
     db.session.add(insight)
@@ -317,7 +317,7 @@ def insights_put(id):
         personas = []
         for persona in request.json['personas']:
             personas.append(Persona.query.get(persona['id']))
-        insight.roles = roles
+        insight.personas = personas
         upchange = ""
         downchange = ""
     elif key == 'products' :

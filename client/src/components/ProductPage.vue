@@ -6,25 +6,32 @@
       <b-nav-item href="javascript:void(0)" id="Cards"
         class="nav-link active" v-on:click="changeView('card')">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
-        <i class="fa fa-laptop"></i></b-nav-item>
+        <i class="fa fa-laptop"></i>
+        <span class="nav-text">Cards</span>
+      </b-nav-item>
       <b-nav-item href="javascript:void(0)" id="Table"
         class="nav-link active" v-on:click="changeView('table') ">
-        <i class="fa fa-list"></i></b-nav-item>
+        <i class="fa fa-list"></i>
+        <span class="nav-text">Table</span>
+      </b-nav-item>
         <!-- v-if start -->
       <b-nav-item v-if="this.selection !== null"
             href="javascript:void(0)" id="Detail"
             class="nav-link active" v-on:click="expandDetail()">
             <i class="fa fa-align-left"></i>
+            <span class="nav-text">Details</span>
       </b-nav-item>
       <b-nav-item v-else href="javascript:void(0)" id="Detail"
               class="nav-link disabled" v-on:click="expandDetail() ">
               <i class="fa fa-align-left"></i>
+              <span class="nav-text">Details</span>
       </b-nav-item>
         <!-- v-if start -->
       <b-nav-item href="javascript:void(0)" id="Add"
           class="nav-link active" v-on:click=" addDataAction(); expandDetail()"
           data-toggle="tooltip" title="Add">
       <i class="fa fa-plus"></i>
+      <span class="nav-text">Add New</span>
       </b-nav-item>
     </b-nav>
       <!-- MAIN -->
@@ -144,6 +151,12 @@ export default {
   border-right-style: solid;
   border-right-color: #D1D1D1;
   border-right-width: thin;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+.nav-text{
+  margin-left: 24px;
 }
 
 .sidepanel-left:hover {
@@ -154,7 +167,7 @@ export default {
 
 .main{
   width: 100%;
-  height: 100%;
+  height: 100vh;
   margin-left: 60px;
   padding: 0px 10px;
   background-color: #F7F7F7

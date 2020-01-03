@@ -15,7 +15,7 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100vh; height: 100vh;"
+    <ag-grid-vue style="width: 100vl; height: 100vh;"
         class="ag-theme-balham"
         :columnDefs="columnDefs"
         :rowData="rowData"
