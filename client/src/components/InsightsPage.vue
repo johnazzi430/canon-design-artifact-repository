@@ -3,7 +3,7 @@ b-nav-item<template>
     <!-- LEFT SIDEPANEL -->
     <b-nav id="left-sidepanel" vertical class="sidepanel-left">
       <b-nav-item href="javascript:void(0)" id="Cards"
-        class="nav-link active" v-on:click="changeView('card'); closeNav()">
+        class="nav-link active" v-on:click="changeView('card')">
           <!-- class="nav-link active" v-on:click="changeView('card')"> -->
         <i class="fa fa-exclamation"></i>
       </b-nav-item>
@@ -136,9 +136,11 @@ function closeNav() {
 .sidepanel-left{
   z-index:1;
   left:0;
+  top:0;
+  padding-top: 70px;
   position:fixed;
   width: 60px;
-  height:100%;
+  height: 100vh;
   background-color: #F7F7F7;
   border-right-style: solid;
   border-right-color: #D1D1D1;
@@ -157,6 +159,7 @@ function closeNav() {
 
 .main{
   width: 100%;
+  height: 100vh;
   margin-left: 60px;
   padding: 0px 10px;
   background-color: #F7F7F7

@@ -2,8 +2,8 @@
 
 <template>
     <div>
-      <b-navbar class="navbar-dark"
-          style="padding-left:30px">
+      <b-navbar class="navbar-expand-lg navbar-dark"
+          style="padding-left:30px; border-radius: 0px">
         <b-navbar-nav>
           <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
           <b-nav-item to="/insights">Insights</b-nav-item>
@@ -50,8 +50,6 @@ export default {
   margin-bottom: -15px;
   background-color: #000000;
   color: #FFFFFF;
-  border-radius: 0;
 }
-
 
 </style>
