@@ -354,16 +354,11 @@ export default {
          var get_url = '/api/insights/';
          get_url += this.form.id ;
 
-         var archive_set = { 'archived': 1};
-
          console.log(get_url)
          await axios({
              method: 'PUT',
              url: get_url,
-             data: archive_set,
-             params: {
-                table: "insights"
-              }
+             data: { 'archived': 1},
             })
          .then(function (response) {
              console.log(response);})
@@ -371,7 +366,7 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('insight-data-changed' , archive_set )
+         EventBus.$emit('insight-data-changed' , 'archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
      },

@@ -22,19 +22,19 @@
         <p> {{form.market_size}} </p>
         <label for="quote">Persona Quote</label>
         <p> {{form.quote}} </p>
-        <div v-if="form.job_function !== ''">
+        <div v-if="form.job_function !== null">
           <label for="function">Job Function</label>
           <p class="text-wrap"> {{form.job_function}} </p>
         </div>
-        <div v-if="form.needs !== ''">
+        <div v-if="form.needs !== null">
           <label for="needs" style="white-space: pre-line;">Needs</label>
           <p> {{form.needs}} </p>
         </div>
-        <div v-if="form.wants !== ''">
+        <div v-if="form.wants !== null">
           <label for="wants" style="white-space: pre-line;">Wants</label>
           <p> {{form.wants}} </p>
         </div>
-        <div v-if="form.pain_point !== ''">
+        <div v-if="form.pain_point !== null">
           <label for="pain_point">Pain Points</label>
           <p> {{form.pain_point}} </p>
         </div>
@@ -70,8 +70,7 @@
 
       <hr>
       <h4>Comments</h4>
-      <comment-view v-bind:sourceTable="source"
-                    v-bind:itemId='form.id'></comment-view>
+      <comment-view v-bind:sourceTable="source" v-bind:itemId='form.id'></comment-view>
 
     </div>
       <div  id='persona-detail-edit' v-else>
@@ -205,20 +204,20 @@ export default {
     return {
       form: {
         id : null,
-        name: '',
-        title: '',
+        name: null,
+        title: null,
         external: null,
         market_size: null,
-        quote: '',
-        job_function: '',
-        needs: '',
-        wants: '',
-        pain_point: '',
+        quote: null,
+        job_function: null,
+        needs: null,
+        wants: null,
+        pain_point: null,
         buss_val: null,
-        revision: '',
+        revision: null,
         products: [],
         roles: [] ,
-        persona_picture: '',
+        persona_picture: null,
         persona_file: null},
       editing: false,
       source: 'persona',
@@ -327,16 +326,12 @@ export default {
          var get_url = '/api/persona-table/';
          get_url += this.form.id ;
 
-         var archive_set = { 'archived': 1};
 
          console.log(get_url)
          await axios({
              method: 'PUT',
              url: get_url,
-             data: archive_set,
-             params: {
-                table: "persona"
-              }
+             data: { 'archived': true},
             })
          .then(function (response) {
              console.log(response);})
@@ -344,7 +339,7 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('persona-table-changed' , archive_set )
+         EventBus.$emit('persona-table-changed' , "archived" )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
 

@@ -31,6 +31,10 @@ const router =  new Router({
       path: '/admin',
       name: 'admin',
       component: Admin,
+      beforeEnter: (to,from,next) => {
+        if (store.state.role === 'admin') next()
+        else next(false)
+      }
     },
     {
       path: '/persona',

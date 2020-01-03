@@ -229,17 +229,13 @@ export default {
          await axios({
             method: 'put',
             url: '/api/product-table/' + this.form.id ,
-            data: {
-              'id' : this.form.id,
-              'archived': 1
-            }
          })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('product-table-changed' , 'data archived' )
+         EventBus.$emit('product-table-changed' , 'archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
      },

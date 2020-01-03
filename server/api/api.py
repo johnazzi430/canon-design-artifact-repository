@@ -490,16 +490,15 @@ def protected():
 
 @api.route('/login', methods = ['POST'])
 def authenticate_user():
-    print(request.json)
     username = request.json.get('username')
     password = request.json.get('password')
     user = User.query.filter_by(username = username).first()
-    if not user or not user.verify_password(password):
+    if not user or not user.verify_password(password) or not user.role:
         return jsonify( { 'username': username , 'authenticated' : False} ) , 401
     g.user = user
     token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
 #    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
-    return jsonify( {"token" : token.decode('UTF-8') , "user" : username, "role" : user.role}) , 200
+    return jsonify( {"token" : token.decode('UTF-8') , "username" : username, "role" : user.role}) , 200
 
 @api.route('/refresh', methods = ['GET'])
 @token_required
@@ -533,7 +532,7 @@ def reset_password():
     current_password = request.json.get('current_password')
     new_password = request.json.get('new_password')
     user = User.query.filter_by(username = username).first()
-    if not user or not user.verify_password(current_password):
+    if not user or not user.verify_password(current_password) or not user.role:
         return jsonify( { 'message': "current password incorrect"} )
     user.hash_password(new_password)
     db.session.commit()

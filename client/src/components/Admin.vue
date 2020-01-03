@@ -80,14 +80,12 @@ export default {
 
     async onCellValueChanged(params) {
       // var colId = params.column.getId();
-      console.log( params.data.username,params.data.role,store.state.role)
+      console.log( params.data.username,params.data.role)
       await axios({
          method: 'put',
-         url: '/api/users/admin',
+         url: '/api/users/' + params.data.user_id,
          data: {
-           'username' : params.data.username,
-           'role': params.data.role,
-           'admin' : this.$store.state.role
+           'role': params.data.role
          }
       })
     },

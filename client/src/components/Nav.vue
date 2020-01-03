@@ -6,14 +6,9 @@
           style="padding-left:30px">
         <div class="navbar-nav">
           <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
-          <!-- <b-nav-item :to="{path :'/'}">Home</b-nav-item>
-          <b-nav-item :to="{path :'/persona'}">Personas</b-nav-item >
-          <b-nav-item :to="{path :'/product'}">Products</b-nav-item>
-          <b-nav-item :to="{path :'/login'}">login</b-nav-item> -->
           <b-nav-item to="/insights">Insights</b-nav-item>
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
-          <!-- <b-nav-item disabled to="/insights">Insights</b-nav-item> -->
           <b-nav-item disabled>Playlist</b-nav-item>
           <b-nav-item disabled>About</b-nav-item>
           <b-nav-item v-if="isLoggedIn" @click='logout'>Logout</b-nav-item>
@@ -33,19 +28,17 @@ export default {
       role : null
     }
   },
-  computed :{
+  computed:{
     isLoggedIn : function() {return this.$store.getters.isLoggedIn},
     userRole : function() {return this.$store.getters.userRole}
+
   },
   methods: {
-    logout() {
+    async logout() {
       this.$store.dispatch('logout')
       this.$router.push('/login')
     },
   },
-  mounted() {
-    this.role = this.$store.state.role
-  }
 }
 
 </script>
