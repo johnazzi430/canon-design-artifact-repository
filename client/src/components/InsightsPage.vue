@@ -78,7 +78,7 @@ export default {
    }
   },
   watch: {
-    '$route.params.id ' (to, from) {
+    '$route' (to, from) {
       EventBus.$emit('insight-selection-changed',this.selectedRow = this.$route.params.id )
     }
   },
@@ -101,45 +101,6 @@ export default {
     },
 
     changeView(view) { this.view = view},
-
-    getFile(file_id) {
-        const self = this;
-        axios({
-        method: 'get',
-        url: '/api/insights/1/files',
-      }
-      ).then(function(response){
-        self.image = 'data:image/jpeg;base64,' + response.data[0]
-        console.log(response);
-      })
-    },
-
-    handleFileUpload(){
-      this.file = this.$refs.file.files[0];
-    },
-
-    submitFiles(){
-
-            let formData = new FormData();
-
-            formData.append('file', this.file);
-            formData.append('filename', 'blank');
-
-            axios({
-              method: 'post',
-              url: '/api/insights/1/files',
-              data : formData,
-              headers: {
-                    'Content-Type': 'multipart/form-data'
-              }
-            }
-            ).then(function(response){
-              console.log(response);
-            })
-            .catch(function(error){
-              console.log(error);
-            });
-    },
   },
   mounted() {
 

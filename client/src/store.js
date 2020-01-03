@@ -11,7 +11,8 @@ export default new Vuex.Store({
   state: {
     status: '',
     token: localStorage.getItem('token') || '',
-    user : {}
+    user : {},
+    role : null
   },
   mutations: {
 
@@ -85,8 +86,8 @@ export default new Vuex.Store({
 
   },
   getters : {
-    isLoggedIn: state => !!state.token,
-    authStatus: state => state.status,
-    userRole: state => state.role,
+    isLoggedIn: state => {return !!state.token},
+    authStatus: state => {return state.status},
+    userRole: state => {return state.role},
   },
 });

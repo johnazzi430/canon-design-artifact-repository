@@ -288,30 +288,14 @@ export default {
        async onEdit() {
          var key;
          for (key of this.edited_fields) {
-           if (key.match('products')) {
-             await axios({
-                 method: 'post',
-                 url: '/api/insights/'+ this.form.id +'/products',
-                 data: this.form.products,
+            await axios({
+                 method: 'put',
+                 url: '/api/insights/' + this.form.id ,
+                 data: {
+                    [key] : this.form[key]
+                  }
                  })
-           }
-           else if (key.match('personas')) {
-             await axios({
-                 method: 'post',
-                 url: '/api/insights/'+ this.form.id +'/personas',
-                 data: this.form.personas,
-                 })
-           }
-           else {
-           await axios({
-               method: 'put',
-               url: '/api/insights/' + this.form.id ,
-               data: {
-                 'id' : this.form.id
-               }
-               })
-             };
-           };
+               };
 
         EventBus.$emit('insight-data-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
@@ -365,7 +349,6 @@ export default {
          .catch(function (error) {
              console.log(error);})
 
-         console.log('delete')
          EventBus.$emit('insight-data-changed' , 'archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
       },

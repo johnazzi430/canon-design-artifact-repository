@@ -329,19 +329,9 @@ def insights_put(id):
         downchange = ""
     else:
         upchange = data[key]
-        downchange = getattr(persona, key) #GET DOWNCHANGE
-        setattr(persona, key , upchange) #SET UPCHANGE
+        downchange = getattr(insight, key) #GET DOWNCHANGE
+        setattr(insight, key , upchange) #SET UPCHANGE
     setattr(insight, 'revision' ,insight.revision + 1)
-
-    ## Add comment to log changes and edits
-    insight_comments = InsightComments(                          ## SET ID
-                source_id = id,
-                comment_body= None,
-                creator_id = None,
-                action = 'edited '+ key,
-                downchange = downchange,
-                upchange = upchange)
-    db.session.add(insight_comments)
     db.session.commit()
     return request.json, 201
 

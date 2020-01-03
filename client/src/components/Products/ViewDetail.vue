@@ -1,8 +1,8 @@
 
 <template>
 <div style="padding-right:15px; margin-left:15px">
-    <b-form id='product-detail'
-        @submit="onEdit"
+  <b-form id='product-detail'
+        @submit.prevent="onEdit"
         @reset="onReset"
         @archive="onArchive">
       <div id='product-detail-show' v-if='editing === false && form.id !== null'>
@@ -13,15 +13,15 @@
         <p class="text-wrap"> {{form.name}} </p>
         <label>Description</label>
         <p class="text-wrap"> {{form.description}} </p>
-        <div v-if="form.metrics!== ''">
+        <div v-if="form.metrics!== null">
           <label>Metrics</label>
           <p class="text-wrap"> {{form.metrics}} </p>
         </div>
-        <div v-if="form.features!== ''">
+        <div v-if="form.features!== null">
           <label>Product Features</label>
           <p class="text-wrap"> {{form.features}} </p>
         </div>
-        <div v-if="form.goals!== ''">
+        <div v-if="form.goals!== null">
           <label>Goals</label>
           <p class="text-wrap"> {{form.goals}} </p>
         </div>
@@ -107,7 +107,7 @@
             type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
-          <b-button type="submit" variant="primary" v-on:click='onAdd'>
+          <b-button type="submit" variant="primary" v-on:click.prevent='onAdd'>
             Add New Product</b-button>
         </div>
       </div>
@@ -129,17 +129,18 @@ export default {
     return {
       form: {
         id: null,
-        name: '',
-        description: '',
-        metrics: '',
-        features: '',
-        goals: '',
+        name: null,
+        description: null,
+        metrics: null,
+        features: null,
+        goals: null,
         owner: '',
         product_homepage: '',
         personas: [],
         products:[],
         product_photo: '',
         product_file: null},
+      errors: {},
       editing: false,
       source: 'product',
       persona_options : [],
