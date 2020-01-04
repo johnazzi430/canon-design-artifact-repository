@@ -4,6 +4,49 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from datetime import datetime
 
+# USER -------------------------------------------------------------------------
+
+from werkzeug.security import generate_password_hash , check_password_hash
+
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.Text)
+    password_hash = db.Column(db.Text)
+    role = db.Column(db.Text)
+
+    def hash_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash,password)
+
+    def generate_auth_token(self, expiration = 600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+        return s.dumps({ 'id': self.id })
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None # valid token, but expired
+        except BadSignature:
+            return None # invalid token
+        user = User.query.get(data['id'])
+        return user
+
+class UserSchema(ma.ModelSchema):
+    class Meta:
+        model = User
+        sqla_session = db.session
+
+class Roles(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.Text)
+    ability = db.Column(db.Text)
 
 # RELATIONSHIP TABLES ----------------------------------------------------------
 persona_roles_rel = db.Table('persona_roles_rel',
@@ -204,46 +247,19 @@ class InsightFileSchema(ma.ModelSchema):
         model = InsightFile
         sqla_session = db.session
 
-# USER -------------------------------------------------------------------------
 
-from werkzeug.security import generate_password_hash , check_password_hash
-
-class User(db.Model):
-    __tablename__ = 'users'
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text)
-    password_hash = db.Column(db.Text)
-    role = db.Column(db.Text)
-
-    def hash_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash,password)
-
-    def generate_auth_token(self, expiration = 600):
-        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
-        return s.dumps({ 'id': self.id })
-
-    @staticmethod
-    def verify_auth_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except SignatureExpired:
-            return None # valid token, but expired
-        except BadSignature:
-            return None # invalid token
-        user = User.query.get(data['id'])
-        return user
-
-class UserSchema(ma.ModelSchema):
-    class Meta:
-        model = User
-        sqla_session = db.session
-
-class Roles(db.Model):
-    __tablename__ = 'roles'
+# INSIGHTS ---------------------------------------------------------------------
+class Playlist(db.Model):
+    __tablename__ = 'playlist'
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.Text)
-    ability = db.Column(db.Text)
+    user_id = db.Column(db.Integer, ForeignKey('users.user_id'), index=True)
+    source_table = db.Column(db.Text)
+    source_id = db.Column(db.Integer)
+    order = db.Column(db.Integer)
+
+
+class PlaylistSchema(ma.ModelSchema):
+
+    class Meta:
+        model = Playlist
+        sqla_session = db.session

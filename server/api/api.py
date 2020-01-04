@@ -432,6 +432,74 @@ def insight_comments_post(id):
     return request.json, 201
 
 
+#### Playlist ---------------------------------------------
+
+@api.route("/playlist/<int:user_id>" , methods = ['GET'])
+def user_playlist(user_id):
+    if request.args.get('details') == 'True' :
+        playlist = Playlist.query.filter(Playlist.user_id == user_id).all()
+        response = []
+        for play_item in playlist:
+            source = play_item.source_table
+            source_id = play_item.source_id
+            if source == 'persona':
+                persona = Persona.query.filter(Persona.id == source_id).first()
+                data = PersonaSchema(only={'id','name','title','quote'}).dump(persona)
+                data.update({"source" : source})
+                response.append(data) ## # TODO: make this better
+
+            if source == 'product':
+                product = Product.query.filter(Product.id == source_id).first()
+                data = ProductSchema(only={'id','name','description'}).dump(product)
+                data.update({"source" : source})
+                response.append(data)
+
+            if source == 'insight':
+                insight = Insight.query.filter(Insight.id == source_id).first()
+                data = InsightSchema(only={'id','title','description','experience_vector'}).dump(insight)
+                data.update({"source" : source})
+                response.append(data)
+
+        return json.dumps(response), 201
+    else:
+        playlist = Playlist.query.filter(Playlist.user_id == user_id).all()
+        return json.dumps(PlaylistSchema().dump(playlist,many=True))
+
+@api.route("/playlist" , methods = ['POST'])
+def add_to_playlist():
+    if not request.args.get('source_table'):
+        return "Missing source_table agrument", 404
+    if not request.args.get('source_id'):
+        return "Missing source_id agrument", 404
+    if not request.args.get('user_id'):
+        return "Missing user_id agrument", 404
+
+    playlist_item= Playlist(
+                user_id = request.args.get('user_id'),   ### remove later request.args.get('user_id')
+                source_id = request.args.get('source_id'),
+                source_table = request.args.get('source_table'),
+                order = None)
+    db.session.add(playlist_item)
+    db.session.commit()
+    return "Added to user playlist", 201
+
+@api.route("/playlist" , methods = ['DELETE'])
+def remove_from_playlist():
+    if not request.args.get('source_table'):
+        return "Missing source_table agrument", 404
+    if not request.args.get('source_id'):
+        return "Missing source_id agrument", 404
+    if not request.args.get('user_id'):
+        return "Missing user_id agrument", 404
+
+    playlist_item = Playlist.query.filter(
+                Playlist.user_id == request.args.get('user_id'),   ### remove later request.args.get('user_id')
+                Playlist.source_id == request.args.get('source_id'),
+                Playlist.source_table == request.args.get('source_table')) \
+            .first()
+    db.session.delete(playlist_item)
+    db.session.commit()
+    return "Removed from user playlist", 201
 
 
 # PLACEHOLDER FOR API TO PUT NEW ROLES

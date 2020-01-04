@@ -10,6 +10,7 @@ import Login from './components/Login.vue';
 import NotFound from './components/NotFound.vue';
 import Home from './components/Home.vue';
 import About from './components/About.vue';
+import Playlist from './components/Playlist.vue'
 import {EventBus} from  "./index.js";
 import store from  "./store";
 
@@ -60,8 +61,8 @@ const router =  new Router({
       ]
     },
     {
-      path: '/insights',
-      name: 'insights default',
+      path: '/insight',
+      name: 'insight default',
       component: InsightsPage,
       children:[
         {
@@ -69,6 +70,11 @@ const router =  new Router({
           component: InsightsPage,
         }
       ]
+    },
+    {
+      path: '/playlist',
+      name: 'playlist',
+      component: Playlist,
     },
     {
       path: '/about',
