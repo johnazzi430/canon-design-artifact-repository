@@ -61,12 +61,6 @@
       <br>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
 
-      <hr>
-      <h4>Comments</h4>
-      <comment-view :key='form.id'
-                    v-bind:sourceTable="source"
-                    v-bind:itemId='form.id'></comment-view>
-
     </div>
       <div  id='persona-detail-edit' v-else>
         <h1 v-if='form.id === null'>Add</h1>
@@ -108,11 +102,19 @@
           <b-form-select v-model="form.journey" id="journey" :options="journey_options"
           name="journey" @change="onInputChanged('journey')"/>
 
-          <div class="large-12 medium-12 small-12 cell">
-            <label>Files
-              <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()"/>
-            </label>
-            <button href="javascript:void(0)" v-on:click="submitFiles()">Submit</button>
+          <label>Files</label>
+          <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+          <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
+          <br>
+          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+            {{uploadedFile.filename}}
+            <button
+              type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+              <i class="fa fa-file"></i>
+            </button>
+            <button v-on:click="deleteFile(uploadedFile.id)"
+                type="button" href="javascript:void(0)">&times;
+            </button>
           </div>
           <br>
           <label for="persona-select">Choose Personas: </label>
@@ -172,6 +174,19 @@
         </div>
       </div>
   </b-form>
+
+  <div class="right" style="align-content:right">
+    <span>add to playlist -> </span>
+    <playlist-add class="right" :source='"insight"' :source_id="form.id"/>
+  </div>
+
+  <hr>
+  <h4>Comments</h4>
+  <comment-view :key='form.id'
+                v-bind:sourceTable="source"
+                v-bind:itemId='form.id'>
+  </comment-view>
+
 </div>
 </template>
 
@@ -275,7 +290,6 @@ export default {
       },
 
       submitFiles(){
-
               let formData = new FormData();
 
               for( var i = 0; i < this.files.length; i++ ){
@@ -297,6 +311,15 @@ export default {
               .catch(function(){
                 console.log('FAILURE!!');
               });
+      },
+
+      deleteFile(){
+        const self = this;
+        axios({
+          method: 'delete',
+          url: '/api/insights/files/'+this.form.id+'?file_id='+ file_id
+        })
+        // need to add action to update view
       },
 
       handleFilesUpload(){

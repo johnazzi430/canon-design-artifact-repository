@@ -67,14 +67,6 @@
 
       </div>
       <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
-
-      <hr>
-      <h4>Comments</h4>
-      <comment-view :key='form.id'
-                    v-bind:sourceTable="source"
-                    v-bind:itemId='form.id'>
-      </comment-view>
-
     </div>
       <div  id='persona-detail-edit' v-else>
         <h1 v-if='form.id === null'>Add</h1>
@@ -162,12 +154,20 @@
           <br>
         </div>
         <!-- Single file -->
-        <div class="container" >
-          <label>Files
-            <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
-          </label>
-          <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
-            <br>
+        <br>
+        <label>Files</label>
+        <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+        <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
+        <br>
+        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          {{uploadedFile.filename}}
+          <button
+            type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+            <i class="fa fa-file"></i>
+          </button>
+          <button v-on:click="deleteFile(uploadedFile.id)"
+              type="button" href="javascript:void(0)">&times;
+          </button>
         </div>
         <div>
           <label for="persona_file">Add File</label>
@@ -188,6 +188,18 @@
           <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Persona</b-button>
         </div>
       </div>
+
+      <br>
+      <div class="right" style="align-content:right">
+        <span>add to playlist -> </span>
+        <playlist-add class="right" :key='form.id' :source='"persona"' :source_id="form.id"/>
+      </div>
+      <h4>Comments</h4>
+      <comment-view :key='form.id'
+                    v-bind:sourceTable="source"
+                    v-bind:itemId='form.id'>
+      </comment-view>
+
   </b-form>
 </div>
 </template>
@@ -392,7 +404,14 @@ export default {
                 console.log(error);
               });
       },
-
+      deleteFile(){
+        const self = this;
+        axios({
+          method: 'delete',
+          url: '/api/persona/files/'+this.form.id+'?file_id='+ file_id
+        })
+        // need to add action to update view
+      },
      },
   };
 

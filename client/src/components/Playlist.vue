@@ -9,9 +9,7 @@
         placeholder="Search for item"
         aria-label="Search">
     </div>
-    <br>
-
-    <b-card-group columns>
+    <b-card-group columns v-drag-and-drop:options="options">
       <b-card class="card" v-for="card in filterItems(cards)"
               v-bind:key="card.id + card.source"
               v-bind:class="[ card.experience_vector, card.source]">
@@ -24,10 +22,13 @@
           {{card.title}}
           {{card.description}}
           {{card.quote}}
-          <br>
-          <b-button :to='"/"+card.source+"/" +card.id'></b-button>
+          <b-button variant="outline-secondary" :to='"/"+card.source+"/" +card.id'>
+            open <i class="fa fa-angle-double-right"></i>
+          </b-button>
         </b-card-text>
-        <button v-on:click="removeFromPlaylist( card.source , card.id )">remove</button>
+        <!-- <b-button variant="outline-secondary"
+                  v-on:click="removeFromPlaylist( card.source , card.id )">
+          remove from playlist</b-button> -->
       </b-card>
     </b-card-group>
   </div>
@@ -37,15 +38,32 @@
 /*eslint-disable */
 import axios from 'axios'
 import {EventBus} from "../index.js";
+import PlaylistAdd from './Playlist/PlaylistAdd.vue'
+
 
 export default {
+  name: 'playlist',
+  components: {
+    'playlist-add':PlaylistAdd,
+  },
   data() { return {
     cards : [],
-    search : ''
+    search : '',
+    options:{
+      dropzoneSelector: 'ul',
+      draggableSelector: 'li',
+      handlerSelector: null,
+      reactivityEnabled: true,
+      multipleDropzonesItemsDraggingEnabled: true,
+      showDropzoneAreas: true,
+      onDrop: function(event) {},
+      onDragstart: function(event) {},
+      onDragenter: function(event) {},
+      onDragend: function(event) {}
+      }
     }
   },
   beforeCreate() {
-
     const self = this;
     var user_id = 1
     var get_url = `/api/playlist/` + user_id +'?details=True';
@@ -60,8 +78,6 @@ export default {
   },
   methods:{
     removeFromPlaylist: async function(source,id) {
-      console.log(source)
-      console.log(id)
       await axios({
            method: 'delete',
            url: '/api/playlist',
@@ -71,7 +87,6 @@ export default {
               source_id : id
             }
            })
-      console.log("deleted")
     },
 
     filterItems: function(cards) {

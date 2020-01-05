@@ -8,6 +8,7 @@ from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
 from flask_cors import CORS
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 from functools import wraps
@@ -459,7 +460,6 @@ def user_playlist(user_id):
                 data = InsightSchema(only={'id','title','description','experience_vector'}).dump(insight)
                 data.update({"source" : source})
                 response.append(data)
-
         return json.dumps(response), 201
     else:
         playlist = Playlist.query.filter(Playlist.user_id == user_id).all()
@@ -492,11 +492,12 @@ def remove_from_playlist():
     if not request.args.get('user_id'):
         return "Missing user_id agrument", 404
 
-    playlist_item = Playlist.query.filter(
-                Playlist.user_id == request.args.get('user_id'),   ### remove later request.args.get('user_id')
+    playlist_item = Playlist.query.filter(and_(
+                Playlist.user_id == request.args.get('user_id'),
                 Playlist.source_id == request.args.get('source_id'),
-                Playlist.source_table == request.args.get('source_table')) \
+                Playlist.source_table == request.args.get('source_table'))) \
             .first()
+
     db.session.delete(playlist_item)
     db.session.commit()
     return "Removed from user playlist", 201
