@@ -52,10 +52,10 @@
         <label>Files:</label>
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
-          <button
+          <b-button
             type="button" name="button" target="_blank" v-on:click="getFile(uploadedFile.id)">
             <i class="fa fa-file"></i>
-          </button>
+          </b-button>
         </div>
       </div>
       <br>
@@ -102,20 +102,6 @@
           <b-form-select v-model="form.journey" id="journey" :options="journey_options"
           name="journey" @change="onInputChanged('journey')"/>
 
-          <label>Files</label>
-          <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
-          <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
-          <br>
-          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
-            {{uploadedFile.filename}}
-            <button
-              type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
-              <i class="fa fa-file"></i>
-            </button>
-            <button v-on:click="deleteFile(uploadedFile.id)"
-                type="button" href="javascript:void(0)">&times;
-            </button>
-          </div>
           <br>
           <label for="persona-select">Choose Personas: </label>
           <br>
@@ -134,7 +120,6 @@
               </span>
             </template>
           </multiselect>
-          <label for="product-select">Product:    </label>
           <br>
           <label>Choose Products</label>
           <multiselect
@@ -154,14 +139,30 @@
           </multiselect>
           <br>
         </div>
-        <div>
-          <label for="file">Add File</label>
-          <b-form-file v-model="form.file"
-          :state="Boolean(form.file)"
-          name="file"
+        <label>Files</label>
+        <!-- v-on:change="handleFilesUpload()" -->
+        <b-form-file
+          type="file" id="file" ref="file"
+          v-model="file"
+          :state="Boolean(file)"
           placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here..."></b-form-file>
+          drop-placeholder="Drop file here..."
+          ></b-form-file>
+        <b-button variant="info"
+          href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
+        <br>
+        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          {{uploadedFile.filename}}
+          <b-button variant="outline-primary"
+            type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+            <i class="fa fa-file"></i>
+          </b-button>
+          <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
+              type="button" href="javascript:void(0)">&times;
+          </b-button>
         </div>
+        <hr>
+
         <div id="button-if" v-if='form.id != null'>
           <b-button type="reset" variant="secondary">Return</b-button>
           <b-button href="javascript:void(0)"
@@ -220,6 +221,7 @@ export default {
         products: [],
         personas: []
       },
+      file : null,
       uploadedFiles: [],
       editing: false,
       source: 'insights',
@@ -242,7 +244,7 @@ export default {
         .then(response => {self.persona_options = response.data;})
 
       // UPDATE DATA ON CHANGES
-      EventBus.$on('insight-selection-changed', function(selection){
+      EventBus.$on('insight-selection-changed', async function(selection){
 
         //make sure when "add" button is pressed no errors are thrown
         if (selection === null) {
@@ -252,7 +254,7 @@ export default {
         var get_url = "/api/insights/";
         get_url += selection;
 
-        axios.get(get_url)
+        await axios.get(get_url)
         .then(response => {
             self.form.id = selection;
             self.form.title= response.data[0].title;
@@ -268,11 +270,10 @@ export default {
             self.form.products = response.data[0].products;
             self.editing = false;
             self.edited_fields.length = 0 ;
-          }
-        )
+          })
         .catch(error => console.log(error))
 
-        axios({
+        await axios({
           method: 'get',
           url: '/api/insights/files/' + selection,
         }).then(function(response){
@@ -290,26 +291,25 @@ export default {
       },
 
       submitFiles(){
+
               let formData = new FormData();
 
-              for( var i = 0; i < this.files.length; i++ ){
-                let file = this.files[i];
+              formData.append('file', this.file);
+              formData.append('filename', 'blank');
 
-                formData.append('files[' + i + ']', file);
-              }
-
-              axios.post( '/api/insights/files',
-                formData,
-                {
-                  headers: {
+              axios({
+                method: 'post',
+                url: '/api/insights/files/' + this.form.id,
+                data : formData,
+                headers: {
                       'Content-Type': 'multipart/form-data'
-                  }
                 }
-              ).then(function(){
-                console.log('SUCCESS!!');
+              }
+              ).then(function(response){
+                console.log(response);
               })
-              .catch(function(){
-                console.log('FAILURE!!');
+              .catch(function(error){
+                console.log(error);
               });
       },
 

@@ -34,7 +34,7 @@ export default new Vuex.Store({
     logout(state){
       state.status = ''
       state.token = null
-      state.role = ''
+      state.user = ''
     }
 
   },
@@ -88,6 +88,18 @@ export default new Vuex.Store({
   getters : {
     isLoggedIn: state => {return !!state.token},
     authStatus: state => {return state.status},
-    userRole: state => {return state.role},
+    userData: state => {
+      axios({
+        method : 'get',
+        url : `/api/users`,
+        params : {
+          'session' : 'true'
+        }
+      })
+      .then(response => {
+        state.user = response.data[0]
+      })
+      return state.user
+    },
   },
 });

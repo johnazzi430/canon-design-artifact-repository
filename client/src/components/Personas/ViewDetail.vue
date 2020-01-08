@@ -155,28 +155,28 @@
         </div>
         <!-- Single file -->
         <br>
-        <label>Files</label>
-        <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
-        <button href="javascript:void(0)" v-on:click='submitFiles'>Add Files</button>
+        <b-form-file
+          type="file" id="file" ref="file"
+          v-model="file"
+          :state="Boolean(file)"
+          placeholder="Choose a file or drop it here..."
+          drop-placeholder="Drop file here...">
+        </b-form-file>
+        <b-button variant="info"
+          href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
         <br>
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
-          <button
+          <b-button variant="outline-primary"
             type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
             <i class="fa fa-file"></i>
-          </button>
-          <button v-on:click="deleteFile(uploadedFile.id)"
+          </b-button>
+          <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
               type="button" href="javascript:void(0)">&times;
-          </button>
+          </b-button>
         </div>
-        <div>
-          <label for="persona_file">Add File</label>
-          <b-form-file v-model="form.persona_file"
-          :state="Boolean(form.persona_file)"
-          name="persona_file"
-          placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here..."></b-form-file>
-        </div>
+        <hr>
+
         <div id="button-if" v-if='form.id != null'>
           <b-button type="reset" variant="secondary">Return</b-button>
           <b-button href="javascript:void(0)"
@@ -235,6 +235,7 @@ export default {
         persona_picture: null,
         persona_file: null},
       uploadedFiles: [],
+      file: null,
       editing: false,
       source: 'persona',
       product_options: [],
@@ -404,6 +405,7 @@ export default {
                 console.log(error);
               });
       },
+
       deleteFile(){
         const self = this;
         axios({

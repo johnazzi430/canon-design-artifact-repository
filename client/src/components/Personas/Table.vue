@@ -75,7 +75,7 @@ export default {
 
       document.querySelector("#selectedRows").innerHTML = selectedRowsString;
       EventBus.$emit('persona-selection-changed' ,this.selectedRow = selectedRowsid)
-      this.$router.push('/persona/' + id )
+      this.$router.push('/persona/' + selectedRowsid )
     },
 
 

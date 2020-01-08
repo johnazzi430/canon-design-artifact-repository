@@ -12,7 +12,7 @@
           <h1>Product</h1>
         </router-link></button>
       <button type="button" class="btn btn-outline-primary">
-        <router-link to="/insights">
+        <router-link to="/insight">
           <i class="fa fa-exclamation fa-5x"></i>
           <h1>Insights</h1>
         </router-link></button>

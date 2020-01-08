@@ -11,7 +11,7 @@
     </div>
     <b-card-group columns v-drag-and-drop:options="options">
       <b-card class="card" v-for="card in filterItems(cards)"
-              v-bind:key="c ard.id + card.source"
+              v-bind:key="card.id + card.source"
               v-bind:class="[ card.experience_vector, card.source]">
         <b-card-text>
           <h4 style="text-align:left">{{card.source | capitalize}} id: {{card.id}}</h4>

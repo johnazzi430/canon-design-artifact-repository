@@ -554,7 +554,13 @@ def authenticate_user():
     g.user = user
     token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
 #    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    session['user'] = user.user_id
     return jsonify( {"token" : token.decode('UTF-8') , "username" : username, "role" : user.role}) , 200
+
+@api.route('/logout', methods = ['POST'])
+def clear_session():
+    session.pop('user', None)
+    return "logged out"
 
 @api.route('/refresh', methods = ['GET'])
 @token_required
@@ -599,8 +605,16 @@ def reset_password():
 
 @api.route('/users', methods = ['GET'])
 def get_user_data():
-    users = User.query.all()
-    return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
+    if request.args.get('session') == 'true':
+        # GET current user info
+        user_id = session['user']
+        print(user_id)
+        user = User.query.filter_by(user_id = user_id).all()
+        return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
+    else:
+        # GET everything
+        users = User.query.all()
+        return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
 
 @api.route('/users/<int:user_id>', methods = ['GET'])
 def get_user_data_by_id(user_id):

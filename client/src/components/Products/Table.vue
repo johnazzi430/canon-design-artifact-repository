@@ -12,7 +12,7 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100vl; height: 100vl;"
+    <ag-grid-vue style="width: 100vl; height: 100vh;"
         class="ag-theme-balham"
         :columnDefs="columnDefs"
         :rowData="rowData"
@@ -67,6 +67,7 @@ export default {
 
       document.querySelector("#selectedRows").innerHTML = selectedRowsString;
       EventBus.$emit('product-selection-changed' ,this.selectedRow = selectedRowsid)
+      this.$router.push('/product/' + selectedRowsid )
     },
 
     onFilterTextBoxChanged() {
