@@ -183,7 +183,8 @@
 
   <hr>
   <h4>Comments</h4>
-  <comment-view :key='form.id'
+  <comment-view v-if='form.id != null'
+                :key='form.id'
                 v-bind:sourceTable="source"
                 v-bind:itemId='form.id'>
   </comment-view>

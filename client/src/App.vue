@@ -35,8 +35,8 @@ body, html {
   padding: 0;
   margin: 0;
   width: 100%;
-  min-height: 100vh;
-  background: #F7F7F7;
+  min-height: 100%;
+  background-color: #F7F7F7;
 }
 
 #app {
@@ -47,6 +47,7 @@ body, html {
   color: #2c3e50;
   background: #F7F7F7;
 }
+
 
 
 </style>
