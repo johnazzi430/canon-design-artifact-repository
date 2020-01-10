@@ -8,6 +8,7 @@ from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
 from flask_cors import CORS
+import sqlalchemy
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
@@ -381,6 +382,7 @@ def insight_file_delete(id):
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
 def persona_comments(id):
     persona_comments = PersonaComments.query.filter(PersonaComments.source_id == id).all()
+#                        .join(User,user_id = PersonaComments.creator_id) \ 
     return json.dumps(PersonaCommentsSchema().dump(persona_comments,many=True))
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
@@ -398,10 +400,12 @@ def insights_comments(id):
 ## COMMENT ADD
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
 def persona_comments_post(id):
+
+    user_id = User.query.filter_by(user_id = session['user']).first().user_id
     persona_comments = PersonaComments(                          ## SET ID
                 source_id = id,
                 comment_body= request.json['comment_body'],
-                creator_id = None,
+                creator_id = user_id,
                 action = None,
                 downchange = None,
                 upchange = None)
@@ -548,7 +552,7 @@ def protected():
 def authenticate_user():
     username = request.json.get('username')
     password = request.json.get('password')
-    user = User.query.filter_by(username = username).first()
+    user = User.query.filter(sqlalchemy.func.lower(User.username) == username.lower()).first() ## force lowercase filter
     if not user or not user.verify_password(password) or not user.role:
         return jsonify( { 'username': username , 'authenticated' : False} ) , 401
     g.user = user
@@ -566,7 +570,7 @@ def clear_session():
 @token_required
 def refresh_token():
     request.json.get('username')
-    user = User.query.filter_by(username = username).first()
+    user = User.query.filter_by(username == username).first()
     g.user = user
     token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
     return jsonify( {"token" : token.decode('UTF-8')})
@@ -574,7 +578,7 @@ def refresh_token():
 #
 @api.route('/users', methods = ['POST'])
 def add_user():
-    username = request.json.get('username')
+    username = request.json.get('username').lower()
     password = request.json.get('password')
     if username is None or password is None:
         abort(400) # missing arguments

@@ -141,6 +141,7 @@ class PersonaComments(db.Model):
                             default=datetime.utcnow)
 
 class PersonaCommentsSchema(ma.ModelSchema):
+
     class Meta:
         model = PersonaComments
         sqla_session = db.session
