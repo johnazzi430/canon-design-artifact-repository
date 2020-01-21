@@ -9,8 +9,17 @@
       <h1>Detail</h1>
       <span> Persona ID: {{form.id}} | Revision: {{form.revision}}  </span>
       <div class="">
-        <div class="">
-          <img src="../../../public/assets/img_avatar2.png" alt="Avatar" class="avatar">
+        <!-- Yeah I mean im not happy about this either: -->
+        <div>
+          <div v-if="form.avatar == true">
+            <img
+             v-bind:src="'/api/persona/avatar/' + form.id"
+             class="avatar">
+          </div>
+          <div v-else>
+              <img src="../../../public/assets/img_avatar2.png"
+                   alt="Avatar" class="avatar">
+          </div>
         </div>
         <label for="Name">Name</label>
         <div class="panel-group"> {{form.name}} </div>
@@ -71,6 +80,21 @@
       <div  id='persona-detail-edit' v-else>
         <h1 v-if='form.id === null'>Add</h1>
         <h1 v-else>Edit</h1>
+        <picture-input
+                    ref="pictureInput"
+                    width="100"
+                    height="100"
+                    margin="16"
+                    accept="image/jpeg,image/png"
+                    size="10"
+                    radius="50"
+                    button-class="btn"
+                    :custom-strings="{
+                      upload: '<h1>Bummer!</h1>',
+                      drag: 'Drag in a photo or click to change'
+                    }"
+                    @change="onChange">
+        </picture-input>
         <div>
           <label for="Name">Name</label>
           <b-form-input v-model="form.name" @change="onInputChanged('name')" name="Name" />
@@ -135,6 +159,7 @@
             </template>
           </multiselect>
           <br>
+          <label for="product-select">Choose Persona Roles:    </label>
           <br>
           <multiselect
                       v-model="form.roles" :options="role_options"
@@ -155,26 +180,29 @@
         </div>
         <!-- Single file -->
         <br>
-        <b-form-file
-          type="file" id="file" ref="file"
-          v-model="file"
-          :state="Boolean(file)"
-          placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here...">
-        </b-form-file>
-        <b-button variant="info"
-          href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
-        <br>
-        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
-          {{uploadedFile.filename}}
-          <b-button variant="outline-primary"
-            type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
-            <i class="fa fa-file"></i>
-          </b-button>
-          <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
-              type="button" href="javascript:void(0)">&times;
-          </b-button>
+        <div class="wrapper" v-if='form.id != null'>
+          <b-form-file
+            type="file" id="file" ref="file"
+            v-model="file"
+            :state="Boolean(file)"
+            placeholder="Choose a file or drop it here..."
+            drop-placeholder="Drop file here...">
+          </b-form-file>
+          <b-button variant="info"
+            href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
+          <br>
+          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+            {{uploadedFile.filename}}
+            <b-button variant="outline-primary"
+              type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+              <i class="fa fa-file"></i>
+            </b-button>
+            <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
+                type="button" href="javascript:void(0)">&times;
+            </b-button>
+          </div>
         </div>
+
         <hr>
 
         <div id="button-if" v-if='form.id != null'>
@@ -192,7 +220,10 @@
       <br>
       <div class="right" style="align-content:right">
         <span>add to playlist -> </span>
-        <playlist-add class="right" :key='form.id' :source='"persona"' :source_id="form.id"/>
+        <playlist-add class="right"
+                      :key='form.id'
+                      :source='"persona"'
+                      :source_id="form.id"/>
       </div>
       <h4>Comments</h4>
       <comment-view v-if='form.id != null'
@@ -211,11 +242,15 @@ import axios from 'axios'
 import CommentView from '../CommentView.vue'
 import {EventBus} from "../../index.js";
 import store from  "../../store";
-
+import PictureInput from 'vue-picture-input'
 
 export default {
   name: "persona-details",
-  components : {'comment-view': CommentView },
+  components : {
+    'comment-view' : CommentView ,
+    PictureInput
+  },
+
   data() {
     return {
       form: {
@@ -234,7 +269,9 @@ export default {
         products: [],
         roles: [] ,
         persona_picture: null,
-        persona_file: null},
+        persona_file: null,
+        avatar: "../../../public/assets/img_avatar2.png"
+      },
       uploadedFiles: [],
       file: null,
       editing: false,
@@ -282,11 +319,14 @@ export default {
               self.form.revision= response.data[0].revision;
               self.form.products = response.data[0].products;
               self.form.roles = response.data[0].roles;
+              self.form.avatar = response.data[0].avatar;
               self.editing = false;
               self.edited_fields.length = 0 ;
             }
           )
           .catch(error => console.log(error))
+
+
 
           //GET FILES
           axios({
@@ -333,6 +373,14 @@ export default {
 
          EventBus.$emit('persona-table-changed','item-added');
          document.getElementById("right-sidepanel").style.width = "0px";
+         this.$store.commit({
+           type: 'alert',
+           alert : {
+             show : true,
+             variant : "info",
+             content : "New Persona Added!"
+           },
+         })
        },
 
        onReset() {
@@ -359,6 +407,15 @@ export default {
          console.log('delete')
          EventBus.$emit('persona-table-changed' , "archived" )
          document.getElementById("right-sidepanel").style.width = "0px";
+
+         this.$store.commit({
+           type: 'alert',
+           alert : {
+             show : true,
+             variant : "info",
+             content : "Persona Archived!"
+           },
+         })
       },
 
       getFile(file_id) {
@@ -415,7 +472,36 @@ export default {
         })
         // need to add action to update view
       },
+
+      onChange (image) {
+         console.log('New picture selected!')
+         if (image) {
+           console.log('Picture loaded.')
+           this.form.avatar = this.$refs.pictureInput.file
+
+           let formData = new FormData();
+           formData.append('file', this.$refs.pictureInput.file);
+
+           axios({
+             method: 'PUT',
+             url: '/api/persona/avatar/' + this.form.id,
+             data : formData,
+             headers: {
+                   'Content-Type': 'multipart/form-data'
+             }
+           })
+
+         } else {
+           console.log('FileReader API not supported: use the <form>, Luke!')
+         }
+       },
+
+      avatarNotFound(event) {
+         this.form.avatar= null;
+      }
+
      },
+
   };
 
 </script>
@@ -426,10 +512,12 @@ export default {
 <style scoped>
 
 .avatar {
-  vertical-align: middle;
-  text-align: center;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  display: block;
+  object-fit: cover;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 50%;
 }
 

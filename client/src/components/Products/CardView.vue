@@ -87,4 +87,5 @@ export default {
   border-top-width: medium;
   border-image: linear-gradient(to right,#7799FF,purple) 1;
 }
+
 </style>

@@ -2,20 +2,23 @@
 
 <template lang="html">
   <div class="container" :key="commentKey">
-    <div v-for="comment in comments" v-bind:key="comment.id">
-      <div class="" v-if="comment.action === null">
-        <span> {{comment.creator_id}} commented {{comment.create_date | formatDate}}
-        </span>
-        <br>
-        <p class="well">
-          {{comment.comment_body}}
-        </p>
-      </div>
-      <div class="" v-else>
-        <i class="fa fa-edit"></i>
-        <span> {{comment.creator_id}} {{comment.action}}
-          {{comment.create_date | formatDate}}
-        </span>
+    <div class="wrapper" v-if="comments !== null">
+      <div v-for="comment in comments" v-bind:key="comment.id">
+        <div class="" v-if="comment.action === null">
+          <span> {{comment.user.username}} commented {{comment.create_date | formatDate}}
+          </span>
+          <br>
+          <p class="well">
+            {{comment.comment_body}}
+          </p>
+        </div>
+        <div class="" v-else>
+          <i class="fa fa-edit"></i>
+          <span>
+            {{comment.user.username}} {{comment.action}}
+            {{comment.create_date | formatDate}}
+          </span>
+        </div>
       </div>
     </div>
     <b-button v-b-toggle="'collapse-add-comment'" variant="success">Add Comment</b-button>

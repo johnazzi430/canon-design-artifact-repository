@@ -20,6 +20,7 @@
         :columnDefs="columnDefs"
         :rowData="rowData"
         :modules="modules"
+        :floatingFilter="true"
         rowSelection="single"
         @grid-ready="onGridReady"
         @selection-changed="onSelectionChanged">
@@ -55,6 +56,55 @@ export default {
   components: {
     AgGridVue
   },
+
+  beforeMount() {
+
+    this.columnDefs = [
+      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
+      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
+      {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
+      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400},
+      {headerName: "Market Size", field: "market_size", filter: true, width: 50},
+    ];
+
+    this.defaultColDef = {
+      sortable: true,
+      resizable: true,
+      filter: true,
+      getQuickFilterText: function(params) {
+        return params.value.name;
+      }
+    };
+
+    this.gridOptions = {};
+    this.rowSelection = "single";
+    this.gridOptions.rowHeight = 200;
+
+    this.getRowHeight = params => {
+      return 28 * (Math.floor(params.data.latinText.length / 60) + 1);
+    };
+
+
+    fetch(`/api/persona-table`)
+    .then(result => result.json())
+    .then(rowData => this.rowData = rowData);
+
+    this.$nextTick(() => {
+        fetch(`/api/persona-table`)
+        .then(result => result.json())
+        .then(rowData => this.rowData = rowData);
+    });
+  },
+  mounted() {
+    const self = this
+
+    EventBus.$on('persona-table-changed',function(data) {
+      fetch(`/api/persona-table`)
+      .then(result => result.json())
+      .then(rowData => self.rowData = rowData);
+        console.log('recived')
+    })
+  },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
@@ -82,50 +132,6 @@ export default {
     onFilterTextBoxChanged() {
       this.gridApi.setQuickFilter(document.getElementById('filter-text-box').value);
     },
-  },
-
-  mounted() {
-    const self = this
-
-    EventBus.$on('persona-table-changed',function(data) {
-      fetch(`/api/persona-table`)
-      .then(result => result.json())
-      .then(rowData => self.rowData = rowData);
-        console.log('recived')
-    })
-  },
-
-  beforeMount() {
-
-    this.columnDefs = [
-      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
-      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
-      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Market Size", field: "market_size", filter: true, width: 50},
-    ];
-
-    this.defaultColDef = {
-      sortable: true,
-      resizable: true,
-      filter: true,
-      getQuickFilterText: function(params) {
-        return params.value.name;
-      }
-    };
-
-    this.gridOptions = {};
-    this.rowSelection = "single";
-    this.gridOptions.rowHeight = 200;
-    fetch(`/api/persona-table`)
-    .then(result => result.json())
-    .then(rowData => this.rowData = rowData);
-
-    this.$nextTick(() => {
-        fetch(`/api/persona-table`)
-        .then(result => result.json())
-        .then(rowData => this.rowData = rowData);
-    });
   },
 };
 

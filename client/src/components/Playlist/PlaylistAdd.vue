@@ -27,7 +27,6 @@ export default {
            method: 'post',
            url: '/api/playlist',
            params: {
-              user_id : 1,
               source_table : self.source,
               source_id : self.source_id
             }
@@ -41,7 +40,6 @@ export default {
            method: 'Delete',
            url: '/api/playlist',
            params: {
-              user_id : 1,
               source_table : self.source,
               source_id : self.source_id
             }
@@ -53,8 +51,7 @@ export default {
   beforeMount() {
 
       const self = this;
-      var user_id = 1
-      var get_url = `/api/playlist/` + user_id ;
+      var get_url = `/api/playlist`;
       var resp
 
       axios.get(get_url)      // CHECKS TO SEE IF ON USERS PLAYLIST

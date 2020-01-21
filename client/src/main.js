@@ -10,8 +10,6 @@ import moment from 'moment'
 import router from './router';
 import store from './store';
 
-
-
 // CSS
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css';
@@ -33,6 +31,8 @@ if (token) {
   Vue.prototype.$http.defaults.headers.common['Authorization'] = token;
 }
 
+Vue.component('multiselect', Multiselect)
+
 new Vue({
   router,
   store,
@@ -47,7 +47,7 @@ Vue.filter('capitalize', function (value) {
 
 Vue.filter('formatDate', function(value) {
   if (value) {
-    return moment(String(value)).fromNow()
+    return moment.utc(value).fromNow()
   }
 })
 

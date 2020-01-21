@@ -14,8 +14,17 @@
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.id">
         <div>
-                  <img alt="avatar" class="avatar"
-                       src="../../../public/assets/img_avatar2.png" >
+          <div>
+            <div v-if="card.avatar == true">
+              <img
+               v-bind:src="'/api/persona/avatar/' + card.id"
+               class="avatar">
+            </div>
+            <div v-else>
+                <img src="../../../public/assets/img_avatar2.png"
+                     alt="Avatar" class="avatar">
+            </div>
+          </div>
         </div>
         <b-card-text>
           <span> {{card.name}} the {{card.title}}
@@ -81,7 +90,8 @@ export default {
 //        return cards.name.match(regex);
         return JSON.stringify(cards).match(regex);
       })
-    }
+    },
+
   },
 };
 
@@ -90,11 +100,10 @@ export default {
 <style lang="scss" scoped>
 
 .avatar {
-  min-width: 50px;
-  max-width: 50px;
-  min-height: 50px;
-  max-height: 50px;
+  width: 50px;
+  height: 50px;
   display: block;
+  object-fit: cover;
   margin-left: auto;
   margin-right: auto;
   border-radius: 50%;

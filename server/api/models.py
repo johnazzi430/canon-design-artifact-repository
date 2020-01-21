@@ -3,6 +3,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from datetime import datetime
+from marshmallow import fields
 
 # USER -------------------------------------------------------------------------
 
@@ -92,7 +93,7 @@ class Product(db.Model):
     product_homepage = db.Column(db.Text)
 
 class ProductSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True, exclude=('products',))
+    personas = ma.Nested('PersonaSchema', many=True, exclude=('products','persona_file','persona_picture'))
 
     class Meta:
         model = Product
@@ -103,14 +104,16 @@ class ProductComments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer,ForeignKey('product.id'))
     comment_body = db.Column(db.Text)
-    creator_id = db.Column(db.Integer, default = None)
+    creator_id = db.Column(db.Integer, ForeignKey('users.user_id'))
     action = db.Column(db.Text)
     downchange = db.Column(db.Text)
     upchange = db.Column(db.Text)
-    create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow)
+    create_date = db.Column(db.DateTime,default=datetime.utcnow)
+    user = db.relationship('User')
 
 class ProductCommentsSchema(ma.ModelSchema):
+    user = ma.Nested('UserSchema', exclude=('password_hash',))
+
     class Meta:
         model = ProductComments
         sqla_session = db.session
@@ -133,14 +136,15 @@ class PersonaComments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer,ForeignKey('persona.id'))
     comment_body = db.Column(db.Text)
-    creator_id = db.Column(db.Integer, default = None)
+    creator_id = db.Column(db.Integer, ForeignKey('users.user_id'))
     action = db.Column(db.Text)
     downchange = db.Column(db.Text)
     upchange = db.Column(db.Text)
-    create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow)
+    create_date = db.Column(db.DateTime,default=datetime.utcnow)
+    user = db.relationship('User')
 
 class PersonaCommentsSchema(ma.ModelSchema):
+    user = ma.Nested('UserSchema', exclude=('password_hash',))
 
     class Meta:
         model = PersonaComments
@@ -183,9 +187,18 @@ class Persona(db.Model):
     roles = db.relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref=db.backref('personas')  )
     products = db.relationship('Product' , secondary = 'pers_prod_rel' ,backref=db.backref('personas')  )
 
+    # @staticmethod
+    # def check_if_avatar(self):
+    #     self.avatar = db.Column(db.Boolean, default=False)
+    #     if self.persona_picture == None:
+    #         self.avatar = False
+    #     else:
+    #         self.avatar = True
+
 class PersonaSchema(ma.ModelSchema):
     roles = ma.Nested('PersonaRoleSchema', many=True)
     products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
+    avatar = fields.Function(lambda obj : obj.persona_picture != None)
 
     class Meta:
         model = Persona
@@ -214,7 +227,7 @@ class Insight(db.Model):
     products = relationship('Product' , secondary = 'insight_product_rel' , backref=db.backref('insights') )
 
 class InsightSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True , exclude=('products',))
+    personas = ma.Nested('PersonaSchema', many=True , exclude=('products','persona_file','persona_picture'))
     products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
 
     class Meta:
@@ -226,11 +239,13 @@ class InsightComments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer,ForeignKey('insight.id'))
     comment_body = db.Column(db.Text)
-    creator_id = db.Column(db.Integer, default = None)
-    create_date = db.Column(db.DateTime,
-                            default=datetime.utcnow)
+    creator_id = db.Column(db.Integer, ForeignKey('users.user_id'))
+    create_date = db.Column(db.DateTime,default=datetime.utcnow)
+    user = db.relationship('User')
 
 class InsightCommentsSchema(ma.ModelSchema):
+    user = ma.Nested('UserSchema', exclude=('password_hash',))
+
     class Meta:
         model = InsightComments
         sqla_session = db.session

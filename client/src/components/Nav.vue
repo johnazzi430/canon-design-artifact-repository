@@ -11,10 +11,13 @@
           <b-nav-item to="/product">Product</b-nav-item>
           <b-nav-item to="/playlist">Playlist</b-nav-item>
           <b-nav-item to="/about">About</b-nav-item>
-          <b-nav-item v-if="user.role=== 'admin'" to="/admin">Admin</b-nav-item>
+          <b-nav-item v-if="user.role == 'admin'" to="/admin">Admin</b-nav-item>
         </b-navbar-nav>
         <b-navbar-nav v-if="isLoggedIn" class="ml-auto">
-          <b-nav-item>User: {{user.username.split("@")[0]}} </b-nav-item>
+          <b-nav-item>
+          <rotor-avatar accent="accent-1" icon="rotor-icon-user"
+                        initials="A" is-clickable="false" /> </b-nav-item>
+          <b-nav-item>User: {{user.username.split("@")[0] }} </b-nav-item>
           <b-nav-item @click='logout'>Logout</b-nav-item>
         </b-navbar-nav>
       </b-navbar>
@@ -23,36 +26,13 @@
 
 <script>
 /*eslint-disable */
-import store from  "../store";
+import {store} from  "../store";
 import axios from 'axios'
 
 export default {
-  data() {
-    return {
-      user: {
-        role : '',
-        username : ''
-      }
-    }
-  },
-  beforeCreate() {
-    this.user = this.$store.getters.userData
-    // const self = this;
-    //
-    // axios({
-    //   method : 'get',
-    //   url : `/api/users?session=true`,
-    //   params : {
-    //     'session' : 'true'
-    //   }
-    // })
-    // .then(response => {
-    //   self.user = response.data[0]
-    // })
-  },
   computed:{
     isLoggedIn : function() {return this.$store.getters.isLoggedIn},
-    // user : function() {return this.$store.getters.user}
+    user : function() {return this.$store.getters.user},
   },
   methods: {
     async logout() {

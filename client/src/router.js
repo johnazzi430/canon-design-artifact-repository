@@ -2,15 +2,15 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 //import BootstrapVue from 'bootstrap-vue';
-import PersonaPage from './components/PersonaPage.vue';
-import ProductPage from './components/ProductPage.vue';
-import InsightsPage from './components/InsightsPage.vue';
-import Admin from './components/Admin.vue';
-import Login from './components/Login.vue';
+import PersonaPage from './components/Personas/PersonaPage.vue';
+import ProductPage from './components/Products/ProductPage.vue';
+import InsightsPage from './components/Insights/InsightsPage.vue';
+import Admin from './components/UserManagement/Admin.vue';
+import Login from './components/UserManagement/Login.vue';
 import NotFound from './components/NotFound.vue';
 import Home from './components/Home.vue';
 import About from './components/About.vue';
-import Playlist from './components/Playlist.vue'
+import Playlist from './components/Playlist/Playlist.vue'
 import {EventBus} from  "./index.js";
 import store from  "./store";
 
@@ -35,7 +35,7 @@ const router =  new Router({
       name: 'admin',
       component: Admin,
       beforeEnter: (to,from,next) => {
-        if (store.state.role === 'admin') next()
+        if (store.getters.user.role === 'admin') next()
         else next(false)
       }
     },
