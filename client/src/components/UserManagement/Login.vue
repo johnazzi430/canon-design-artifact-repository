@@ -34,7 +34,7 @@
         </div>
       </div>
       <div id="login" v-else-if='form_mode === "reset_password"'>
-        <h1>Reset Password</h1>
+        <h1>Change Password</h1>
           <input type="text" name="username" v-model="input.username" placeholder="Email" /><br>
           <input id='password' type="password" name="password"
               v-model="input.password" placeholder="Current Password" /><br>
@@ -44,7 +44,7 @@
             <button type="button" class="btn btn-outline-secondary"
             v-on:click="changeView('login')">back</button>
             <button type="button" class="btn btn-outline-secondary"
-            v-on:click="changeView('reset_password')">reset password</button>
+            v-on:click="changeView('reset_password')">Change Password</button>
             <button type="button" class="btn btn-outline-secondary"
             v-on:click="changeView('reset_password')">forgot password?</button>
           </div>

@@ -25,8 +25,14 @@
         <div class="panel-group"> {{form.name}} </div>
         <label for="Title">Title</label>
         <p class="text-wrap"> {{form.title}} </p>
-        <label for="external">Internal or External?</label>
-        <p class="text-wrap"> {{form.external}} </p>
+
+        <b-form-group>
+          <b-form-radio disabled v-model="form.external" name="some-radios"
+          value="1" @change="onInputChanged('external')">External</b-form-radio>
+          <b-form-radio disabled v-model="form.external" name="some-radios"
+          value="0" @change="onInputChanged('external')">Internal</b-form-radio>
+        </b-form-group>
+
         <label for="qty">Number people who fit this persona</label>
         <p> {{form.market_size}} </p>
         <label for="quote">Persona Quote</label>
@@ -114,9 +120,23 @@
           <label for="quote">Persona Quote</label>
           <b-form-textarea v-model="form.quote" id="quote"
                 name="quote" @change="onInputChanged('quote')"/>
-          <label for="function">Job Function</label>
+          <label for="function">Function</label>
           <b-form-textarea v-model="form.job_function" id="function"
                 name="function" @change="onInputChanged('job_function')"/>
+
+
+          <!-- Collapasble form input  -->
+          <!-- <div
+              variant="light" v-b-toggle="'collapse-function'" class="m-1"
+              :aria-expanded="form.job_function ? 'true' : 'false'">
+                  <label for="function">Job Function</label>
+                  <i class="fa fa-angle-down nav-icon expand_caret"></i>
+          </div>
+          <b-collapse id="collapse-function" :class = "!form.job_function ? 'visable' : null">
+            <b-form-textarea v-model="form.job_function" id="function"
+                  name="function" @change="onInputChanged('job_function')"/>
+          </b-collapse> -->
+
 
           <label for="needs">Needs</label>
           <b-form-textarea v-model="form.needs" id="needs"
@@ -541,6 +561,17 @@ export default {
 
 p {
   white-space: pre-line;
+}
+
+.expand_caret {
+    transform: scale(1.6);
+    transition: 0.2s;
+    margin-left: 8px;
+    margin-top: -4px;
+}
+
+div[aria-expanded='false'] > .expand_caret {
+    transform: scale(1.6) rotate(-90deg);
 }
 
 </style>

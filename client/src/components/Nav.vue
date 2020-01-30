@@ -6,7 +6,7 @@
           style="padding-left:30px; border-radius: 0px">
         <b-navbar-nav>
           <b-navbar-brand to="/">UTC Product Insight</b-navbar-brand>
-          <b-nav-item to="/insight">Insights</b-nav-item>
+          <b-nav-item to="/insight">Insight</b-nav-item>
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
           <b-nav-item to="/playlist">Playlist</b-nav-item>

@@ -2,12 +2,27 @@
 
 <template lang="html">
   <div class="container">
-    <div class="md-form mt-0" id="card-search">
-      <input v-model="search"
-        class="form-control"
-        type="text"
-        placeholder="Search for product"
-        aria-label="Search">
+    <div class="row">
+      <div class="md-form mt-0 col-8" id="card-search">
+        <input v-model="search"
+          class="form-control"
+          type="text"
+          placeholder="Search for product"
+          aria-label="Search">
+      </div>
+      <h4>Filter: </h4>
+          <b-button-group class="mx-1">
+            <b-button variant="info"
+            @click='toggleSearch("collins")'>Collins</b-button>
+            <b-button variant="info"
+            @click='toggleSearch("pratt")'>Pratt</b-button>
+          </b-button-group>
+          <b-button-group class="mx-1">
+            <b-button variant="info"
+            @click='toggleSearch(`"external":0`)'>Internal</b-button>
+            <b-button variant="info"
+            @click='toggleSearch(`"external":1`)'>External</b-button>
+          </b-button-group>
     </div>
     <br>
 
@@ -66,6 +81,15 @@ export default {
       EventBus.$emit('product-selection-changed' ,this.selectedRow = id)
     },
 
+    toggleSearch(value) {
+      if ( this.search != value){
+        this.search = value
+      }
+      else {
+        this.search = ''
+      }
+    },
+
     filterItems: function(cards) {
       var self = this;
       return cards.filter(function(cards) {
@@ -86,6 +110,9 @@ export default {
   border-top-style: solid;
   border-top-width: medium;
   border-image: linear-gradient(to right,#7799FF,purple) 1;
+  box-shadow:
+    -8px -8px 8px 0 rgba(255,255,255,0.5),
+    8px 8px 8px 0 rgba(0,0,0,0.05);
 }
 
 </style>

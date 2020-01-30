@@ -18,7 +18,7 @@
       <b-nav-item v-if="this.selection !== null"
             href="javascript:void(0)" id="Detail"
             class="nav-link active" v-on:click="expandDetail()">
-            <i class="fa fa-align-left nav-icon"></i>
+            <i class="fas fa-align-left nav-icon"></i>
             <span class="nav-text">Details</span>
       </b-nav-item>
       <b-nav-item v-else href="javascript:void(0)" id="Detail"
@@ -144,6 +144,7 @@ export default {
   left:0;
   top:0;
   padding-top: 70px;
+  margin-left: 0px;
   position:fixed;
   width: 60px;
   height: 100vh;
@@ -166,7 +167,8 @@ export default {
 }
 
 .nav-icon{
-  width:40px
+  width:40px;
+  align-items: left;
 }
 
 .main{

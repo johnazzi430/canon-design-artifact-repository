@@ -9,6 +9,7 @@
         placeholder="Search for user insight"
         aria-label="Search">
     </div>
+
     <br>
 
     <b-card-group columns>
@@ -80,6 +81,9 @@ export default {
 .card{
   border-left-style: solid;
   border-left-width: thick;
+  box-shadow:
+    -8px -8px 8px 0 rgba(255,255,255,0.4),
+    8px 8px 8px 0 rgba(0,0,0,0.05);
 }
 
 .avatar {

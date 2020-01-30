@@ -31,6 +31,7 @@
       <b-nav-item href="javascript:void(0)" id="Dashboard"
           class="nav-link disabled" v-on:click="expandDetail()">
           <i class="fas fa-chart-line nav-icon"></i>
+            <span class="nav-text">Data Viz</span>
         </b-nav-item>
     </b-nav>
     <div class ="main">

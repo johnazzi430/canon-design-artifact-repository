@@ -13,7 +13,7 @@
       </div>
     </div>
     <ag-grid-vue style="width: 100vl; height: 100vh;"
-        class="ag-theme-balham"
+        class="ag-theme-material"
         :columnDefs="columnDefs"
         :rowData="rowData"
         :modules="modules"
@@ -78,10 +78,10 @@ export default {
   beforeMount() {
     this.columnDefs = [
       {headerName: "Name", field: "name", width: 200},
-      {headerName: "Description", field: "description", filter: 'agTextColumnFilter', width: 200},
-      {headerName: "Goals", field: "goals", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Features", field: "features", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Owner", field: "owner", filter: true, width: 50},
+      {headerName: "Description", field: "description", filter: 'agTextColumnFilter', width: 500},
+      {headerName: "Goals", field: "goals", filter: 'agTextColumnFilter', width: 200},
+      {headerName: "Features", field: "features", filter: 'agTextColumnFilter', width: 200},
+      {headerName: "Owner", field: "owner", filter: true, width: 100},
     ];
 
     this.defaultColDef = {
@@ -110,7 +110,6 @@ export default {
     })
   },
 };
-
 
     var externalCellRender = function(params) {
         return '<span style="color: '+params.color+'">' + params.value + '</span>';

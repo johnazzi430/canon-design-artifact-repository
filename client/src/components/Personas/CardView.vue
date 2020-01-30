@@ -2,17 +2,24 @@
 
 <template lang="html">
   <div class="container" style="margin-top:0px">
-    <div class="md-form mt-0" id="card-search">
-      <input v-model="search"
-        class="form-control"
-        type="text"
-        placeholder="Search for user persona"
-        aria-label="Search">
+    <div class="row ">
+      <div class="md-form mt-0 col-8" id="card-search">
+        <input v-model="search"
+          class="form-control"
+          type="text"
+          placeholder="Search for user persona"
+          aria-label="Search">
+      </div>
+      <h4>Filter:</h4>
+      <b-button-group class="mx-1">
+        <b-button variant="info" @click='toggleSearch(`"external":0`)'>Internal</b-button>
+        <b-button variant="info" @click='toggleSearch(`"external":1`)'>External</b-button>
+      </b-button-group>
     </div>
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.id">
+      <b-card class="card" v-for="card in SearchItems(cards)" v-bind:key="card.id">
         <div>
           <div>
             <div v-if="card.avatar == true">
@@ -63,7 +70,8 @@ import {EventBus} from "../../index.js";
 export default {
   data() {return {
     cards : [],
-    search : ''
+    search : '',
+    filter : ''
   }
  },
   beforeMount() {
@@ -83,7 +91,16 @@ export default {
       this.$router.push('/persona/' + id )
     },
 
-    filterItems: function(cards) {
+    toggleSearch(value) {
+      if ( this.search != value){
+        this.search = value
+      }
+      else {
+        this.search = ''
+      }
+    },
+
+    SearchItems: function(cards) {
       var self = this;
       return cards.filter(function(cards) {
         let regex = new RegExp('(' + self.search+ ')', 'i');
@@ -107,6 +124,13 @@ export default {
   margin-left: auto;
   margin-right: auto;
   border-radius: 50%;
+}
+
+.card {
+  border-radius: 10px;
+  box-shadow:
+    -8px -8px 8px 0 rgba(255,255,255,0.4),
+    8px 8px 8px 0 rgba(0,0,0,0.05);
 }
 
 </style>

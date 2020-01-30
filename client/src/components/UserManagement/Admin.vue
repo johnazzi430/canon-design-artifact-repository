@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <h1>Admin Page</h1>
+    <a href="#" @onclick='resetPasswordforUser'>resetPassword</a>
     <div class="test-header row" style="margin:15px">
       <div class="col-2">
         Selection:
@@ -14,7 +15,7 @@
       </div>
     </div>
     <ag-grid-vue style="width: 100vl; height: 500px;"
-        class="ag-theme-balham"
+        class="ag-theme-material"
         :columnDefs="columnDefs"
         :rowData="rowData"
         :modules="modules"
@@ -70,7 +71,6 @@ export default {
       });
 
       document.querySelector("#selectedRows").innerHTML = selectedRowsString;
-      EventBus.$emit('product-selection-changed' ,this.selectedRow = selectedRowsid)
     },
 
     onFilterTextBoxChanged() {
@@ -90,13 +90,17 @@ export default {
       })
     },
 
+    resetPasswordforUser(){
+
+    },
+
   },
   beforeMount() {
     this.columnDefs = [
       {headerName: "User ID", field: "user_id", width: 200},
       {headerName: "Username", field: "username", filter: 'agTextColumnFilter', width: 200},
-      {headerName: "Role", field: "role",
-          filter: 'agTextColumnFilter', width: 400, editable:true},
+      {headerName: "Role", field: "role", filter: 'agTextColumnFilter', width: 100, editable:true},
+      {headerName: "test"  ,cellRenderer: resetPassword}
     ];
 
     this.defaultColDef = {
@@ -118,17 +122,11 @@ export default {
   mounted() {
     const self = this
 
-    EventBus.$on('product-table-changed',function(data) {
-      fetch(`/api/users`)
-      .then(result => result.json())
-      .then(rowData => self.rowData = rowData);
-    })
   },
 };
 
 
-    var externalCellRender = function(params) {
-        return '<span style="color: '+params.color+'">' + params.value + '</span>';
-    }
-
+function resetPassword(params) {
+  return '<a href="#" @onclick="resetPasswordforUser"> Reset Password</a>'
+};
 </script>

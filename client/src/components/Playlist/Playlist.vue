@@ -2,13 +2,19 @@
 <template lang="html">
   <div class="container main">
     <h1>Playlist</h1>
-    <div class="md-form mt-0" id="card-search">
-      <input v-model="search"
-        class="form-control"
-        type="text"
-        placeholder="Search for item"
-        aria-label="Search">
+    <div class="row">
+      <div class="md-form mt-0 col-8" id="card-search">
+        <input v-model="search"
+          class="form-control"
+          type="text"
+          placeholder="Search for item"
+          aria-label="Search">
+      </div>
+      <b-button-group class="mx-1">
+        <b-button variant="info" @click='toggleSearch(`"external":0`)'>Clear Playlist</b-button>
+      </b-button-group>
     </div>
+    <br>
     <draggable v-model="cards" @start="drag=true" @end="drag=false">
         <b-card class="card" v-for="card in filterItems(cards)"
                 v-bind:key="card.id + card.source"
@@ -95,6 +101,15 @@ export default {
               source_id : id
             }
            })
+    },
+
+    toggleSearch(value) {
+      if ( this.search != value){
+        this.search = value
+      }
+      else {
+        this.search = ''
+      }
     },
 
     filterItems: function(cards) {

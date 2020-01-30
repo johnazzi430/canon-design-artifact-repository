@@ -73,9 +73,10 @@
           <!-- Collapasble form input  -->
           <div variant="light" v-b-toggle="'collapse-description'" class="m-1">
             <label>description</label>
+            <i class="fa fa-angle-down nav-icon expand_caret"></i>
           </div>
           <b-collapse id="collapse-description">
-            <b-form-input v-model="form.description" id="description"
+            <b-form-textarea v-model="form.description" id="description"
             name="description" @change="onInputChanged('description')"/>
           </b-collapse>
 
@@ -481,4 +482,14 @@ p {
     background-color: #4CAF50;
 }
 
+.expand_caret {
+    transform: scale(1.6);
+    transition: 0.2s;
+    margin-left: 8px;
+    margin-top: -4px;
+}
+
+div[aria-expanded='false'] > .expand_caret {
+    transform: scale(1.6) rotate(-90deg);
+}
 </style>
