@@ -16,7 +16,7 @@
       </div>
     </div>
     <ag-grid-vue style="width: 100vl; height: 100vh;"
-        class="ag-theme-balham"
+        class="ag-theme-material"
         :columnDefs="columnDefs"
         :rowData="rowData"
         :modules="modules"
@@ -33,8 +33,6 @@ import {AgGridVue} from "@ag-grid-community/vue";
 import {AllCommunityModules} from '@ag-grid-community/all-modules';
 import {EventBus} from "../../index.js";
 
-
-const API_URL = process.env.API_URL
 
 export default {
   name: 'PersonaTable',
@@ -55,10 +53,75 @@ export default {
   components: {
     AgGridVue
   },
+
+  beforeMount() {
+
+    this.defaultColDef = {
+      sortable: true,
+      resizable: true,
+      getQuickFilterText: function(params) {
+        return params.value.name;
+      }
+    };
+
+    this.getRowHeight = params => {
+      return params.data.rowHeight;
+    };
+
+    this.gridOptions = {enableBrowserTooltips: true};
+    this.rowSelection = "single";
+    this.rowHeight = 50;
+
+    this.columnDefs = [
+      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200 , resizable: true , sortable: true , cellClass: "cell-wrap-text",},
+      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true, cellClass: "cell-wrap-text",},
+      {headerName: "    ", field: "external" ,  width: 50 , headerTooltip:'External Persona', filter: 'agNumberColumnFilter', resizable: true , sortable: true, cellRenderer: externalFlag},
+      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true},
+      {headerName: "    ", field: "market_size", headerTooltip:'Market Size' , width: 75 , resizable: true , sortable: true},
+      {headerName: "Roles", field: "roles", filter: 'agTextColumnFilter' , flex: 2, resizable: true , sortable: true , cellRenderer: roleBadge , cellClass: "cell-wrap-text",  minWidth: 200, maxWidth: 350},
+    ];
+
+
+    fetch(`/api/persona-table`)
+    .then(result => result.json())
+    .then(rowData => this.rowData = rowData);
+
+    this.$nextTick(() => {
+        fetch(`/api/persona-table`)
+        .then(result => result.json())
+        .then(rowData => this.rowData = rowData);
+    });
+  },
+  mounted() {
+    this.gridApi = this.gridOptions.api;
+    this.gridColumnApi = this.gridOptions.columnApi;
+
+    api.sizeColumnsToFit()
+
+    const self = this
+
+    EventBus.$on('persona-table-changed',function(data) {
+      fetch(`/api/persona-table`)
+      .then(result => result.json())
+      .then(rowData => self.rowData = rowData);
+        console.log('recived')
+    })
+  },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
       this.columnApi = params.columnApi;
+      this.rowHeight = 200;
+
+      try {
+          params.api.context.beanWrappers.tooltipManager.beanInstance.MOUSEOVER_SHOW_TOOLTIP_TIMEOUT = 0;
+        } catch (e) {
+          console.error(e);
+        }
+    },
+
+    onColumnResized() {
+      this.gridApi.resetRowHeights();
     },
 
     onSelectionChanged() {
@@ -83,57 +146,30 @@ export default {
       this.gridApi.setQuickFilter(document.getElementById('filter-text-box').value);
     },
   },
-
-  mounted() {
-    const self = this
-
-    EventBus.$on('persona-table-changed',function(data) {
-      fetch(`/api/persona-table`)
-      .then(result => result.json())
-      .then(rowData => self.rowData = rowData);
-        console.log('recived')
-    })
-  },
-
-  beforeMount() {
-
-    this.columnDefs = [
-      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200},
-      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Internal or External", field: "external" ,  width: 50 , headerTooltip:'Flag if external', filter: true},
-      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400},
-      {headerName: "Market Size", field: "market_size", filter: true, width: 50},
-    ];
-
-    this.defaultColDef = {
-      sortable: true,
-      resizable: true,
-      filter: true,
-      getQuickFilterText: function(params) {
-        return params.value.name;
-      }
-    };
-
-    this.gridOptions = {};
-    this.rowSelection = "single";
-    this.gridOptions.rowHeight = 200;
-    fetch(`/api/persona-table`)
-    .then(result => result.json())
-    .then(rowData => this.rowData = rowData);
-
-    this.$nextTick(() => {
-        fetch(`/api/persona-table`)
-        .then(result => result.json())
-        .then(rowData => this.rowData = rowData);
-    });
-  },
 };
 
-    var externalCellRender = function(params) {
-        return '<span style="color: '+params.color+'">' + params.value + '</span>';
-    }
+function externalFlag(params) {
+  if (params.value === 1) {
+    return '<i class="fas fa-external-link-square-alt"></i>'
+  }
+  else {
+    return ''
+  };
+};
+
+function roleBadge(params) {
+  var out = ''
+  params.value.forEach((item,index) => {
+    out = out + '<div class="badge badge-primary">'+ item.name + '</div>'
+  })
+//  return  '<i class="fas fa-external-link-square-alt"></i>'
+  return '<div>' + out + '</div>'
+};
 
 </script>
 
-<style>
+<style lang="scss" scoped>
+.cell-wrap-text {
+    white-space: normal !important;
+}
 </style>

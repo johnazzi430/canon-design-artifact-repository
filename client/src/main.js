@@ -10,15 +10,16 @@ import moment from 'moment'
 import router from './router';
 import store from './store';
 
-
-
 // CSS
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css';
+import "@ag-grid-community/all-modules/dist/styles/ag-theme-material.css";
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 import "./styles.css";
-
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
+import { fas } from '@fortawesome/free-solid-svg-icons'
 
 Vue.config.productionTip = false;
 
@@ -27,11 +28,14 @@ Vue.use(VueDraggable)
 Vue.component('multiselect', Multiselect)
 Vue.component('playlist-add', PlaylistAdd)
 
+
 Vue.prototype.$http = Axios;
 const token = localStorage.getItem('token')
 if (token) {
   Vue.prototype.$http.defaults.headers.common['Authorization'] = token;
 }
+
+Vue.component('multiselect', Multiselect)
 
 new Vue({
   router,
@@ -47,7 +51,7 @@ Vue.filter('capitalize', function (value) {
 
 Vue.filter('formatDate', function(value) {
   if (value) {
-    return moment(String(value)).fromNow()
+    return moment.utc(value).fromNow()
   }
 })
 

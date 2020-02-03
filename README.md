@@ -3,6 +3,10 @@ A singular environment to store user persona's and upper level product descripti
 
 
 ## Want to use this project?
+0. Requirements - > 
+- Python v3.6 and up
+- NodeJS v12 and up
+
 1. Fork/Clone
 
 2. Run the server-side Flask app in one terminal window:
@@ -12,7 +16,7 @@ $ cd server
 $ python3.7 -m venv env         
 $ source env/bin/activate         
 (env)$ pip install -r requirements.txt         
-(env)$ python app.py          
+(env)$ python application.py          
 Navigate to http://localhost:5000         
 ```
 

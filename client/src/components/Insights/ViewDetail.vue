@@ -73,9 +73,10 @@
           <!-- Collapasble form input  -->
           <div variant="light" v-b-toggle="'collapse-description'" class="m-1">
             <label>description</label>
+            <i class="fa fa-angle-down nav-icon expand_caret"></i>
           </div>
           <b-collapse id="collapse-description">
-            <b-form-input v-model="form.description" id="description"
+            <b-form-textarea v-model="form.description" id="description"
             name="description" @change="onInputChanged('description')"/>
           </b-collapse>
 
@@ -139,27 +140,32 @@
           </multiselect>
           <br>
         </div>
-        <label>Files</label>
-        <!-- v-on:change="handleFilesUpload()" -->
-        <b-form-file
-          type="file" id="file" ref="file"
-          v-model="file"
-          :state="Boolean(file)"
-          placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here..."
-          ></b-form-file>
-        <b-button variant="info"
-          href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
-        <br>
-        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
-          {{uploadedFile.filename}}
-          <b-button variant="outline-primary"
-            type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
-            <i class="fa fa-file"></i>
-          </b-button>
-          <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
-              type="button" href="javascript:void(0)">&times;
-          </b-button>
+        <div class="wrapper" v-if='form.id != null'>
+          <label>Files</label>
+          <!-- v-on:change="handleFilesUpload()" -->
+          <b-form-file
+            type="file" id="file" ref="file"
+            v-model="file"
+            :state="Boolean(file)"
+            placeholder="Choose a file or drop it here..."
+            drop-placeholder="Drop file here..."
+            ></b-form-file>
+          <b-button variant="info"
+            href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
+          <br>
+          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+            {{uploadedFile.filename}}
+            <b-button
+                  variant="outline-primary"
+                  type="button"
+                  href="javascript:void(0)"
+                  v-on:click="getFile(uploadedFile.id)">
+              <i class="fa fa-file"></i>
+            </b-button>
+            <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
+                type="button" href="javascript:void(0)">&times;
+            </b-button>
+          </div>
         </div>
         <hr>
 
@@ -171,14 +177,17 @@
             type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
         <div class="" v-else>
-          <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Persona</b-button>
+          <b-button type="button" variant="primary" v-on:click='onAdd'>Add New Insight</b-button>
         </div>
       </div>
   </b-form>
 
   <div class="right" style="align-content:right">
     <span>add to playlist -> </span>
-    <playlist-add class="right" :source='"insight"' :source_id="form.id"/>
+    <playlist-add :key="form.id"
+              class="right"
+              :source='"insight"'
+              :source_id="form.id"/>
   </div>
 
   <hr>
@@ -227,7 +236,7 @@ export default {
       editing: false,
       source: 'insights',
       experience_options: ["Positive", "Neutral", "Negative"],
-      emotion_options: ["Pain", "Joyful", "Triumphiant", "Angry", "Calm", "Frustrated", "Surprised" , "Excited"],
+      emotion_options: ["Pain", "Joyful", "Triumphiant", "Angry", "Calm", "Frustrated", "Surprised" , "Excited", "Confused"],
       journey_options: ["Aware", "Try", "Use", "Leave"],
       product_options: [],
       persona_options: [],
@@ -291,6 +300,73 @@ export default {
         console.log(this.edited_fields)
       },
 
+       async onEdit() {
+         var key;
+         for (key of this.edited_fields) {
+            await axios({
+                 method: 'put',
+                 url: '/api/insights/' + this.form.id ,
+                 data: {
+                    [key] : this.form[key]
+                  }
+                 })
+               };
+
+        EventBus.$emit('insight-data-changed','item-updated');
+        document.getElementById("right-sidepanel").style.width = "0px";
+
+       },
+
+       async onAdd() {
+         await axios({
+             method: 'post',
+             url: '/api/insights',
+             data: this.form, })
+
+
+         EventBus.$emit('insight-data-changed','item-updated');
+         document.getElementById("right-sidepanel").style.width = "0px";
+         this.$store.commit({
+           type: 'alert',
+           alert : {
+             show : true,
+             variant : "info",
+             content : "Insight added!"
+           },
+         })
+       },
+
+       onReset() {
+         // Reset our form values
+         this.editing = false;
+       },
+
+       async onArchive() {
+         var get_url = '/api/insights/';
+         get_url += this.form.id ;
+
+         console.log(get_url)
+         await axios({
+             method: 'PUT',
+             url: get_url,
+             data: { 'archived': 1},
+            })
+         .then(function (response) {
+             console.log(response);})
+         .catch(function (error) {
+             console.log(error);})
+
+         EventBus.$emit('insight-data-changed' , 'archived' )
+         document.getElementById("right-sidepanel").style.width = "0px";
+         this.$store.commit({
+           type: 'alert',
+           alert : {
+             show : true,
+             variant : "info",
+             content : "Insight added!"
+           },
+         })
+      },
       submitFiles(){
 
               let formData = new FormData();
@@ -327,58 +403,31 @@ export default {
         this.files = this.$refs.files.files;
       },
 
-       async onEdit() {
-         var key;
-         for (key of this.edited_fields) {
-            await axios({
-                 method: 'put',
-                 url: '/api/insights/' + this.form.id ,
-                 data: {
-                    [key] : this.form[key]
-                  }
-                 })
-               };
+      getFile(file_id) {
+          const self = this;
 
-        EventBus.$emit('insight-data-changed','item-updated');
-        document.getElementById("right-sidepanel").style.width = "0px";
+          axios({
+            method: 'get',
+            url: '/api/insights/files/'+this.form.id+'?file_id='+ file_id
+          })
+          .then(function(response){
+            var fileURL = window.URL.createObjectURL(new Blob([response.data] , {type: 'multipart/form-data'}));
+            var fileLink = document.createElement('a');
 
-       },
+            let fileName = 'unknown';
+            const contentDisposition = response.headers['content-disposition'];
+            const fileNameMatch = contentDisposition.split('filename=');
+            fileName = fileNameMatch[1];
 
-       async onAdd() {
-         await axios({
-             method: 'post',
-             url: '/api/insights',
-             data: this.form, })
+            fileLink.href = fileURL;
+            fileLink.setAttribute('download',fileName);
+            document.body.appendChild(fileLink);
 
-
-         EventBus.$emit('insight-data-changed','item-updated');
-         document.getElementById("right-sidepanel").style.width = "0px";
-       },
-
-       onReset() {
-         // Reset our form values
-         this.editing = false;
-       },
-
-       async onArchive() {
-         var get_url = '/api/insights/';
-         get_url += this.form.id ;
-
-         console.log(get_url)
-         await axios({
-             method: 'PUT',
-             url: get_url,
-             data: { 'archived': 1},
-            })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
-
-         EventBus.$emit('insight-data-changed' , 'archived' )
-         document.getElementById("right-sidepanel").style.width = "0px";
+            fileLink.click();
+            console.log(response);
+          })
       },
-     },
+    },
   };
 
 </script>
@@ -433,4 +482,14 @@ p {
     background-color: #4CAF50;
 }
 
+.expand_caret {
+    transform: scale(1.6);
+    transition: 0.2s;
+    margin-left: 8px;
+    margin-top: -4px;
+}
+
+div[aria-expanded='false'] > .expand_caret {
+    transform: scale(1.6) rotate(-90deg);
+}
 </style>

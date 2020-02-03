@@ -4,6 +4,7 @@ import json
 import sqlite3
 import psycopg2
 import sys
+from datetime import timedelta
 from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
 from flask import send_file, make_response
@@ -21,36 +22,62 @@ from .models import *
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
+# Session Settings
+@api.before_request
+def make_session_permanent():
+    session.permanent = True
+    api.permanent_session_lifetime = timedelta(minutes=1)
+
+def user_in_session(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        try:
+            user_id = session['user']
+        except:
+            return jsonify({"message" : "user not in session"})
+
+        return f(*args, **kwargs)
+    return decorated
+
+
 ##-------------------------- PERSONA API
 
 ## GET ALL
 @api.route("/persona-table", methods = ['GET'])
+@user_in_session
 def persona_table():
     if request.args.get('filter') == "False" :
         personas = Persona.query.order_by(Persona.id).all()
-        return json.dumps(PersonaSchema().dump(personas,many=True))
+        return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(personas,many=True))
     else:
         personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
-        return json.dumps(PersonaSchema().dump(personas,many=True))
+        return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(personas,many=True))
 
 ## GET PERSONA LIST
+
 @api.route("/personas", methods = ['GET'])
+@user_in_session
 def persona_list():
 #    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
     personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
     return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
 
 ## GET BY ID
+
 @api.route("/persona-table/<int:id>" , methods = ['GET'])
+@user_in_session
 def persona_table_by_id(id):
     persona = Persona.query.filter(Persona.id == id) \
             .options(joinedload('roles') ,joinedload('products') ) \
             .all()
-    return json.dumps(PersonaSchema().dump(persona,many=True))
+    return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(persona,many=True))
 
 
 ## POST NEW
+
 @api.route("/persona-table" , methods = ['POST'])
+@user_in_session
 def persona_post():
     persona = Persona(                          ## SET ID
                 name = request.json['name'],
@@ -64,7 +91,7 @@ def persona_post():
                 market_size = request.json['market_size'] ,
                 buss_val = request.json['buss_val'] ,
                 revision = 0,                          # Revision
-                creator_id = None,          # creator_id   TODO
+                creator_id = session['user'],
                 access_group = 0,           # access_group TODO
                 persona_file = None,
                 persona_picture = None)
@@ -88,6 +115,7 @@ def persona_post():
 
 
 @api.route("/persona-table/<int:id>" , methods = ['PUT'])
+@user_in_session
 def persona_table_put_by_id(id):
 
     data = request.get_json()
@@ -118,7 +146,7 @@ def persona_table_put_by_id(id):
     persona_comments = PersonaComments(                          ## SET ID
                 source_id = id,
                 comment_body= None,
-                creator_id = None,
+                creator_id = session['user'],
                 action = 'edited '+ key,
                 downchange = downchange,
                 upchange = upchange)
@@ -130,6 +158,7 @@ def persona_table_put_by_id(id):
 ##-------------------------- FILE API
 
 @api.route("/persona/files/<int:id>" , methods = ['GET'])
+@user_in_session
 def personas_file_get(id):
     if request.args.get('file_id') != None:
         file = PersonaFile.query \
@@ -144,6 +173,7 @@ def personas_file_get(id):
         return json.dumps(PersonaFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/persona/files/<int:id>" , methods = ['POST'])
+@user_in_session
 def personas_file_upload(id):
     file = PersonaFile(
             source_id = id,
@@ -155,6 +185,7 @@ def personas_file_upload(id):
     return 'success', 201
 
 @api.route("/persona/files/<int:id>" , methods = ['DELETE'])
+@user_in_session
 def persona_file_delete(id):
     if request.args.get('file_id') != None:
         file = PersonaFile.query \
@@ -168,9 +199,48 @@ def persona_file_delete(id):
         return 'A file id must be selected' , 404
 
 @api.route("/persona/roles" , methods = ['GET'])
+@user_in_session
 def persona_get_roles():
     persona_roles = PersonaRoles.query.all()
     return json.dumps(PersonaRoleSchema().dump(persona_roles,many=True))
+
+
+# PLACEHOLDER FOR API TO PUT NEW ROLES
+# @api.route("/persona/roles" , methods = ['POST'])
+# def persona_role_post():
+#     with db_connect() as conn:
+#         c = conn.cursor()
+#         id = request.json.get('id')
+#         c.execute( "DELETE FROM PERSONA_ROLES_REL WHERE persona_id = ?;" , [id])
+#         data =[]
+#         for item in request.json.get('roles'):
+#             data.append([id,item['persona_role_id']])
+#         c.executemany("INSERT INTO PERSONA_ROLES_REL (persona_id,persona_role_id) VALUES (?,?)",data)
+#         conn.commit()
+#         return request.json, 201
+
+## AVATAR
+
+@api.route("/persona/avatar/<int:id>" , methods = ['GET'])
+# @user_in_session
+def personas_avatar_download(id):
+    try:
+        persona = Persona.query.filter(Persona.id == id).first()
+        response = make_response(persona.persona_picture)
+        response.headers.set('Content-Type', 'image/jpeg')
+        response.headers.set('Content-Disposition', 'inline')
+        return response , 201
+    except:
+        return "no avatar found" , 404
+
+@api.route("/persona/avatar/<int:id>" , methods = ['PUT'])
+@user_in_session
+def personas_avatar_upload(id):
+    persona = Persona.query.filter(Persona.id == id).first()
+    print(request.files)
+    persona.persona_picture = request.files['file'].read()
+    db.session.commit()
+    return 'success', 201
 
 ##-------------------------- PRODUCT API
 
@@ -178,12 +248,14 @@ def persona_get_roles():
 
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
+@user_in_session
 def product_list():
     products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
     return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product-table", methods = ['GET'])
+@user_in_session
 def product_table():
     if request.args.get('filter') == "False" :
         products = Product.query.order_by(Product.id).all()
@@ -194,6 +266,7 @@ def product_table():
 
 ## GET BY ID
 @api.route("/product-table/<int:id>" , methods = ['GET'])
+@user_in_session
 def product_table_by_id(id):
     products = Product.query.filter(Product.id == id) \
             .options(joinedload('personas')) \
@@ -203,6 +276,7 @@ def product_table_by_id(id):
 
 
 @api.route("/product-table" , methods = ['POST'])
+@user_in_session
 def product_post():
     current_app.logger.info(request.json['name'])
     product = Product(                          ## SET ID
@@ -213,7 +287,7 @@ def product_post():
                 features = request.json['features'] ,
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
-                creator_id = None)
+                creator_id = session['user'])
     if request.json.get('personas') != None:
         personas =[]
         for persona in request.json['personas']:
@@ -226,6 +300,7 @@ def product_post():
 
 
 @api.route("/product-table/<int:id>" , methods = ['PUT'])
+@user_in_session
 def product_table_put_by_id(id):
     data = request.get_json()
     key = list(data.keys())[0]
@@ -248,7 +323,7 @@ def product_table_put_by_id(id):
     product_comments = ProductComments(                          ## SET ID
                 source_id = id,
                 comment_body= None,
-                creator_id = None,
+                creator_id = session['user'],
                 action = 'edited '+ key,
                 downchange = downchange,
                 upchange = upchange)
@@ -262,12 +337,14 @@ def product_table_put_by_id(id):
 
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
+@user_in_session
 def insights_get():
     insights = Insight.query.order_by(Insight.id).filter(Insight.archived.is_(False)).all()
     return json.dumps(InsightSchema().dump(insights,many=True))
 
 ## GET BY ID
 @api.route("/insights/<int:id>" , methods = ['GET'])
+@user_in_session
 def insights_get_by_id(id):
     insight = Insight.query.filter(Insight.id == id )\
                 .options(joinedload('personas') ,joinedload('products') ) \
@@ -276,6 +353,7 @@ def insights_get_by_id(id):
 
 ## POST NEW
 @api.route("/insights" , methods = ['POST'])
+@user_in_session
 def insights_post():
     current_app.logger.info(request.json['title'])
     insight = Insight(
@@ -309,6 +387,7 @@ def insights_post():
 
 
 @api.route("/insights/<int:id>" , methods = ['PUT'])
+@user_in_session
 def insights_put(id):
     data = request.get_json()
     key = list(data.keys())[0]
@@ -339,6 +418,7 @@ def insights_put(id):
 
 
 @api.route("/insights/files/<int:id>" , methods = ['GET'])
+@user_in_session
 def insights_file_get(id):
     if request.args.get('file_id') != None:
         file = InsightFile.query \
@@ -353,6 +433,7 @@ def insights_file_get(id):
         return json.dumps(InsightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/insights/files/<int:id>" , methods = ['POST'])
+@user_in_session
 def insights_file_upload(id):
     file = InsightFile(
             source_id = id,
@@ -364,6 +445,7 @@ def insights_file_upload(id):
     return 'success', 201
 
 @api.route("/insights/files/<int:id>" , methods = ['DELETE'])
+@user_in_session
 def insight_file_delete(id):
     if request.args.get('file_id') != None:
         file = InsightFile.query \
@@ -380,18 +462,20 @@ def insight_file_delete(id):
 
 #### COMMENTS ---------------------------------------------
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
+@user_in_session
 def persona_comments(id):
     persona_comments = PersonaComments.query.filter(PersonaComments.source_id == id).all()
-#                        .join(User,user_id = PersonaComments.creator_id) \ 
     return json.dumps(PersonaCommentsSchema().dump(persona_comments,many=True))
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
+@user_in_session
 def product_comments(id):
     product_comments = ProductComments.query.filter(ProductComments.source_id == id).all()
     return json.dumps(ProductCommentsSchema().dump(product_comments,many=True))
 
 
 @api.route("/insights/comments/<int:id>" , methods = ['GET'])
+@user_in_session
 def insights_comments(id):
     insight_comments = InsightComments.query.filter(InsightComments.source_id == id).all()
     return json.dumps(InsightCommentsSchema().dump(insight_comments,many=True))
@@ -399,13 +483,12 @@ def insights_comments(id):
 
 ## COMMENT ADD
 @api.route("/persona/comments/<int:id>" , methods = ['POST'])
+@user_in_session
 def persona_comments_post(id):
-
-    user_id = User.query.filter_by(user_id = session['user']).first().user_id
     persona_comments = PersonaComments(                          ## SET ID
                 source_id = id,
                 comment_body= request.json['comment_body'],
-                creator_id = user_id,
+                creator_id = session['user'],
                 action = None,
                 downchange = None,
                 upchange = None)
@@ -414,11 +497,12 @@ def persona_comments_post(id):
     return request.json, 201
 
 @api.route("/product/comments/<int:id>" , methods = ['POST'])
+@user_in_session
 def product_comments_post(id):
     product_comments = ProductComments(                          ## SET ID
                 source_id = id,
                 comment_body= request.json['comment_body'],
-                creator_id = None,
+                creator_id = session['user'],
                 action = None,
                 downchange = None,
                 upchange = None)
@@ -427,11 +511,12 @@ def product_comments_post(id):
     return request.json, 201
 
 @api.route("/insights/comments/<int:id>" , methods = ['POST'])
+@user_in_session
 def insight_comments_post(id):
     insight_comments = InsightComments(                          ## SET ID
                 source_id = id,
                 comment_body= request.json['comment_body'],
-                creator_id = None)
+                creator_id = session['user'])
     db.session.add(insight_comments)
     db.session.commit()
     return request.json, 201
@@ -439,9 +524,15 @@ def insight_comments_post(id):
 
 #### Playlist ---------------------------------------------
 
-@api.route("/playlist/<int:user_id>" , methods = ['GET'])
-def user_playlist(user_id):
+@api.route("/playlist" , methods = ['GET'])
+@user_in_session
+def user_playlist():
+
+    if not session['user']:
+        return "No user logged in";
+
     if request.args.get('details') == 'True' :
+        user_id = session['user']
         playlist = Playlist.query.filter(Playlist.user_id == user_id).all()
         response = []
         for play_item in playlist:
@@ -449,7 +540,7 @@ def user_playlist(user_id):
             source_id = play_item.source_id
             if source == 'persona':
                 persona = Persona.query.filter(Persona.id == source_id).first()
-                data = PersonaSchema(only={'id','name','title','quote'}).dump(persona)
+                data = PersonaSchema(only={'id','name','title','quote','avatar'}).dump(persona)
                 data.update({"source" : source})
                 response.append(data) ## # TODO: make this better
 
@@ -466,20 +557,23 @@ def user_playlist(user_id):
                 response.append(data)
         return json.dumps(response), 201
     else:
+        user_id = session['user']
         playlist = Playlist.query.filter(Playlist.user_id == user_id).all()
         return json.dumps(PlaylistSchema().dump(playlist,many=True))
 
 @api.route("/playlist" , methods = ['POST'])
+@user_in_session
 def add_to_playlist():
     if not request.args.get('source_table'):
         return "Missing source_table agrument", 404
     if not request.args.get('source_id'):
         return "Missing source_id agrument", 404
-    if not request.args.get('user_id'):
+    if not session['user']:
         return "Missing user_id agrument", 404
 
+
     playlist_item= Playlist(
-                user_id = request.args.get('user_id'),   ### remove later request.args.get('user_id')
+                user_id = session['user'],
                 source_id = request.args.get('source_id'),
                 source_table = request.args.get('source_table'),
                 order = None)
@@ -488,16 +582,17 @@ def add_to_playlist():
     return "Added to user playlist", 201
 
 @api.route("/playlist" , methods = ['DELETE'])
+@user_in_session
 def remove_from_playlist():
     if not request.args.get('source_table'):
         return "Missing source_table agrument", 404
     if not request.args.get('source_id'):
         return "Missing source_id agrument", 404
-    if not request.args.get('user_id'):
+    if not session['user']:
         return "Missing user_id agrument", 404
 
     playlist_item = Playlist.query.filter(and_(
-                Playlist.user_id == request.args.get('user_id'),
+                Playlist.user_id == session['user'],
                 Playlist.source_id == request.args.get('source_id'),
                 Playlist.source_table == request.args.get('source_table'))) \
             .first()
@@ -523,27 +618,28 @@ def remove_from_playlist():
 
 
 ## AUTHORIZATION
+
+# def token_required(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         token = request.args.get('token')
+#
+#         if not token:
+#             return jsonify({"message" : "token is missing"})
+#
+#         try:
+#             data = jwt.decode(token, app_config['SECRET_KEY'])
+#         except:
+#             return jsonify({"message" : "token is invalid"})
+#
+#         return f(*args, **kwargs)
+#     return decorated
+
 from werkzeug.security import generate_password_hash , check_password_hash
 
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.args.get('token')
-
-        if not token:
-            return jsonify({"message" : "token is missing"})
-
-        try:
-            data = jwt.decode(token, app_config['SECRET_KEY'])
-        except:
-            return jsonify({"message" : "token is invalid"})
-
-        return f(*args, **kwargs)
-    return decorated
-
-@api.route('/login', methods = ['GET'])
-@token_required
+@api.route('/test', methods = ['GET'])
+@user_in_session
 def protected():
     foo = "foo"
     return 'did it work?'
@@ -555,11 +651,11 @@ def authenticate_user():
     user = User.query.filter(sqlalchemy.func.lower(User.username) == username.lower()).first() ## force lowercase filter
     if not user or not user.verify_password(password) or not user.role:
         return jsonify( { 'username': username , 'authenticated' : False} ) , 401
-    g.user = user
+
     token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
-#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
     session['user'] = user.user_id
-    return jsonify( {"token" : token.decode('UTF-8') , "username" : username, "role" : user.role}) , 200
+    user_json = UserSchema(only=("username","user_id","role")).dump(user)
+    return jsonify( {"token" : token.decode('UTF-8') , "user" : user_json }) , 200
 
 @api.route('/logout', methods = ['POST'])
 def clear_session():
@@ -567,7 +663,6 @@ def clear_session():
     return "logged out"
 
 @api.route('/refresh', methods = ['GET'])
-@token_required
 def refresh_token():
     request.json.get('username')
     user = User.query.filter_by(username == username).first()
@@ -608,25 +703,31 @@ def reset_password():
     return jsonify( {"token" : token.decode('UTF-8') , "user" : username})
 
 @api.route('/users', methods = ['GET'])
+@user_in_session
 def get_user_data():
     if request.args.get('session') == 'true':
         # GET current user info
-        user_id = session['user']
-        print(user_id)
-        user = User.query.filter_by(user_id = user_id).all()
-        return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
+        try:
+            user_id = session['user']
+            print(user_id)
+            user = User.query.filter_by(user_id = user_id).all()
+            return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
+        except:
+            return "no user logged in"
     else:
         # GET everything
         users = User.query.all()
         return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
 
 @api.route('/users/<int:user_id>', methods = ['GET'])
+@user_in_session
 def get_user_data_by_id(user_id):
     user = User.query.filter_by(user_id = user_id).all()
     return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
 
 
 @api.route('/users/<int:user_id>', methods = ['PUT'])
+@user_in_session
 def admin_user(user_id):
     data = request.get_json()
     user = User.query.filter_by(user_id = user_id).first()

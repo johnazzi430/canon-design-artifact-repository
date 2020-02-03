@@ -33,7 +33,6 @@
         <label>Personas: </label>
         <div v-for="persona in form.personas" v-bind:key="persona.id">
           <b-button :to='"/persona/" +persona.id' pill variant="info">{{persona.title}} </b-button>
-          <!-- TODO: make it so clicking her routes to the persona -->
         </div>
       </div>
       <hr>
@@ -65,6 +64,15 @@
           <b-form-input v-model="form.product_homepage"
               @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
+
+          <b-form-group label="Life stage">
+            <b-form-radio-group
+              id="radio-group-1"
+              v-model="product_life"
+              :options="product_life_options"
+              name="radio-options" />
+          </b-form-group>
+
           <label>Choose Personas</label>
           <multiselect
                       @change="onInputChanged('personas')"
@@ -84,32 +92,37 @@
           <br>
           <div >Selected: <strong>{{form.personas.title}}</strong></div>
         </div>
-        <div >
-          <label for="product_file">Add File</label>
-          <b-form-file v-model="form.product_file"
-          :state="Boolean(form.product_file)"
-          name="product_file"
-          placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here..."></b-form-file>
-        </div>
+        <!-- <div class="wrapper" v-if='form.id != null'>
+          <div>
+            <label for="product_file">Add File</label>
+            <b-form-file v-model="form.product_file"
+            :state="Boolean(form.product_file)"
+            name="product_file"
+            placeholder="Choose a file or drop it here..."
+            drop-placeholder="Drop file here..."></b-form-file>
+          </div>
+        </div> -->
         <br>
         <div id="button-if" v-if='form.id != null'>
-          <b-button type="reset" variant="secondary">Return</b-button>
-          <b-button href="javascript:void(0)"
-            type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
-          <b-button href="javascript:void(0)"
-            type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
+            <b-button type="reset" variant="secondary">Return</b-button>
+            <b-button href="javascript:void(0)"
+              type="button" variant="danger"  v-on:click='onArchive'> Archive</b-button>
+            <b-button href="javascript:void(0)"
+              type="submit" variant="primary" v-on:click='onEdit'>Submit Changes</b-button>
         </div>
-        <div class="" v-else>
-          <b-button type="submit" variant="primary" v-on:click.prevent='onAdd'>
-            Add New Product</b-button>
+        <div v-else>
+            <b-button type="submit" variant="primary" v-on:click='onAdd'>
+              Add New Product</b-button>
         </div>
       </div>
   </b-form>
 
   <div class="right" style="align-content:right">
     <span>add to playlist -> </span>
-    <playlist-add class="right" :source='"product"' :source_id="form.id"/>
+    <playlist-add :key="form.id"
+          class="right"
+          :source='"product"'
+          :source_id="form.id"/>
   </div>
 
   <hr>
@@ -151,7 +164,9 @@ export default {
       editing: false,
       source: 'product',
       persona_options : [],
-      edited_fields: []
+      edited_fields: [],
+      product_life: null,
+      product_life_options: ['POC','MVP','G2M','Maturing','Declining']
       }
     },
     beforeMount() {
