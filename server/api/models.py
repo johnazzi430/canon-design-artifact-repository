@@ -91,9 +91,10 @@ class Product(db.Model):
     revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer)
     product_homepage = db.Column(db.Text)
+    product_life = db.Column(db.Text)
 
 class ProductSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True, exclude=('products','persona_file','persona_picture'))
+    personas = ma.Nested('PersonaSchema', many=True, exclude=('products','persona_picture'))
 
     class Meta:
         model = Product
@@ -116,6 +117,19 @@ class ProductCommentsSchema(ma.ModelSchema):
 
     class Meta:
         model = ProductComments
+        sqla_session = db.session
+
+class ProductFile(db.Model):
+    __tablename__ = 'product_files'
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer, ForeignKey('product.id'))
+    filename = db.Column(db.Text)
+    file = db.Column(db.LargeBinary)
+    filetype = db.Column(db.Text)
+
+class ProductFileSchema(ma.ModelSchema):
+    class Meta:
+        model = ProductFile
         sqla_session = db.session
 
 
@@ -182,7 +196,7 @@ class Persona(db.Model):
     creator_id = db.Column(db.Integer)
     access_group = db.Column(db.Integer)
     archived = db.Column(db.Boolean, default=False)
-    persona_file = db.Column(db.Binary)
+    persona_maturity = db.Column(db.Text)
     persona_picture = db.Column(db.Binary)
     roles = db.relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref=db.backref('personas')  )
     products = db.relationship('Product' , secondary = 'pers_prod_rel' ,backref=db.backref('personas')  )
@@ -227,7 +241,7 @@ class Insight(db.Model):
     products = relationship('Product' , secondary = 'insight_product_rel' , backref=db.backref('insights') )
 
 class InsightSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True , exclude=('products','persona_file','persona_picture'))
+    personas = ma.Nested('PersonaSchema', many=True , exclude=('products','persona_picture'))
     products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
 
     class Meta:

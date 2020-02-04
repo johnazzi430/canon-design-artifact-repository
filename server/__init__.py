@@ -34,3 +34,30 @@ def index_client():
 #    entry = os.path.join(dist_dir, 'index.html')
     entry = os.path.join(dist_dir, 'index.html')
     return send_file(entry)
+
+
+
+### SSO TEST
+from flask import Flask, session, redirect
+from flask_sso import SSO
+
+sso = SSO(app=app)
+SSO_ATTRIBUTE_MAP = {
+    'ADFS_EMAIL': (True, 'email')
+    }
+    
+
+
+app.config['SSO_ATTRIBUTE_MAP'] = SSO_ATTRIBUTE_MAP
+
+@sso.login_handler
+def login_callback(user_info):
+    """Store information in session."""
+    session['user'] = user_info
+
+@app.route('/sso_test')
+def index():
+    """Display user information or force login."""
+    if 'user' in session:
+        return 'Welcome {name}'.format(name=session['user']['nickname'])
+    return redirect(app.config['SSO_LOGIN_URL'])

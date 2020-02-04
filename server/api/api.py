@@ -4,6 +4,7 @@ import json
 import sqlite3
 import psycopg2
 import sys
+import mimetypes
 from datetime import timedelta
 from flask import Flask , flash, redirect, render_template, session, g
 from flask import Blueprint, jsonify, request, current_app
@@ -19,6 +20,8 @@ import base64
 import io
 from .models import *
 
+
+######
 
 api = Blueprint('api_bp', __name__,url_prefix='/api')
 
@@ -44,15 +47,15 @@ def user_in_session(f):
 ##-------------------------- PERSONA API
 
 ## GET ALL
-@api.route("/persona-table", methods = ['GET'])
+@api.route("/persona", methods = ['GET'])
 @user_in_session
 def persona_table():
     if request.args.get('filter') == "False" :
         personas = Persona.query.order_by(Persona.id).all()
-        return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(personas,many=True))
+        return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
     else:
         personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
-        return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(personas,many=True))
+        return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
 
 ## GET PERSONA LIST
 
@@ -65,18 +68,18 @@ def persona_list():
 
 ## GET BY ID
 
-@api.route("/persona-table/<int:id>" , methods = ['GET'])
+@api.route("/persona/<int:id>" , methods = ['GET'])
 @user_in_session
 def persona_table_by_id(id):
     persona = Persona.query.filter(Persona.id == id) \
             .options(joinedload('roles') ,joinedload('products') ) \
             .all()
-    return json.dumps(PersonaSchema(exclude=['persona_file', 'persona_picture']).dump(persona,many=True))
+    return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(persona,many=True))
 
 
 ## POST NEW
 
-@api.route("/persona-table" , methods = ['POST'])
+@api.route("/persona" , methods = ['POST'])
 @user_in_session
 def persona_post():
     persona = Persona(                          ## SET ID
@@ -93,7 +96,7 @@ def persona_post():
                 revision = 0,                          # Revision
                 creator_id = session['user'],
                 access_group = 0,           # access_group TODO
-                persona_file = None,
+                persona_maturity = session['persona_maturity'],
                 persona_picture = None)
 
     if request.json.get('roles') != None:
@@ -114,7 +117,7 @@ def persona_post():
 
 
 
-@api.route("/persona-table/<int:id>" , methods = ['PUT'])
+@api.route("/persona/<int:id>" , methods = ['PUT'])
 @user_in_session
 def persona_table_put_by_id(id):
 
@@ -165,11 +168,13 @@ def personas_file_get(id):
                 .filter(PersonaFile.id == request.args.get('file_id')) \
                 .first()
         response = make_response(file.file)
-        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Type', mimetypes.guess_type(file.filename))
         response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
         return response
     else:
-        files = PersonaFile.query.filter(PersonaFile.source_id == id).all()
+        files = PersonaFile.query \
+                .with_entities(PersonaFile.id , PersonaFile.filename , PersonaFile.filetype) \
+                .filter(PersonaFile.source_id == id).all()
         return json.dumps(PersonaFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/persona/files/<int:id>" , methods = ['POST'])
@@ -242,9 +247,9 @@ def personas_avatar_upload(id):
     db.session.commit()
     return 'success', 201
 
+
+
 ##-------------------------- PRODUCT API
-
-
 
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
@@ -254,7 +259,7 @@ def product_list():
     return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
-@api.route("/product-table", methods = ['GET'])
+@api.route("/product", methods = ['GET'])
 @user_in_session
 def product_table():
     if request.args.get('filter') == "False" :
@@ -265,7 +270,7 @@ def product_table():
         return json.dumps(ProductSchema().dump(products,many=True))
 
 ## GET BY ID
-@api.route("/product-table/<int:id>" , methods = ['GET'])
+@api.route("/product/<int:id>" , methods = ['GET'])
 @user_in_session
 def product_table_by_id(id):
     products = Product.query.filter(Product.id == id) \
@@ -275,7 +280,7 @@ def product_table_by_id(id):
 
 
 
-@api.route("/product-table" , methods = ['POST'])
+@api.route("/product" , methods = ['POST'])
 @user_in_session
 def product_post():
     current_app.logger.info(request.json['name'])
@@ -287,6 +292,7 @@ def product_post():
                 features = request.json['features'] ,
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
+                product_life = request.json['product_life'] ,
                 creator_id = session['user'])
     if request.json.get('personas') != None:
         personas =[]
@@ -299,7 +305,7 @@ def product_post():
     return request.json, 201
 
 
-@api.route("/product-table/<int:id>" , methods = ['PUT'])
+@api.route("/product/<int:id>" , methods = ['PUT'])
 @user_in_session
 def product_table_put_by_id(id):
     data = request.get_json()
@@ -331,6 +337,50 @@ def product_table_put_by_id(id):
     db.session.commit()
     return request.json, 201
 
+##-------------------------- FILE API
+
+@api.route("/product/files/<int:id>" , methods = ['GET'])
+@user_in_session
+def product_file_get(id):
+    if request.args.get('file_id') != None:
+        file = ProductFile.query \
+                .filter(ProductFile.id == request.args.get('file_id')) \
+                .first()
+        response = make_response(file.file)
+        response.headers.set('Content-Type', 'multipart/form-data ')
+        response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
+        return response
+    else:
+        files = ProductFile.query \
+                .with_entities(ProductFile.id , ProductFile.filename , ProductFile.filetype) \
+                .filter(ProductFile.source_id == id).all()
+        return json.dumps(ProductFileSchema(only=['id','filename','filetype']).dump(files,many=True))
+
+@api.route("/product/files/<int:id>" , methods = ['POST'])
+@user_in_session
+def product_file_upload(id):
+    file = ProductFile(
+            source_id = id,
+            file = request.files['file'].read(),
+            filename = request.files['file'].filename,
+            filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
+    db.session.add(file)
+    db.session.commit()
+    return 'success', 201
+
+@api.route("/product/files/<int:id>" , methods = ['DELETE'])
+@user_in_session
+def product_file_delete(id):
+    if request.args.get('file_id') != None:
+        file = ProductFile.query \
+                .filter(ProductFile.id == request.args.get('file_id')) \
+                .first()
+        db.session.delete(file)
+        db.session.flush()
+        db.session.commit()
+        return 'success', 201
+    else:
+        return 'A file id must be selected' , 404
 
 
 ##-------------------------- INSIGHTS API
@@ -429,7 +479,9 @@ def insights_file_get(id):
         response.headers.set( 'Content-Disposition', 'attachment', filename=file.filename)
         return response
     else:
-        files = InsightFile.query.filter(InsightFile.source_id == id).all()
+        files = InsightFile.query \
+                .with_entities(InsightFile.id , InsightFile.filename , InsightFile.filetype) \
+                .filter(InsightFile.source_id == id).all()
         return json.dumps(InsightFileSchema(only=['id','filename','filetype']).dump(files,many=True))
 
 @api.route("/insights/files/<int:id>" , methods = ['POST'])
@@ -662,6 +714,7 @@ def clear_session():
     session.pop('user', None)
     return "logged out"
 
+## Lets admins change role
 @api.route('/refresh', methods = ['GET'])
 def refresh_token():
     request.json.get('username')
@@ -670,7 +723,7 @@ def refresh_token():
     token = jwt.encode({ 'username': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
     return jsonify( {"token" : token.decode('UTF-8')})
 
-#
+## lets users register
 @api.route('/users', methods = ['POST'])
 def add_user():
     username = request.json.get('username').lower()
@@ -685,10 +738,9 @@ def add_user():
     db.session.commit()
     return jsonify( { 'username': username  , 'authenticated' : True} )
 
-
-## TODO NOT WORKING?
+## Lets users change their own password
 @api.route('/users', methods = ['PUT'])
-def reset_password():
+def change_password():
     username = request.json.get('username')
     current_password = request.json.get('current_password')
     new_password = request.json.get('new_password')
@@ -702,6 +754,7 @@ def reset_password():
 #    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
     return jsonify( {"token" : token.decode('UTF-8') , "user" : username})
 
+## checks if user is in session
 @api.route('/users', methods = ['GET'])
 @user_in_session
 def get_user_data():
@@ -719,19 +772,33 @@ def get_user_data():
         users = User.query.all()
         return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
 
+## gets user data by id
 @api.route('/users/<int:user_id>', methods = ['GET'])
 @user_in_session
 def get_user_data_by_id(user_id):
     user = User.query.filter_by(user_id = user_id).all()
     return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
 
-
+## Lets admins change role
 @api.route('/users/<int:user_id>', methods = ['PUT'])
 @user_in_session
-def admin_user(user_id):
+def admin_change_user(user_id):
     data = request.get_json()
     user = User.query.filter_by(user_id = user_id).first()
     for key in list(data.keys()):
         setattr(user, key , data[key]) #SET UPCHANGE
     db.session.commit()
     return request.json, 201
+
+## Lets admins reset password
+@api.route('/users/<int:user_id>/password-reset', methods = ['PUT'])
+@user_in_session
+def reset_user_password(user_id):
+    user = User.query.filter_by(user_id = user_id).first()
+    new_password = 'password123'
+    user.hash_password(new_password)
+    db.session.commit()
+
+    token = jwt.encode({ 'username': user.username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+#    return jsonify( { 'username': username , 'authenticated' : True , 'role': user.role } )
+    return jsonify( {"token" : token.decode('UTF-8') , "user" : user.username})
