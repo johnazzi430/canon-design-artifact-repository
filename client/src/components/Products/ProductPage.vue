@@ -156,24 +156,28 @@ export default {
   overflow-x: hidden;
 }
 
-
-.sidepanel-left:hover {
-  width: 160px; /* On mouse-over, make the elements appear as they should */
-  transition: 0.25s;
-}
-
 .nav-text{
-  width:60px
+  width:60px;
+  padding-left:10px;
 }
 
 .nav-icon{
-  width:40px;
-  align-items: left;
+  width:50px;
+  margin-right:10px
+}
+
+.nav-link{
+  padding:15px 0px;
+  font-size: 15px;
+}
+
+.sidepanel-left:hover {
+  width: 170px; /* On mouse-over, make the elements appear as they should */
+  transition: 0.25s;
 }
 
 .main{
   width: 100%;
-  height: 100vh;
   margin-left: 60px;
   padding: 0px 10px;
   background-color: #F7F7F7

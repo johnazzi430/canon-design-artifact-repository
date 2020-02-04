@@ -7,6 +7,7 @@
         @reset="onReset"
         @archive="onArchive">
       <div id='persona-detail-show' v-if='editing === false && form.id !== null'>
+        <!-- Show view -->
       <h1>Insight Detail</h1>
       <div class="">
         <label>Title</label>
@@ -53,7 +54,9 @@
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
           <b-button
-            type="button" name="button" target="_blank" v-on:click="getFile(uploadedFile.id)">
+            type="button" name="button" target="_blank"
+            :href ="'/api/insights/files/' + form.id + '?file_id=' + uploadedFile.id"
+            download>
             <i class="fa fa-file"></i>
           </b-button>
         </div>
@@ -63,6 +66,7 @@
 
     </div>
       <div  id='persona-detail-edit' v-else>
+        <!-- Edditing or Adding view -->
         <h1 v-if='form.id === null'>Add</h1>
         <h1 v-else>Edit</h1>
         <div>
@@ -148,8 +152,8 @@
             v-model="file"
             :state="Boolean(file)"
             placeholder="Choose a file or drop it here..."
-            drop-placeholder="Drop file here..."
-            ></b-form-file>
+            drop-placeholder="Drop file here...">
+          </b-form-file>
           <b-button variant="info"
             href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
           <br>
@@ -158,8 +162,8 @@
             <b-button
                   variant="outline-primary"
                   type="button"
-                  href="javascript:void(0)"
-                  v-on:click="getFile(uploadedFile.id)">
+                  :href ="'/api/insight/files/' + form.id + '?file_id=' + uploadedFile.id"
+                  download>
               <i class="fa fa-file"></i>
             </b-button>
             <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
@@ -367,8 +371,8 @@ export default {
            },
          })
       },
-      submitFiles(){
 
+      submitFiles(){
               let formData = new FormData();
 
               formData.append('file', this.file);
@@ -383,24 +387,18 @@ export default {
                 }
               }
               ).then(function(response){
-                console.log(response);
               })
               .catch(function(error){
-                console.log(error);
               });
       },
 
-      deleteFile(){
+      deleteFile(file_id){
         const self = this;
         axios({
           method: 'delete',
           url: '/api/insights/files/'+this.form.id+'?file_id='+ file_id
         })
         // need to add action to update view
-      },
-
-      handleFilesUpload(){
-        this.files = this.$refs.files.files;
       },
 
       getFile(file_id) {
@@ -424,7 +422,6 @@ export default {
             document.body.appendChild(fileLink);
 
             fileLink.click();
-            console.log(response);
           })
       },
     },

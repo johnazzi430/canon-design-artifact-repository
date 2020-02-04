@@ -1,6 +1,17 @@
 <template lang="html">
   <div class="container">
     <!-- <avatar avatar_exists=false persona_id=1 name="fank dawson"/> -->
+
+    <h1>Canon</h1>
+    <p>the body of rules, principles, or standards accepted as axiomatic
+      and universally binding in a field of study or art</p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
     <h1>About</h1>
     <hr>
     <p>The existing process of digital development within UTC has created a

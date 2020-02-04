@@ -6,38 +6,57 @@
         @reset="onReset"
         @archive="onArchive">
       <div id='product-detail-show' v-if='editing === false && form.id !== null'>
-      <h1>Detail</h1>
-      <span> Product ID: {{form.id}} | Revision: {{form.revision}}  </span>
-      <div>
-        <label>Name</label>
-        <p class="text-wrap"> {{form.name}} </p>
-        <label>Description</label>
-        <p class="text-wrap"> {{form.description}} </p>
-        <div v-if="form.metrics!== null">
-          <label>Metrics</label>
-          <p class="text-wrap"> {{form.metrics}} </p>
+        <h1>Detail</h1>
+        <span> Product ID: {{form.id}} | Revision: {{form.revision}}  </span>
+        <div>
+          <label>Name</label>
+          <p class="text-wrap"> {{form.name}} </p>
+          <label>Description</label>
+          <p class="text-wrap"> {{form.description}} </p>
+          <div v-if="form.metrics!== null">
+            <label>Metrics</label>
+            <p class="text-wrap"> {{form.metrics}} </p>
+          </div>
+          <div v-if="form.features!== null">
+            <label>Product Features</label>
+            <p class="text-wrap"> {{form.features}} </p>
+          </div>
+          <div v-if="form.goals!== null">
+            <label>Goals</label>
+            <p class="text-wrap"> {{form.goals}} </p>
+          </div>
+          <label for="function">Owner</label>
+          <p class="text-wrap"> {{form.owner}} </p>
+          <label>Product Homepage</label>
+          <p> {{form.product_homepage}} </p>
+          <br>
+          <b-form-group label="Product Life stage">
+            <b-form-radio-group
+              disabled
+              id="radio-group-1"
+              v-model="form.product_life"
+              :options="product_life_options"
+              name="radio-options" />
+          </b-form-group>
+          <label>Personas: </label>
+          <div v-for="persona in form.personas" v-bind:key="persona.id">
+            <b-button :to='"/persona/" +persona.id' pill variant="info">
+              {{persona.title}} </b-button>
+          </div>
         </div>
-        <div v-if="form.features!== null">
-          <label>Product Features</label>
-          <p class="text-wrap"> {{form.features}} </p>
+        <label>Files:</label>
+        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          {{uploadedFile.filename}}
+          <b-button
+            type="button" name="button" target="_blank"
+            :href ="'/api/product/files/' + form.id + '?file_id=' + uploadedFile.id"
+            download>
+            <i class="fa fa-file"></i>
+          </b-button>
         </div>
-        <div v-if="form.goals!== null">
-          <label>Goals</label>
-          <p class="text-wrap"> {{form.goals}} </p>
-        </div>
-        <label for="function">Owner</label>
-        <p class="text-wrap"> {{form.owner}} </p>
-        <label>Product Homepage</label>
-        <p> {{form.product_homepage}} </p>
-        <br>
-        <label>Personas: </label>
-        <div v-for="persona in form.personas" v-bind:key="persona.id">
-          <b-button :to='"/persona/" +persona.id' pill variant="info">{{persona.title}} </b-button>
-        </div>
+        <hr>
+        <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
       </div>
-      <hr>
-      <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
-    </div>
       <div  id='product-detail-edit' v-else>
         <h1 v-if='form.id !== null'>Edit</h1>
         <h1 v-else>Add</h1>
@@ -65,10 +84,12 @@
               @change="onInputChanged('product_homepage')"></b-form-input>
           <br>
 
-          <b-form-group label="Life stage">
+          <label>Product Life Stage</label>
+          <b-form-group label="Life stage" >
             <b-form-radio-group
+              @change="onInputChanged('product_life')"
               id="radio-group-1"
-              v-model="product_life"
+              v-model="form.product_life"
               :options="product_life_options"
               name="radio-options" />
           </b-form-group>
@@ -92,16 +113,36 @@
           <br>
           <div >Selected: <strong>{{form.personas.title}}</strong></div>
         </div>
-        <!-- <div class="wrapper" v-if='form.id != null'>
-          <div>
-            <label for="product_file">Add File</label>
-            <b-form-file v-model="form.product_file"
-            :state="Boolean(form.product_file)"
-            name="product_file"
+        <!-- Single file -->
+        <br>
+        <div class="wrapper" v-if='form.id != null'>
+          <label>Files</label>
+          <!-- v-on:change="handleFilesUpload()" -->
+          <b-form-file
+            type="file" id="file" ref="file"
+            v-model="file"
+            :state="Boolean(file)"
             placeholder="Choose a file or drop it here..."
-            drop-placeholder="Drop file here..."></b-form-file>
+            drop-placeholder="Drop file here...">
+          </b-form-file>
+          <b-button variant="info" id='file-upload'
+            href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
+          <br>
+          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+            {{uploadedFile.filename}}
+            <b-button
+                  variant="outline-primary"
+                  type="button"
+                  :href ="'/api/product/files/' + form.id + '?file_id=' + uploadedFile.id"
+                  download>
+              <i class="fa fa-file"></i>
+            </b-button>
+            <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
+                type="button" href="javascript:void(0)">&times;
+            </b-button>
           </div>
-        </div> -->
+        </div>
+
         <br>
         <div id="button-if" v-if='form.id != null'>
             <b-button type="reset" variant="secondary">Return</b-button>
@@ -159,13 +200,15 @@ export default {
         personas: [],
         products:[],
         product_photo: '',
+        product_life: null,
         product_file: null},
+      uploadedFiles: [],
+      file: null,
       errors: {},
       editing: false,
       source: 'product',
       persona_options : [],
       edited_fields: [],
-      product_life: null,
       product_life_options: ['POC','MVP','G2M','Maturing','Declining']
       }
     },
@@ -182,7 +225,7 @@ export default {
       // GET ON DATA CHANGE
       EventBus.$on('product-selection-changed', function(selection){
 
-        var get_url = "/api/product-table/";
+        var get_url = "/api/product/";
         get_url += selection;
 
         axios.get(get_url)
@@ -195,6 +238,7 @@ export default {
             self.form.features = response.data[0].features;
             self.form.owner = response.data[0].owner;
             self.form.product_homepage = response.data[0].product_homepage;
+            self.form.product_life = response.data[0].product_life;
             self.form.revision = response.data[0].revision;
             self.form.personas = response.data[0].personas;
             self.editing = false;
@@ -202,7 +246,17 @@ export default {
           }
         )
         .catch(error => console.log(error))
+
+        //GET FILES
+        axios({
+            method: 'get',
+            url: '/api/product/files/' + selection,
+          }).then(function(response){
+            self.uploadedFiles = response.data;
+          })
+
         });
+
       },
       methods: {
         onInputChanged(field) {
@@ -215,14 +269,14 @@ export default {
           for (key of this.edited_fields) {
              await axios({
                   method: 'put',
-                  url: '/api/product-table/' + this.form.id ,
+                  url: '/api/product/' + this.form.id ,
                   data: {
                      [key] : this.form[key]
                    }
                   })
                 };
 
-         EventBus.$emit('product-table-changed','item-updated');
+         EventBus.$emit('product-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
 
         },
@@ -231,14 +285,14 @@ export default {
          evt.preventDefault()
          await axios({
              method: 'post',
-             url: '/api/product-table',
+             url: '/api/product',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('product-table-changed','item-updated');
+         EventBus.$emit('product-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
        },
 
@@ -252,16 +306,51 @@ export default {
          evt.preventDefault()
          await axios({
             method: 'put',
-            url: '/api/product-table/' + this.form.id ,
+            url: '/api/product/' + this.form.id ,
          })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('product-table-changed' , 'archived' )
+         EventBus.$emit('product-changed' , 'archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
       },
+
+      submitFiles(){
+              let formData = new FormData();
+
+              document.getElementById('file-upload').innerHTML = '<b-spinner label="Loading..."></b-spinner>';
+
+              formData.append('file', this.file);
+              formData.append('filename', 'blank');
+
+              axios({
+                method: 'post',
+                url: '/api/product/files/' + this.form.id,
+                data : formData,
+                headers: {
+                      'Content-Type': 'multipart/form-data'
+                }
+              }).then(function(response){
+                document.getElementById('file-upload').innerHTML = '<i class="fa fa-check"></i>';
+                console.log('file uploaded')
+              })
+              .catch(function(error){
+                document.getElementById('file-upload').innerHTML = '<i class="fa fa-times nav-icon"></i>';
+                console.log('upload error')
+              });
+      },
+
+      deleteFile(file_id){
+        const self = this;
+        axios({
+          method: 'delete',
+          url: '/api/product/files/'+this.form.id+'?file_id='+ file_id
+        })
+        // need to add action to update view
+      },
+
      },
   };
 
