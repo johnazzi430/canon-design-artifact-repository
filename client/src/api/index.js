@@ -6,7 +6,7 @@ const API_URL = process.env.API_URL
 
 // PERSONAS
 export function persona_table () {
-  return axios.get(`${API_URL}/persona-table`)
+  return axios.get(`${API_URL}/persona`)
 }
 
 export function persona_list () {
@@ -27,7 +27,7 @@ export function persona_table_put_by_id (id,data) {
 
 // PRODUCTS
 export function product_table () {
-  return axios.get(`${API_URL}/product-table`)
+  return axios.get(`${API_URL}/product`)
 }
 
 export function product_list () {

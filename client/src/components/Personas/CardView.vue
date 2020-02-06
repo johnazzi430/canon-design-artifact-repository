@@ -76,7 +76,7 @@ export default {
  },
   beforeMount() {
     const self = this;
-    var get_url = `/api/persona-table`;
+    var get_url = `/api/persona`;
 
     axios.get(get_url)
     .then(response => {

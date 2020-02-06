@@ -70,13 +70,26 @@
           <b-badge pill variant="success">{{role.name}}</b-badge>
         </div>
         <br>
+        <b-form-group label="Persona Maturity">
+          <b-form-radio-group
+            disabled
+            id="radio-group-1"
+            v-model="form.persona_maturity"
+            :options="persona_maturity_options"
+            name="radio-options" />
+        </b-form-group>
+        <br>
         <label>Files:</label>
         <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
-          <button
-            type="button" name="button" target="_blank" v-on:click="getFile(uploadedFile.id)">
+          <b-button
+            variant="outline-primary"
+            type="button"
+            :href ="'/api/persona/files/' + form.id + '?file_id=' + uploadedFile.id"
+            download
+            >
             <i class="fa fa-file"></i>
-          </button>
+          </b-button>
         </div>
         <hr>
 
@@ -161,6 +174,15 @@
               @change="onInputChanged('buss_val')"/>
           <div class="mt-2">Value: {{ form.buss_val }}</div>
           <br>
+          <b-form-group label="Persona Maturity">
+            <b-form-radio-group
+             @change="onInputChanged('persona_maturity')"
+              id="radio-group-1"
+              v-model="form.persona_maturity"
+              :options="persona_maturity_options"
+              name="radio-options" />
+          </b-form-group>
+          <br>
           <label for="product-select">Add Product:    </label>
           <br>
           <multiselect
@@ -201,6 +223,8 @@
         <!-- Single file -->
         <br>
         <div class="wrapper" v-if='form.id != null'>
+          <label>Files</label>
+          <!-- v-on:change="handleFilesUpload()" -->
           <b-form-file
             type="file" id="file" ref="file"
             v-model="file"
@@ -213,8 +237,11 @@
           <br>
           <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
             {{uploadedFile.filename}}
-            <b-button variant="outline-primary"
-              type="button" href="javascript:void(0)" v-on:click="getFile(uploadedFile.id)">
+            <b-button
+                  variant="outline-primary"
+                  type="button"
+                  :href ="'/api/persona/files/' + form.id + '?file_id=' + uploadedFile.id"
+                  download>
               <i class="fa fa-file"></i>
             </b-button>
             <b-button variant="outline-primary" v-on:click="deleteFile(uploadedFile.id)"
@@ -222,7 +249,6 @@
             </b-button>
           </div>
         </div>
-
         <hr>
 
         <div id="button-if" v-if='form.id != null'>
@@ -288,8 +314,8 @@ export default {
         revision: null,
         products: [],
         roles: [] ,
+        persona_maturity: null,
         persona_picture: null,
-        persona_file: null,
         avatar: "../../../public/assets/img_avatar2.png"
       },
       uploadedFiles: [],
@@ -298,7 +324,8 @@ export default {
       source: 'persona',
       product_options: [],
       role_options: [],
-      edited_fields: []
+      edited_fields: [],
+      persona_maturity_options: [ 'proto','secondary','validated']
       }
     },
     beforeMount() {
@@ -320,7 +347,7 @@ export default {
 
       // UPDATE DATA ON CHANGES
       EventBus.$on('persona-selection-changed', function(selection){
-          var get_url = "/api/persona-table/";
+          var get_url = "/api/persona/";
           get_url += selection;
 
            axios.get(get_url)
@@ -340,13 +367,12 @@ export default {
               self.form.products = response.data[0].products;
               self.form.roles = response.data[0].roles;
               self.form.avatar = response.data[0].avatar;
+              self.form.persona_maturity = response.data[0].persona_maturity;
               self.editing = false;
               self.edited_fields.length = 0 ;
             }
           )
           .catch(error => console.log(error))
-
-
 
           //GET FILES
           axios({
@@ -370,28 +396,28 @@ export default {
          for (key of this.edited_fields) {
              await axios({
                  method: 'put',
-                 url: '/api/persona-table/' + this.form.id ,
+                 url: '/api/persona/' + this.form.id ,
                  data: {
                     [key] : this.form[key]
                     }
                  })
            };
 
-        EventBus.$emit('persona-table-changed','item-updated');
+        EventBus.$emit('persona-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
        },
 
        async onAdd() {
          await axios({
              method: 'post',
-             url: '/api/persona-table',
+             url: '/api/persona',
              data: this.form, })
          .then(function (response) {
              console.log(response);})
          .catch(function (error) {
              console.log(error);})
 
-         EventBus.$emit('persona-table-changed','item-added');
+         EventBus.$emit('persona-changed','item-added');
          document.getElementById("right-sidepanel").style.width = "0px";
          this.$store.commit({
            type: 'alert',
@@ -409,7 +435,7 @@ export default {
        },
 
        async onArchive() {
-         var get_url = '/api/persona-table/';
+         var get_url = '/api/persona/';
          get_url += this.form.id ;
 
 
@@ -425,7 +451,7 @@ export default {
              console.log(error);})
 
          console.log('delete')
-         EventBus.$emit('persona-table-changed' , "archived" )
+         EventBus.$emit('persona-changed' , "archived" )
          document.getElementById("right-sidepanel").style.width = "0px";
 
          this.$store.commit({
@@ -438,32 +464,9 @@ export default {
          })
       },
 
-      getFile(file_id) {
-          const self = this;
-          axios({
-          method: 'get',
-          url: '/api/persona/files/'+this.form.id+'?file_id='+ file_id
-        }
-        ).then(function(response){
-          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
-          var fileLink = document.createElement('a');
-
-          fileLink.href = fileURL;
-          fileLink.setAttribute('download');
-          document.body.appendChild(fileLink);
-
-          fileLink.click();
-          console.log(response);
-        })
-      },
-
-      handleFileUpload(){
-        this.file = this.$refs.file.files[0];
-      },
-
       submitFiles(){
-
               let formData = new FormData();
+              var mime = require('mime-types')
 
               formData.append('file', this.file);
               formData.append('filename', 'blank');
@@ -475,16 +478,11 @@ export default {
                 headers: {
                       'Content-Type': 'multipart/form-data'
                 }
-              }
-              ).then(function(response){
-                console.log(response);
-              })
-              .catch(function(error){
-                console.log(error);
-              });
+              }).then(function(response){})
+              .catch(function(error){});
       },
 
-      deleteFile(){
+      deleteFile(file_id){
         const self = this;
         axios({
           method: 'delete',

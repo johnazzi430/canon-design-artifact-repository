@@ -2,10 +2,15 @@
 
 <template>
     <div>
-      <b-navbar class="navbar-expand-lg navbar-dark"
+      <b-navbar
+          toggleable="sm"
+          class="navbar-expand-lg navbar-dark"
           style="padding-left:30px; border-radius: 0px">
         <b-navbar-nav>
-          <b-navbar-brand to="/">Canon - Insight Repository</b-navbar-brand>
+          <b-navbar-brand to="/">
+                        UTC Canon
+                        <h6 class='subscript'>Product Artifact Repository</h6>
+          </b-navbar-brand>
           <b-nav-item to="/insight">Insight</b-nav-item>
           <b-nav-item to="/persona">Persona</b-nav-item>
           <b-nav-item to="/product">Product</b-nav-item>
@@ -57,6 +62,10 @@ export default {
   margin-bottom: -15px;
   background-color: #000000;
   color: #FFFFFF;
+}
+
+.subscript {
+  margin:0;
 }
 
 </style>

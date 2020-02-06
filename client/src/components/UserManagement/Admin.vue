@@ -1,12 +1,14 @@
 <template>
   <div class="container">
     <h1>Admin Page</h1>
-    <a href="#" @onclick='resetPasswordforUser'>resetPassword</a>
+
     <div class="test-header row" style="margin:15px">
-      <div class="col-2">
+      <div class="col-4">
         Selection:
-        <span id="selectedRows"></span>
-        <span :selectedRow = "selectedRow"></span>
+        <span>{{selectedRows[0]}}</span>
+        <br>
+        <a href="javascript:void(0)"
+           v-on:click="resetPasswordforUser(selectedRows)">Reset Password</a>
       </div>
       <div class="col-2">
         <span> Search: </span>
@@ -20,8 +22,8 @@
         :rowData="rowData"
         :modules="modules"
         rowSelection="single"
-        @grid-ready="onGridReady"
         @selection-changed="onSelectionChanged"
+        @grid-ready="onGridReady"
         @cell-value-changed="onCellValueChanged">
   </ag-grid-vue>
 </div>
@@ -42,10 +44,10 @@ export default {
       columnDefs: null,
       rowData: null,
       rowSelection: null,
+      selectedRows: [],
       gridApi: null,
       gridOptions: null,
       modules: AllCommunityModules,
-      selectedRow: null,
       defaultColDef: null
     }
   },
@@ -58,25 +60,9 @@ export default {
       this.columnApi = params.columnApi;
     },
 
-    onSelectionChanged() {
-      var selectedRows = this.gridApi.getSelectedRows();
-      var selectedRowsString = "";
-      var selectedRowsid =""
-      selectedRows.forEach(function(selectedRow, index) {
-        if (index !== 0) {
-          selectedRowsString += ", ";
-        }
-        selectedRowsString += selectedRow.name;
-        selectedRowsid = selectedRow.id
-      });
-
-      document.querySelector("#selectedRows").innerHTML = selectedRowsString;
-    },
-
     onFilterTextBoxChanged() {
       this.gridApi.setQuickFilter(document.getElementById('filter-text-box').value);
     },
-
 
     async onCellValueChanged(params) {
       // var colId = params.column.getId();
@@ -90,17 +76,25 @@ export default {
       })
     },
 
-    resetPasswordforUser(){
-
+    onSelectionChanged() {
+      this.selectedRows = this.gridApi.getSelectedRows();
     },
+
+    resetPasswordforUser(params){
+      console.log(params[0].user_id)
+      axios({
+         method: 'put',
+         url: '/api/users/' + params[0].user_id + '/password-reset',
+       })
+     },
 
   },
   beforeMount() {
     this.columnDefs = [
-      {headerName: "User ID", field: "user_id", width: 200},
+      {headerName: "User ID", field: "user_id", width: 75},
       {headerName: "Username", field: "username", filter: 'agTextColumnFilter', width: 200},
       {headerName: "Role", field: "role", filter: 'agTextColumnFilter', width: 100, editable:true},
-      {headerName: "test"  ,cellRenderer: resetPassword}
+      // {headerName: "blank"  , cellRenderer: resetPassword}
     ];
 
     this.defaultColDef = {
@@ -125,8 +119,9 @@ export default {
   },
 };
 
-
 function resetPassword(params) {
-  return '<a href="#" @onclick="resetPasswordforUser"> Reset Password</a>'
+  return '<a href="javascript:void(0)" v-on:click="resetPasswordforUser">Reset Password</a>'
 };
+
+
 </script>

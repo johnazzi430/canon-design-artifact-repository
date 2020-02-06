@@ -15,7 +15,7 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100%; height: 500px;"
+    <ag-grid-vue style="width: 100%; height: 100vh;"
         class="ag-theme-balham"
         :columnDefs="columnDefs"
         :rowData="rowData"
@@ -86,8 +86,8 @@ export default {
   mounted() {
     const self = this
 
-    EventBus.$on('persona-table-changed',function(data) {
-      fetch(`/api/persona-table`)
+    EventBus.$on('persona-changed',function(data) {
+      fetch(`/api/persona`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
         console.log('recived')
@@ -116,12 +116,12 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 200;
-    fetch(`/api/persona-table`)
+    fetch(`/api/persona`)
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
 
     this.$nextTick(() => {
-        fetch(`/api/persona-table`)
+        fetch(`/api/persona`)
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });

@@ -76,10 +76,11 @@ export default {
 
 <style>
 
-body, html {
+.body, html {
   padding: 0;
   margin: 0;
   width: 100%;
+  height: 100%;
   min-height: 100%;
   background-color: #F7F7F7;
 }
@@ -90,6 +91,7 @@ body, html {
   -moz-osx-font-smoothing: grayscale;
   text-align: left;
   color: #2c3e50;
+  height: 100%;
   background: #F7F7F7;
 }
 

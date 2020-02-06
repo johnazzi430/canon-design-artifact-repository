@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 80vh;">
     <div class="test-header row" style="margin:15px;">
       <b-alert :show="this.alert_show === true" variant="info" dismissible>
         Data Updated {{this.alert_text }}
@@ -15,14 +15,15 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100vl; height: 100vh;"
+    <ag-grid-vue style="width: 100vl; height: 83vh;"
         class="ag-theme-material"
         :columnDefs="columnDefs"
         :rowData="rowData"
         :modules="modules"
         rowSelection="single"
         @grid-ready="onGridReady"
-        @selection-changed="onSelectionChanged">
+        @selection-changed="onSelectionChanged"
+        :getRowHeight="getRowHeight">
   </ag-grid-vue>
 </div>
 </template>
@@ -55,7 +56,6 @@ export default {
   },
 
   beforeMount() {
-
     this.defaultColDef = {
       sortable: true,
       resizable: true,
@@ -64,30 +64,25 @@ export default {
       }
     };
 
-    this.getRowHeight = params => {
-      return params.data.rowHeight;
-    };
-
     this.gridOptions = {enableBrowserTooltips: true};
     this.rowSelection = "single";
-    this.rowHeight = 50;
 
     this.columnDefs = [
-      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', width: 200 , resizable: true , sortable: true , cellClass: "cell-wrap-text",},
-      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true, cellClass: "cell-wrap-text",},
+      {headerName: "Title", field: "title", filter: 'agTextColumnFilter', flex: 1, width: 200 , resizable: true , sortable: true , cellClass: "cell-wrap-text",},
+      {headerName: "Quote", field: "quote", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true, cellClass: "cell-wrap-text", tooltipField: 'quote'},
       {headerName: "    ", field: "external" ,  width: 50 , headerTooltip:'External Persona', filter: 'agNumberColumnFilter', resizable: true , sortable: true, cellRenderer: externalFlag},
-      {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true},
-      {headerName: "    ", field: "market_size", headerTooltip:'Market Size' , width: 75 , resizable: true , sortable: true},
-      {headerName: "Roles", field: "roles", filter: 'agTextColumnFilter' , flex: 2, resizable: true , sortable: true , cellRenderer: roleBadge , cellClass: "cell-wrap-text",  minWidth: 200, maxWidth: 350},
+      // {headerName: "Function", field: "job_function", filter: 'agTextColumnFilter', width: 400 , resizable: true , sortable: true},
+      {headerName: "Qty", field: "market_size", headerTooltip:'Market Size' , width: 80 , resizable: true , sortable: true},
+      {headerName: "Roles", field: "roles", filter: 'agTextColumnFilter' , width: 600, flex: 4, resizable: true , sortable: true , tooltipField: 'roles' , cellRenderer: roleBadge , cellClass: "cell-wrap-text",  minWidth: 200, maxWidth: 350},
     ];
 
 
-    fetch(`/api/persona-table`)
+    fetch(`/api/persona`)
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
 
     this.$nextTick(() => {
-        fetch(`/api/persona-table`)
+        fetch(`/api/persona`)
         .then(result => result.json())
         .then(rowData => this.rowData = rowData);
     });
@@ -96,12 +91,11 @@ export default {
     this.gridApi = this.gridOptions.api;
     this.gridColumnApi = this.gridOptions.columnApi;
 
-    api.sizeColumnsToFit()
 
     const self = this
 
-    EventBus.$on('persona-table-changed',function(data) {
-      fetch(`/api/persona-table`)
+    EventBus.$on('persona-changed',function(data) {
+      fetch(`/api/persona`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
         console.log('recived')
@@ -111,7 +105,6 @@ export default {
     onGridReady(params) {
       this.gridApi = params.api;
       this.columnApi = params.columnApi;
-      this.rowHeight = 200;
 
       try {
           params.api.context.beanWrappers.tooltipManager.beanInstance.MOUSEOVER_SHOW_TOOLTIP_TIMEOUT = 0;
@@ -170,6 +163,18 @@ function roleBadge(params) {
 
 <style lang="scss" scoped>
 .cell-wrap-text {
-    white-space: normal !important;
+  line-height: 100px ;
+  white-space: normal !important;
 }
+
+.ag-scrolls {
+    height: auto !important;
+}
+
+.ag-body {
+    position: relative !important;
+    top: auto !important;
+    height: auto !important;
+}
+
 </style>

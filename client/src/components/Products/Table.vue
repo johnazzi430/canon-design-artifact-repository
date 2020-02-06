@@ -12,7 +12,7 @@
         placeholder="Filter..." v-on:input="onFilterTextBoxChanged()"/>
       </div>
     </div>
-    <ag-grid-vue style="width: 100vl; height: 100vh;"
+    <ag-grid-vue style="width: 100vl; height: 83vh;"
         class="ag-theme-material"
         :columnDefs="columnDefs"
         :rowData="rowData"
@@ -96,15 +96,15 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 100;
-    fetch('/api/product-table')
+    fetch('/api/product')
     .then(result => result.json())
     .then(rowData => this.rowData = rowData);
   },
   mounted() {
     const self = this
 
-    EventBus.$on('product-table-changed',function(data) {
-      fetch(`/api/product-table`)
+    EventBus.$on('product-changed',function(data) {
+      fetch(`/api/product`)
       .then(result => result.json())
       .then(rowData => self.rowData = rowData);
     })
