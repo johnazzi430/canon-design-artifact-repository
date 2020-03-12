@@ -13,12 +13,6 @@
       <h4>Filter: </h4>
           <b-button-group vertical class="mx-1 col-1.5">
             <b-button variant="info"
-            @click='toggleSearch("collins")'>Collins</b-button>
-            <b-button variant="info"
-            @click='toggleSearch("pratt")'>Pratt</b-button>
-          </b-button-group>
-          <b-button-group vertical class="mx-1 col-1.5">
-            <b-button variant="info"
             @click='toggleSearch(`"external":0`)'>Internal</b-button>
             <b-button variant="info"
             @click='toggleSearch(`"external":1`)'>External</b-button>

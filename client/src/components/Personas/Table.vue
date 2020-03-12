@@ -156,7 +156,7 @@ function roleBadge(params) {
     out = out + '<div class="badge badge-primary">'+ item.name + '</div>'
   })
 //  return  '<i class="fas fa-external-link-square-alt"></i>'
-  return '<div>' + out + '</div>'
+  return '<div style="display:inline-block;">' + out + '</div>'
 };
 
 </script>

@@ -1,5 +1,4 @@
 
-
 <template lang="html">
   <div class="container" :key="commentKey">
     <div class="wrapper" v-if="comments !== null">

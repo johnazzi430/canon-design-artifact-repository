@@ -86,6 +86,12 @@ export default {
          method: 'put',
          url: '/api/users/' + params[0].user_id + '/password-reset',
        })
+       this.$store.commit({
+         type: 'alert',
+         show : 5,           //seconds to auto dismiss
+         variant : "success",
+         content : params[0].username + " password updated"
+       })
      },
 
   },

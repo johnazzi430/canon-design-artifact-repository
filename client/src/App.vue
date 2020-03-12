@@ -4,17 +4,27 @@
     <!-- <div class="container">
       <button v-on:click='SendAlert()'> CLICK ME!</button>
     </div> -->
-    <!-- <div class="wrapper" v-if="alert.show">
-      <b-alert
-              class="alert"
-              v-model="this.$store.state.alert"
-              :variant="this.$store.state.alert.variant"
-              @dismissed="this.$store.state.alert.show=false"
-              dismissible>
-        {{this.$store.state.alert.content}}
-      </b-alert>
-    </div> -->
+
+    <div v-for="(alert, index) in this.$store.state.alert.slice().reverse()"
+      v-bind:key="alert.time"
+      class="alert-container"
+      v-bind:style="{top:60+index*50 +'px'}">
+        <b-alert
+                fade
+                class="alert"
+                :variant="alert.variant"
+                :show="alert.show"
+                @dismissed="alert.show=false"
+                dismissible>
+                {{alert.content}}
+        </b-alert>
+    </div>
+
     <router-view/>
+
+    <!-- <a href="javascript:void(0)"
+       :style="{right:30+'px', bottom:30+'px'}"
+       @click='logout'>Logout</a> -->
   </div>
 </template>
 
@@ -28,11 +38,6 @@ export default {
   name: 'app',
   components: {
     'app-nav': Nav,
-  },
-  data () {
-    return {
-      image: ''
-    }
   },
   beforeCreate() {
       this.$store.dispatch('enter')
@@ -53,19 +58,23 @@ export default {
     }
   },
   methods :{
+    async logout() {
 
-    getImage(){
-        this.image = '/api/persona/avatar/53'
+      await axios({
+          method : 'post',
+          url : `/api/logout`
+        })
+
+      this.$store.dispatch('logout')
+      this.$router.push('/login')
     },
 
     SendAlert() {
         this.$store.commit({
           type: 'alert',
-          alert : {
-            show : true,
-            variant : "info",
-            content : "TESTING!"
-          },
+          show : 5,           //seconds to auto dismiss
+          variant : "info",
+          content : "TESTING!"
         })
     }
   },
@@ -96,10 +105,14 @@ export default {
 }
 
 .alert{
+  z-index: 10000;
+  width: 100%
+}
+
+.alert-container{
+  z-index: 10000;
   position: fixed;
-  z-index: 1000;
-  left: 0px;
-  top: 0px;
+  width: 100%;
 }
 
 </style>

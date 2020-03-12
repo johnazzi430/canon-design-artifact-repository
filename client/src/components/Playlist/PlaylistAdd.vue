@@ -1,11 +1,20 @@
 
 <template lang="html">
+  <div class="playlist-button">
     <a v-if="isOnPlaylist === true" href="javascript:void(0)" @click="removeFromPlaylist()">
-      <i class="fa fa-2x fa-bookmark active"></i>
+      <span>
+        <i id="bookmarked" class="fa-2x fas fa-bookmark active"></i>
+        <span class="playlist-tooltip">Remove From Playlist</span>
+      </span>
     </a>
-    <a v-else @click="addToPlaylist()">
-      <i class="fa fa-2x fa-bookmark"></i>
+    <a v-else @click="addToPlaylist()" href="javascript:void(0)">
+      <span>
+        <i id="not-bookmarked" class="fa-2x far fa-bookmark"></i>
+        <span class="playlist-tooltip">Add to Playlist</span>
+      </span>
     </a>
+
+  </div>
 </template>
 
 <script>
@@ -32,6 +41,14 @@ export default {
             }
            })
       this.isOnPlaylist = true;
+
+      self.$store.commit({
+        type: 'alert',
+        show : 2,           //seconds to auto dismiss
+        variant : "info",
+        content : self.source + " added to playlist"
+      })
+
       console.log('added to playlist')
     },
     removeFromPlaylist(){
@@ -45,6 +62,14 @@ export default {
             }
            })
       this.isOnPlaylist = false;
+
+      self.$store.commit({
+        type: 'alert',
+        show : 2,           //seconds to auto dismiss
+        variant : "info",
+        content : self.source + " removed from playlist"
+      })
+
       console.log('removed from playlist')
     }
   },
@@ -70,15 +95,34 @@ export default {
 
 <style lang="css" scoped>
 
-.fa {
+.playlist-button .playlist-tooltip {
+  top: -5px;
+  right: 105%;
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+.playlist-button:hover .playlist-tooltip {
+  visibility: visible;
+}
+
+.fa-bookmark {
   color: lightgrey;
 }
 
-.fa:hover {
+.fa-bookmark:hover {
   color: DarkGrey;
 }
 
-.fa.active {
+.fa-bookmark.active {
   color: black;
 }
 

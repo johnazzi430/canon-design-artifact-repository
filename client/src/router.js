@@ -9,7 +9,7 @@ import Admin from './components/UserManagement/Admin.vue';
 import Login from './components/UserManagement/Login.vue';
 import NotFound from './components/NotFound.vue';
 import Home from './components/Home.vue';
-import About from './components/About.vue';
+import About from './components/About/About.vue';
 import Playlist from './components/Playlist/Playlist.vue'
 import {EventBus} from  "./index.js";
 import store from  "./store";
@@ -85,13 +85,14 @@ const router =  new Router({
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach( async (to, from, next) => {
   if(to.name === "login") {
     store.state.auth_success===false
     next()
     return
   }
   else {
+    await store.dispatch('enter')
     if(store.getters.isLoggedIn) {
       next()
       return
