@@ -1,6 +1,6 @@
 
 <template lang="html">
-  <div class="container main">
+  <div class="container main" :key="refresh_key">
     <h1>Playlist</h1>
     <div class="row">
       <div class="md-form mt-0 col-8" id="card-search">
@@ -11,7 +11,9 @@
           aria-label="Search">
       </div>
       <b-button-group class="mx-1">
-        <b-button variant="info" @click='toggleSearch(`"external":0`)'>Clear Playlist</b-button>
+<!-- <b-button variant="info" @click='toggleSearch(`"external":0`)'>
+Clear Playlist</b-button> -->
+        <b-button variant="info" @click='clearPlaylist()'>Clear Playlist</b-button>
       </b-button-group>
     </div>
     <br>
@@ -35,9 +37,17 @@
             {{card.title}}
             {{card.description}}
             {{card.quote}}
-            <b-button variant="outline-secondary" :to='"/"+card.source+"/" +card.id'>
-              open <i class="fa fa-angle-double-right"></i>
-            </b-button>
+            <div class="row">
+              <b-button variant="outline-secondary" :to='"/"+card.source+"/" +card.id'>
+                open <i class="fa fa-angle-double-right"></i>
+              </b-button>
+              <playlist-add
+                    id="tooltip-target-1"
+                    :style="{right:30+'px' , position: 'absolute'}"
+                    :key="card.id"
+                    :source='card.source'
+                    :source_id="card.id"/>
+            </div>
           </b-card-text>
           <!-- <b-button variant="outline-secondary"
                     v-on:click="removeFromPlaylist( card.source , card.id )">
@@ -63,8 +73,12 @@ export default {
     draggable
   },
   data() { return {
-    cards : [],
+    cards : [
+      {
+      },
+    ],
     search : '',
+    refresh_key: 0,
     options:{
       dropzoneSelector: 'ul',
       draggableSelector: 'li',
@@ -79,7 +93,7 @@ export default {
       }
     }
   },
-  beforeCreate() {
+  beforeMount() {
     const self = this;
     var get_url = '/api/playlist?details=True';
 
@@ -101,6 +115,22 @@ export default {
               source_id : id
             }
            })
+    },
+
+    clearPlaylist: async function() {
+      var card;
+      for (card in this.cards) {
+        await axios({
+             method: 'delete',
+             url: '/api/playlist',
+             params: {
+                source_table : this.cards[card].source,
+                source_id : this.cards[card].id
+              }
+             })
+      }
+      this.refresh_key += 1;
+      this.cards = [];
     },
 
     toggleSearch(value) {

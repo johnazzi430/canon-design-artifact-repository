@@ -35,10 +35,10 @@
 
         <label for="qty">Number people who fit this persona</label>
         <p> {{form.market_size}} </p>
-        <label for="quote">Persona Quote</label>
+        <label for="quote">Quote</label>
         <p> {{form.quote}} </p>
         <div v-if="form.job_function !== null">
-          <label for="function">Job Function</label>
+          <label for="function">Responsibilities</label>
           <p class="text-wrap"> {{form.job_function}} </p>
         </div>
         <div v-if="form.needs !== null">
@@ -46,7 +46,7 @@
           <p> {{form.needs}} </p>
         </div>
         <div v-if="form.wants !== null">
-          <label for="wants" style="white-space: pre-line;">Wants</label>
+          <label for="wants" style="white-space: pre-line;">Goals</label>
           <p> {{form.wants}} </p>
         </div>
         <div v-if="form.pain_point !== null">
@@ -59,14 +59,17 @@
           :style="{width:form.buss_val / 5 *100 + '%'}">{{form.buss_val}}</div>
         </div>
         <br>
-        <label>Associated Products:</label>
-        <div v-for="product in form.products" v-bind:key="product.id">
-          <b-button :to='"/product/" +product.id' pill variant="info">{{product.name}}</b-button>
-          <!-- TODO: make it so clicking her routes to the product -->
+        <label>Associated Products:</label><br>
+        <div style="display:inline-block;" v-for="product in form.products" v-bind:key="product.id">
+          <b-button :to='"/product/" +product.id'
+                    pill variant="info"
+                    size="sm">
+                    {{product.name}}
+          </b-button>
         </div>
         <br>
-        <label>Associated Roles:</label>
-        <div v-for="role in form.roles" v-bind:key="role.id">
+        <label>Associated Roles:</label><br>
+        <div style="display:inline-block;" v-for="role in form.roles" v-bind:key="role.id">
           <b-badge pill variant="success">{{role.name}}</b-badge>
         </div>
         <br>
@@ -130,12 +133,14 @@
           <label for="qty">Number people who fit this persona</label>
           <b-form-input type="number" v-model="form.market_size"
                 id="qty" name="qty" @change="onInputChanged('market_size')"/>
-          <label for="quote">Persona Quote</label>
+          <label for="quote">Quote</label>
           <b-form-textarea v-model="form.quote" id="quote"
-                name="quote" @change="onInputChanged('quote')"/>
-          <label for="function">Function</label>
+                name="quote" @change="onInputChanged('quote')"
+                placeholder="Optional"/>
+          <label for="function">Responsibilities</label>
           <b-form-textarea v-model="form.job_function" id="function"
-                name="function" @change="onInputChanged('job_function')"/>
+                name="function" @change="onInputChanged('job_function')"
+                placeholder="Optional"/>
 
 
           <!-- Collapasble form input  -->
@@ -153,7 +158,8 @@
 
           <label for="needs">Needs</label>
           <b-form-textarea v-model="form.needs" id="needs"
-                name="needs" @change="onInputChanged('needs')"/>
+                name="needs" @change="onInputChanged('needs')"
+                placeholder="Optional"/>
 <!--            THERE ARE SOME COMPLEX INTERACTIONS GOING ON HERE NEED TO CONSIDER FURTHER
           <div variant="light" v-b-toggle="'collapse-needs'" class="m-1">
                   <label for="needs">Needs</label>
@@ -163,12 +169,14 @@
                         name="needs" @change="onInputChanged('needs')"/>
                 </b-collapse> -->
 
-          <label for="wants">Wants</label>
+          <label for="wants">Goals</label>
           <b-form-textarea v-model="form.wants" id="wants"
-                name="wants" @change="onInputChanged('wants')"/>
+                name="wants" @change="onInputChanged('wants')"
+                placeholder="Optional"/>
           <label for="pain-point">Pain Points</label>
           <b-form-textarea v-model="form.pain_point" id="pain_point"
-                name="pain_point" @change="onInputChanged('pain_points')"/>
+                name="pain_point" @change="onInputChanged('pain_points')"
+                placeholder="Optional"/>
           <label for="buss-val">value to business</label>
           <b-form-input type="range" min="0" max="5" v-model="form.buss_val"
               @change="onInputChanged('buss_val')"/>
@@ -264,13 +272,13 @@
       </div>
 
       <br>
-      <div class="right" style="align-content:right">
-        <span>add to playlist -> </span>
-        <playlist-add class="right"
-                      :key='form.id'
-                      :source='"persona"'
-                      :source_id="form.id"/>
-      </div>
+
+      <playlist-add :style="{right:30+'px' , position: 'absolute'}"
+                    class="right"
+                    :key='form.id'
+                    :source='"persona"'
+                    :source_id="form.id"/>
+
       <h4>Comments</h4>
       <comment-view v-if='form.id != null'
                     :key='form.id'
@@ -405,6 +413,12 @@ export default {
 
         EventBus.$emit('persona-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
+        this.$store.commit({
+          type: 'alert',
+          show : 2,           //seconds to auto dismiss
+          variant : "success",
+          content : "persona updated"
+        })
        },
 
        async onAdd() {
@@ -421,11 +435,9 @@ export default {
          document.getElementById("right-sidepanel").style.width = "0px";
          this.$store.commit({
            type: 'alert',
-           alert : {
-             show : true,
-             variant : "info",
-             content : "New Persona Added!"
-           },
+           show : 2,           //seconds to auto dismiss
+           variant : "success",
+           content : "persona created"
          })
        },
 
@@ -456,11 +468,9 @@ export default {
 
          this.$store.commit({
            type: 'alert',
-           alert : {
-             show : true,
-             variant : "info",
-             content : "Persona Archived!"
-           },
+           show : 3,           //seconds to auto dismiss
+           variant : "warning",
+           content : "persona archived, NOTE: data is not deleted, if this was done unintentially please reach out to the admin"
          })
       },
 

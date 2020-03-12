@@ -40,7 +40,7 @@
             <product-data v-bind:key = "dataKey"></product-data>
         </div>
         <div v-if="view === 'card'" v-bind:key="view">
-          <product-card v-bind:key = "dataKey">></product-card>
+          <product-card v-bind:key = "dataKey"></product-card>
         </div>
       </div>
     <!-- RIGHT SIDEPANEL -->
@@ -111,7 +111,7 @@ export default {
     const self = this
 
     EventBus.$on('product-selection-changed' , function(selection) {
-      document.getElementById("right-sidepanel").style.width = "500px"
+      document.getElementById("right-sidepanel").style.width = "50%"
       self.selection = selection
     });
 

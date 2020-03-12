@@ -78,6 +78,12 @@ export default {
     column-count: 4;
 }
 
+@media only screen and (max-width: 400px) {
+  .card-columns {
+      column-count: 1;
+  }
+}
+
 .card{
   border-left-style: solid;
   border-left-width: thick;

@@ -96,7 +96,7 @@ def persona_post():
                 revision = 0,                          # Revision
                 creator_id = session['user'],
                 access_group = 0,           # access_group TODO
-                persona_maturity = session['persona_maturity'],
+                persona_maturity = request.json['persona_maturity'],
                 persona_picture = None)
 
     if request.json.get('roles') != None:
@@ -708,6 +708,25 @@ def authenticate_user():
     session['user'] = user.user_id
     user_json = UserSchema(only=("username","user_id","role")).dump(user)
     return jsonify( {"token" : token.decode('UTF-8') , "user" : user_json }) , 200
+
+@api.route('/AD-login', methods = ['POST'])
+def AD_authenticate_user():
+    username = request.json.get('userName')
+
+    ### Go get user ID if user ID doesnt exist then create one
+    user = User.query.filter(sqlalchemy.func.lower(User.username) == username.lower()).first() ## force lowercase filter
+    if user == None:
+        user = User(username = username , role = 'user')
+        db.session.add(user)
+        db.session.commit()
+        user = User.query.filter(sqlalchemy.func.lower(User.username) == username.lower()).first()
+    else:
+        pass
+
+    session['user'] = user.user_id
+    print(session['user'])
+    token = jwt.encode({ 'userName': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
+    return jsonify( {"token" : token.decode('UTF-8') , "user" : user.username }) , 200
 
 @api.route('/logout', methods = ['POST'])
 def clear_session():

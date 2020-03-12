@@ -38,9 +38,11 @@
               :options="product_life_options"
               name="radio-options" />
           </b-form-group>
-          <label>Personas: </label>
-          <div v-for="persona in form.personas" v-bind:key="persona.id">
-            <b-button :to='"/persona/" +persona.id' pill variant="info">
+          <label>Personas: </label><br>
+          <div style="display:inline-block;"
+               v-for="persona in form.personas"
+               v-bind:key="persona.id">
+            <b-button :to='"/persona/" +persona.id' pill variant="info" size="sm">
               {{persona.title}} </b-button>
           </div>
         </div>
@@ -158,15 +160,15 @@
       </div>
   </b-form>
 
-  <div class="right" style="align-content:right">
-    <span>add to playlist -> </span>
-    <playlist-add :key="form.id"
+  <hr>
+    <playlist-add
+          :style="{right:30+'px' , position: 'absolute'}"
+          :key="form.id"
+          id="tooltip-target-1"
           class="right"
           :source='"product"'
           :source_id="form.id"/>
-  </div>
 
-  <hr>
   <h4>Comments</h4>
   <comment-view v-if='form.id != null'
                 :key='form.id'
@@ -278,7 +280,12 @@ export default {
 
          EventBus.$emit('product-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
-
+         this.$store.commit({
+           type: 'alert',
+           show : 2,           //seconds to auto dismiss
+           variant : "success",
+           content : "product updated"
+         })
         },
 
        async onAdd(evt) {
@@ -294,6 +301,12 @@ export default {
 
          EventBus.$emit('product-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
+         this.$store.commit({
+           type: 'alert',
+           show : 2,           //seconds to auto dismiss
+           variant : "success",
+           content : "product created!"
+         })
        },
 
        onReset(evt) {
@@ -315,6 +328,12 @@ export default {
 
          EventBus.$emit('product-changed' , 'archived' )
          document.getElementById("right-sidepanel").style.width = "0px";
+         this.$store.commit({
+           type: 'alert',
+           show : 3,           //seconds to auto dismiss
+           variant : "warning",
+           content : "product archived, NOTE: data is not deleted, if this was done unintentially please reach out to the admin"
+         })
       },
 
       submitFiles(){

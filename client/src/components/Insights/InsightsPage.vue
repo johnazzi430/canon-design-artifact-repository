@@ -102,7 +102,7 @@ export default {
     const self = this;
 
     EventBus.$on('insight-selection-changed' , function(selection) {
-      document.getElementById("right-sidepanel").style.width = "500px"
+      document.getElementById("right-sidepanel").style.width = "50%"
       self.selection = selection
     })
 

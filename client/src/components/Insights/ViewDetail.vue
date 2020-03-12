@@ -44,14 +44,18 @@
           variant="success">{{persona.title}} </b-badge>
         </div>
         <br>
-        <label>Associated products</label>
-        <div v-for="product in form.products" v-bind:key="product.id">
+        <label>Associated products</label><br>
+        <div style="display:inline-block;"
+             v-for="product in form.products"
+             v-bind:key="product.id">
           <b-badge :to="{ path: 'product/' + product.id }" pill
           variant="success">{{product.name}}</b-badge>
         </div>
         <br>
-        <label>Files:</label>
-        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+        <label>Files:</label><br>
+        <div style="display:inline-block;"
+             v-for="uploadedFile in uploadedFiles"
+             v-bind:key="uploadedFile.id">
           {{uploadedFile.filename}}
           <b-button
             type="button" name="button" target="_blank"
@@ -186,15 +190,16 @@
       </div>
   </b-form>
 
-  <div class="right" style="align-content:right">
-    <span>add to playlist -> </span>
-    <playlist-add :key="form.id"
+
+  <hr>
+
+  <playlist-add
+              :style="{right:30+'px' , position: 'absolute'}"
+              :key="form.id"
               class="right"
               :source='"insight"'
               :source_id="form.id"/>
-  </div>
 
-  <hr>
   <h4>Comments</h4>
   <comment-view v-if='form.id != null'
                 :key='form.id'
@@ -318,6 +323,12 @@ export default {
 
         EventBus.$emit('insight-data-changed','item-updated');
         document.getElementById("right-sidepanel").style.width = "0px";
+        this.$store.commit({
+          type: 'alert',
+          show : 2,           //seconds to auto dismiss
+          variant : "success",
+          content : "insight updated"
+        })
 
        },
 
@@ -327,17 +338,15 @@ export default {
              url: '/api/insights',
              data: this.form, })
 
-
          EventBus.$emit('insight-data-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
          this.$store.commit({
            type: 'alert',
-           alert : {
-             show : true,
-             variant : "info",
-             content : "Insight added!"
-           },
+           show : 2,           //seconds to auto dismiss
+           variant : "success",
+           content : "insight added"
          })
+
        },
 
        onReset() {
@@ -364,11 +373,9 @@ export default {
          document.getElementById("right-sidepanel").style.width = "0px";
          this.$store.commit({
            type: 'alert',
-           alert : {
-             show : true,
-             variant : "info",
-             content : "Insight added!"
-           },
+           show : 3,           //seconds to auto dismiss
+           variant : "warning",
+           content : "insight archived, NOTE: data is not deleted, if this was done unintentially please reach out to the admin"
          })
       },
 
