@@ -49,11 +49,12 @@ def user_in_session(f):
 ## GET ALL
 @api.route("/persona", methods = ['GET'])
 def persona_table():
+    cust_id = User.query.filter_by(user_id = session['user']).first().cust_id
     if request.args.get('filter') == "False" :
-        personas = Persona.query.order_by(Persona.id).all()
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
     else:
-        personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).filter(Persona.archived.is_(False)).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
 
 ## GET PERSONA LIST
@@ -774,20 +775,21 @@ def get_user_data():
             user_id = session['user']
             print(user_id)
             user = User.query.filter_by(user_id = user_id).all()
-            return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
+            return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(user,many=True))
         except:
             return "no user logged in"
     else:
         # GET everything
-        users = User.query.all()
-        return json.dumps(UserSchema(only=("username","user_id","role")).dump(users,many=True))
+        cust_id = User.query.filter_by(user_id = session['user']).first().cust_id #Copy this line to add request for cust_id
+        users = User.query.filter_by(cust_id = cust_id).all()
+        return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(users,many=True))
 
 ## gets user data by id
 @api.route('/users/<int:user_id>', methods = ['GET'])
 @user_in_session
 def get_user_data_by_id(user_id):
     user = User.query.filter_by(user_id = user_id).all()
-    return json.dumps(UserSchema(only=("username","user_id","role")).dump(user,many=True))
+    return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(user,many=True))
 
 ## Lets admins change role
 @api.route('/users/<int:user_id>', methods = ['PUT'])
