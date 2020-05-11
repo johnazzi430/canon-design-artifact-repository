@@ -57,11 +57,19 @@ def get_cust_id():
 ## GET ALL
 @api.route("/persona", methods = ['GET'])
 def persona_table():
+    cust_id = User.query.filter_by(user_id = session['user']).first().cust_id
     if request.args.get('filter') == "False" :
+<<<<<<< HEAD
         personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
     else:
         personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).filter(Persona.archived.is_(False)).all()
+=======
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).all()
+        return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
+    else:
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).filter(Persona.archived.is_(False)).all()
+>>>>>>> 49d76fe585fe2c1df767835189ea205cd8cdc1af
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
 
 ## GET PERSONA LIST
@@ -790,11 +798,16 @@ def get_user_data():
             return "no user logged in"
     else:
         # GET everything
+<<<<<<< HEAD
         cust_id = get_cust_id()
         if cust_id == None:
             users = User.query.all()
         else:
             users = User.query.filter_by(cust_id = get_cust_id()).all()
+=======
+        cust_id = User.query.filter_by(user_id = session['user']).first().cust_id #Copy this line to add request for cust_id
+        users = User.query.filter_by(cust_id = cust_id).all()
+>>>>>>> 49d76fe585fe2c1df767835189ea205cd8cdc1af
         return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(users,many=True))
 
 ## gets user data by id
