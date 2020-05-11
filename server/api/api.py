@@ -57,6 +57,7 @@ def get_cust_id():
 ## GET ALL
 @api.route("/persona", methods = ['GET'])
 def persona_table():
+    cust_id = User.query.filter_by(user_id = session['user']).first().cust_id
     if request.args.get('filter') == "False" :
         personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
