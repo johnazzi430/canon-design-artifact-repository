@@ -57,7 +57,12 @@
           </b-button>
         </div>
         <hr>
-        <b-button href="javascript:void(0)" v-on:click="editing = true">Edit</b-button>
+        <b-button
+            href="javascript:void(0)"
+            v-if="this.$store.getters.isLoggedIn"
+            v-on:click="editing = true">
+            Edit
+        </b-button>
       </div>
       <div  id='product-detail-edit' v-else>
         <h1 v-if='form.id !== null'>Edit</h1>

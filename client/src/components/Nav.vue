@@ -16,7 +16,7 @@
             <b-nav-item to="/insight">Insight</b-nav-item>
             <b-nav-item to="/persona">Persona</b-nav-item>
             <b-nav-item to="/product">Product</b-nav-item>
-            <b-nav-item to="/playlist">Playlist</b-nav-item>
+            <b-nav-item v-if="this.$store.getters.isLoggedIn" to="/playlist">Playlist</b-nav-item>
             <b-nav-item to="/about">About</b-nav-item>
             <b-nav-item v-if="user.role === 'admin'" to="/admin">Admin</b-nav-item>
           </b-navbar-nav>
@@ -24,6 +24,10 @@
                         :style="{right:30+'px' , position: 'absolute'}">
             <b-nav-item>User: {{user.username.split("@")[0] }} </b-nav-item>
             <b-nav-item @click='logout'>Logout</b-nav-item>
+          </b-navbar-nav>
+          <b-navbar-nav v-else class="ml-auto"
+                        :style="{right:30+'px' , position: 'absolute'}">
+            <b-nav-item to="/login">login/register</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>

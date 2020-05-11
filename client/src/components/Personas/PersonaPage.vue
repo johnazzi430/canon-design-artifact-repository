@@ -28,7 +28,9 @@
             <span class="nav-text">Details</span>
         </b-nav-item>
       <!-- v-if start -->
-      <b-nav-item href="javascript:void(0)" id="Add"
+      <b-nav-item
+          v-if="this.$store.getters.isLoggedIn"
+          href="javascript:void(0)" id="Add"
           class="nav-link active"
           v-on:click=" addDataAction();  expandDetail()"
           data-toggle="tooltip" title="Add">

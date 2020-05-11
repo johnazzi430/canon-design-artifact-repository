@@ -20,10 +20,14 @@
         </div>
       </div>
     </div>
-    <b-button v-b-toggle="'collapse-add-comment'" variant="success">Add Comment</b-button>
+    <b-button
+      v-if="this.$store.getters.isLoggedIn"
+      v-b-toggle="'collapse-add-comment'"
+      variant="success">Add Comment</b-button>
     <b-collapse :id="'collapse-add-comment'">
       <b-form-textarea v-model="form.comment"></b-form-textarea>
-      <b-button v-on:click="addComment()" variant="success">Submit</b-button>
+      <b-button
+        v-on:click="addComment()" variant="success">Submit</b-button>
     </b-collapse>
   </div>
 </template>
