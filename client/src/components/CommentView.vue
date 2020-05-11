@@ -29,6 +29,7 @@
       <b-button
         v-on:click="addComment()" variant="success">Submit</b-button>
     </b-collapse>
+    <br>
   </div>
 </template>
 

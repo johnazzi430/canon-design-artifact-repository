@@ -49,7 +49,6 @@ def get_cust_id():
     except:
         cust_id = None #set default to no cust_id
         return cust_id
-
     return cust_id
 
 
@@ -70,7 +69,7 @@ def persona_table():
 @api.route("/personas", methods = ['GET'])
 def persona_list():
 #    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
-    personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+    personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).filter(Persona.archived.is_(False)).all()
     return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
 
 ## GET BY ID
@@ -103,6 +102,7 @@ def persona_post():
                 creator_id = session['user'],
                 access_group = 0,           # access_group TODO
                 persona_maturity = request.json['persona_maturity'],
+                cust_id = get_cust_id(),
                 persona_picture = None)
 
     if request.json.get('roles') != None:
@@ -293,6 +293,7 @@ def product_post():
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
                 product_life = request.json['product_life'] ,
+                cust_id = get_cust_id(),
                 creator_id = session['user'])
     if request.json.get('personas') != None:
         personas =[]
@@ -416,6 +417,7 @@ def insights_post():
             frequency = request.json['frequency'] ,
             emotions = request.json['emotions'] ,
             props = request.json['props'] ,
+            cust_id = get_cust_id(),
             journey = request.json['journey'])
 
     ## Relatonships
