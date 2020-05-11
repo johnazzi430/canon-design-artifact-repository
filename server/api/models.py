@@ -15,6 +15,7 @@ class User(db.Model):
     username = db.Column(db.Text)
     password_hash = db.Column(db.Text)
     role = db.Column(db.Text)
+    cust_id = db.Column(db.Integer)
 
     def hash_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -92,9 +93,10 @@ class Product(db.Model):
     creator_id = db.Column(db.Integer)
     product_homepage = db.Column(db.Text)
     product_life = db.Column(db.Text)
+    cust_id = db.Column(db.Integer)
 
 class ProductSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True, exclude=('products','persona_picture'))
+    personas = ma.Nested('PersonaSchema', many=True, exclude=('products','persona_picture' , 'cust_id'))
 
     class Meta:
         model = Product
@@ -198,6 +200,7 @@ class Persona(db.Model):
     archived = db.Column(db.Boolean, default=False)
     persona_maturity = db.Column(db.Text)
     persona_picture = db.Column(db.Binary)
+    cust_id = db.Column(db.Integer)
     roles = db.relationship('PersonaRoles' , secondary = 'persona_roles_rel' , backref=db.backref('personas')  )
     products = db.relationship('Product' , secondary = 'pers_prod_rel' ,backref=db.backref('personas')  )
 
@@ -211,7 +214,7 @@ class Persona(db.Model):
 
 class PersonaSchema(ma.ModelSchema):
     roles = ma.Nested('PersonaRoleSchema', many=True)
-    products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
+    products = ma.Nested('ProductSchema', many=True, exclude=('personas','cust_id',))
     avatar = fields.Function(lambda obj : obj.persona_picture != None)
 
     class Meta:
@@ -237,12 +240,13 @@ class Insight(db.Model):
                             default=datetime.utcnow)
     revision = db.Column(db.Integer, default = 0)
     creator_id = db.Column(db.Integer, default = None)
+    cust_id = db.Column(db.Integer)
     personas = relationship('Persona' , secondary = 'insight_persona_rel' , backref=db.backref('insights') )
     products = relationship('Product' , secondary = 'insight_product_rel' , backref=db.backref('insights') )
 
 class InsightSchema(ma.ModelSchema):
-    personas = ma.Nested('PersonaSchema', many=True , exclude=('products','persona_picture'))
-    products = ma.Nested('ProductSchema', many=True, exclude=('personas',))
+    personas = ma.Nested('PersonaSchema', many=True , exclude=('products','persona_picture','cust_id',))
+    products = ma.Nested('ProductSchema', many=True, exclude=('personas','cust_id',))
 
     class Meta:
         model = Insight
