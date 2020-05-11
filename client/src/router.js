@@ -76,6 +76,10 @@ const router =  new Router({
       path: '/playlist',
       name: 'playlist',
       component: Playlist,
+      beforeEnter: (to,from,next) => {
+        if (store.getters.isLoggedIn) next()
+        else next(false)
+      }
     },
     {
       path: '/about',
@@ -85,22 +89,22 @@ const router =  new Router({
   ],
 });
 
-router.beforeEach( async (to, from, next) => {
-  if(to.name === "login") {
-    store.state.auth_success===false
-    next()
-    return
-  }
-  else {
-    await store.dispatch('enter')
-    if(store.getters.isLoggedIn) {
-      next()
-      return
-    }
-    else {
-      next('/login')
-    }
-  }
-})
+// router.beforeEach( async (to, from, next) => {
+//   if(to.name === "login") {
+//     store.state.auth_success===false
+//     next()
+//     return
+//   }
+//   else {
+//     await store.dispatch('enter')
+//     if(store.getters.isLoggedIn) {
+//       next()
+//       return
+//     }
+//     else {
+//       next('/login')
+//     }
+//   }
+// })
 
 export default router

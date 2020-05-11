@@ -48,7 +48,6 @@ def user_in_session(f):
 
 ## GET ALL
 @api.route("/persona", methods = ['GET'])
-@user_in_session
 def persona_table():
     if request.args.get('filter') == "False" :
         personas = Persona.query.order_by(Persona.id).all()
@@ -60,7 +59,6 @@ def persona_table():
 ## GET PERSONA LIST
 
 @api.route("/personas", methods = ['GET'])
-@user_in_session
 def persona_list():
 #    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
     personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
@@ -69,7 +67,6 @@ def persona_list():
 ## GET BY ID
 
 @api.route("/persona/<int:id>" , methods = ['GET'])
-@user_in_session
 def persona_table_by_id(id):
     persona = Persona.query.filter(Persona.id == id) \
             .options(joinedload('roles') ,joinedload('products') ) \
@@ -161,7 +158,6 @@ def persona_table_put_by_id(id):
 ##-------------------------- FILE API
 
 @api.route("/persona/files/<int:id>" , methods = ['GET'])
-@user_in_session
 def personas_file_get(id):
     if request.args.get('file_id') != None:
         file = PersonaFile.query \
@@ -204,7 +200,6 @@ def persona_file_delete(id):
         return 'A file id must be selected' , 404
 
 @api.route("/persona/roles" , methods = ['GET'])
-@user_in_session
 def persona_get_roles():
     persona_roles = PersonaRoles.query.all()
     return json.dumps(PersonaRoleSchema().dump(persona_roles,many=True))
@@ -227,7 +222,6 @@ def persona_get_roles():
 ## AVATAR
 
 @api.route("/persona/avatar/<int:id>" , methods = ['GET'])
-# @user_in_session
 def personas_avatar_download(id):
     try:
         persona = Persona.query.filter(Persona.id == id).first()
@@ -253,14 +247,12 @@ def personas_avatar_upload(id):
 
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
-@user_in_session
 def product_list():
     products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
     return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product", methods = ['GET'])
-@user_in_session
 def product_table():
     if request.args.get('filter') == "False" :
         products = Product.query.order_by(Product.id).all()
@@ -271,7 +263,6 @@ def product_table():
 
 ## GET BY ID
 @api.route("/product/<int:id>" , methods = ['GET'])
-@user_in_session
 def product_table_by_id(id):
     products = Product.query.filter(Product.id == id) \
             .options(joinedload('personas')) \
@@ -340,7 +331,7 @@ def product_table_put_by_id(id):
 ##-------------------------- FILE API
 
 @api.route("/product/files/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def product_file_get(id):
     if request.args.get('file_id') != None:
         file = ProductFile.query \
@@ -387,14 +378,14 @@ def product_file_delete(id):
 
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
-@user_in_session
+
 def insights_get():
     insights = Insight.query.order_by(Insight.id).filter(Insight.archived.is_(False)).all()
     return json.dumps(InsightSchema().dump(insights,many=True))
 
 ## GET BY ID
 @api.route("/insights/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def insights_get_by_id(id):
     insight = Insight.query.filter(Insight.id == id )\
                 .options(joinedload('personas') ,joinedload('products') ) \
@@ -468,7 +459,7 @@ def insights_put(id):
 
 
 @api.route("/insights/files/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def insights_file_get(id):
     if request.args.get('file_id') != None:
         file = InsightFile.query \
@@ -514,20 +505,20 @@ def insight_file_delete(id):
 
 #### COMMENTS ---------------------------------------------
 @api.route("/persona/comments/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def persona_comments(id):
     persona_comments = PersonaComments.query.filter(PersonaComments.source_id == id).all()
     return json.dumps(PersonaCommentsSchema().dump(persona_comments,many=True))
 
 @api.route("/product/comments/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def product_comments(id):
     product_comments = ProductComments.query.filter(ProductComments.source_id == id).all()
     return json.dumps(ProductCommentsSchema().dump(product_comments,many=True))
 
 
 @api.route("/insights/comments/<int:id>" , methods = ['GET'])
-@user_in_session
+
 def insights_comments(id):
     insight_comments = InsightComments.query.filter(InsightComments.source_id == id).all()
     return json.dumps(InsightCommentsSchema().dump(insight_comments,many=True))
