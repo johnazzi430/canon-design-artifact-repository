@@ -1,10 +1,11 @@
+
+Go try it!
+https://canon-artifact-repository.herokuapp.com/
+
 # User Artifact Repository
 A singular environment to store user persona's, upper level product descriptions and documentation
 
-Still figuring out what to call this..... open to suggestions. something aeronotical themed would be nice like: Takeoff coordinator, or Bording Agent
-
 # Description
-
 There are three "artifacts" that this product aims to capture:
 
 ### Personas
