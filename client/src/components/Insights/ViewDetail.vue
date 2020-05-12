@@ -211,7 +211,7 @@
                 v-bind:sourceTable="source"
                 v-bind:itemId='form.id'>
   </comment-view>
-
+  <br>
 </div>
 </template>
 

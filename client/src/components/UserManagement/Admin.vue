@@ -100,6 +100,8 @@ export default {
       {headerName: "User ID", field: "user_id", width: 75},
       {headerName: "Username", field: "username", filter: 'agTextColumnFilter', width: 200},
       {headerName: "Role", field: "role", filter: 'agTextColumnFilter', width: 100, editable:true},
+      {headerName: "Customer Id", field: "cust_id", filter: 'agTextColumnFilter', editable:true , width: 200},
+
       // {headerName: "blank"  , cellRenderer: resetPassword}
     ];
 

@@ -43,6 +43,14 @@ def user_in_session(f):
         return f(*args, **kwargs)
     return decorated
 
+def get_cust_id():
+    try:
+        cust_id = User.query.filter_by(user_id = session['user']).first().cust_id
+    except:
+        cust_id = None #set default to no cust_id
+        return cust_id
+    return cust_id
+
 
 ##-------------------------- PERSONA API
 
@@ -51,10 +59,10 @@ def user_in_session(f):
 def persona_table():
     cust_id = User.query.filter_by(user_id = session['user']).first().cust_id
     if request.args.get('filter') == "False" :
-        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).all()
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
     else:
-        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = cust_id).filter(Persona.archived.is_(False)).all()
+        personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).filter(Persona.archived.is_(False)).all()
         return json.dumps(PersonaSchema(exclude=['persona_picture']).dump(personas,many=True))
 
 ## GET PERSONA LIST
@@ -62,7 +70,7 @@ def persona_table():
 @api.route("/personas", methods = ['GET'])
 def persona_list():
 #    personas = db.engine.execute("SELECT id as persona_id, name as persona_name, title as persona_title FROM PERSONA WHERE archived = False")
-    personas = Persona.query.order_by(Persona.id).filter(Persona.archived.is_(False)).all()
+    personas = Persona.query.order_by(Persona.id).filter_by(cust_id = get_cust_id()).filter(Persona.archived.is_(False)).all()
     return json.dumps(PersonaSchema(only=['id','name','title']).dump(personas,many=True))
 
 ## GET BY ID
@@ -95,6 +103,7 @@ def persona_post():
                 creator_id = session['user'],
                 access_group = 0,           # access_group TODO
                 persona_maturity = request.json['persona_maturity'],
+                cust_id = get_cust_id(),
                 persona_picture = None)
 
     if request.json.get('roles') != None:
@@ -249,17 +258,17 @@ def personas_avatar_upload(id):
 ## GET PRODUCT LIST
 @api.route("/products", methods = ['GET'])
 def product_list():
-    products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+    products = Product.query.order_by(Product.id).filter_by(cust_id = get_cust_id()).filter(Product.archived.is_(False)).all()
     return json.dumps(ProductSchema(only=['id','name']).dump(products,many=True))
 
 ## GET ALL
 @api.route("/product", methods = ['GET'])
 def product_table():
     if request.args.get('filter') == "False" :
-        products = Product.query.order_by(Product.id).all()
+        products = Product.query.order_by(Product.id).filter_by(cust_id = get_cust_id()).all()
         return json.dumps(ProductSchema().dump(products,many=True))
     else:
-        products = Product.query.order_by(Product.id).filter(Product.archived.is_(False)).all()
+        products = Product.query.order_by(Product.id).filter_by(cust_id = get_cust_id()).filter(Product.archived.is_(False)).all()
         return json.dumps(ProductSchema().dump(products,many=True))
 
 ## GET BY ID
@@ -285,6 +294,7 @@ def product_post():
                 owner = request.json['owner'],
                 product_homepage = request.json['product_homepage'] ,
                 product_life = request.json['product_life'] ,
+                cust_id = get_cust_id(),
                 creator_id = session['user'])
     if request.json.get('personas') != None:
         personas =[]
@@ -381,7 +391,7 @@ def product_file_delete(id):
 @api.route("/insights", methods = ['GET'])
 
 def insights_get():
-    insights = Insight.query.order_by(Insight.id).filter(Insight.archived.is_(False)).all()
+    insights = Insight.query.order_by(Insight.id).filter_by(cust_id = get_cust_id()).filter(Insight.archived.is_(False)).all()
     return json.dumps(InsightSchema().dump(insights,many=True))
 
 ## GET BY ID
@@ -408,6 +418,7 @@ def insights_post():
             frequency = request.json['frequency'] ,
             emotions = request.json['emotions'] ,
             props = request.json['props'] ,
+            cust_id = get_cust_id(),
             journey = request.json['journey'])
 
     ## Relatonships
@@ -780,8 +791,11 @@ def get_user_data():
             return "no user logged in"
     else:
         # GET everything
-        cust_id = User.query.filter_by(user_id = session['user']).first().cust_id #Copy this line to add request for cust_id
-        users = User.query.filter_by(cust_id = cust_id).all()
+        cust_id = get_cust_id()
+        if cust_id == None:
+            users = User.query.all()
+        else:
+            users = User.query.filter_by(cust_id = get_cust_id()).all()
         return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(users,many=True))
 
 ## gets user data by id
