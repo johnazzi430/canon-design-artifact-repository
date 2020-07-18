@@ -12,10 +12,11 @@
       <div class="">
         <label>Title</label>
         <p class="text-wrap"> {{form.title}} </p>
-        <label>description</label>
-        <p class="text-wrap"> {{form.description}} </p>
+        <!-- <label>description</label>
+        <p class="text-wrap"> {{form.description}} </p> -->
         <label>Content</label>
         <p class="text-wrap"> {{form.content}} </p>
+
         <label>Experience vector</label>
         <br>
         <span class="badge badge-pill badge-success"
@@ -39,7 +40,7 @@
         <label>Journey Location</label>
         <p class="text-wrap"> {{form.journey}} </p>
         <label>Associated Personas</label>
-        <div v-for="persona in form.personas" v-bind:key="persona.id">
+        <div v-for="persona in form.personas" v-bind:key="persona.id + persona.title">
           <b-badge :to="{ path: 'persona/' + persona.id }" pill
           variant="success">{{persona.title}} </b-badge>
         </div>
@@ -47,7 +48,7 @@
         <label>Associated products</label><br>
         <div style="display:inline-block;"
              v-for="product in form.products"
-             v-bind:key="product.id">
+             v-bind:key="product.id + product.name">
           <b-badge :to="{ path: 'product/' + product.id }" pill
           variant="success">{{product.name}}</b-badge>
         </div>
@@ -55,7 +56,7 @@
         <label>Files:</label><br>
         <div style="display:inline-block;"
              v-for="uploadedFile in uploadedFiles"
-             v-bind:key="uploadedFile.id">
+             v-bind:key="uploadedFile.id + uploadedFile.filename">
           {{uploadedFile.filename}}
           <b-button
             type="button" name="button" target="_blank"
@@ -84,19 +85,22 @@
           <b-form-input v-model="form.title" @change="onInputChanged('title')"
                         id="Title" name="Title" />
           <!-- Collapasble form input  -->
-          <div variant="light" v-b-toggle="'collapse-description'" class="m-1">
+          <!-- <div variant="light" v-b-toggle="'collapse-description'" class="m-1">
             <label>description</label>
             <i class="fa fa-angle-down nav-icon expand_caret"></i>
           </div>
           <b-collapse id="collapse-description">
             <b-form-textarea v-model="form.description" id="description"
             name="description" @change="onInputChanged('description')"/>
-          </b-collapse>
+          </b-collapse> -->
 
           <label>content</label>
-          <b-form-textarea v-model="form.content" id="content"
-                name="content" @change="onInputChanged('content')"/>
-          <label>Experience vector</label>
+          <editor-content
+            :editor="form.editor"
+            @created = "onUpdate(onInputChanged('content'))"
+            v-slot="{ commands, isActive }"/>
+
+          <!-- <label>Experience vector</label>
           <b-form-select :options="experience_options"
                 v-model="form.experience_vector" id="experience_vector"
                 name="experience_vector" @change="onInputChanged('experience_vector')"/>
@@ -114,7 +118,7 @@
                 name="props" @change="onInputChanged('props')"/>
           <label>Journey Location</label>
           <b-form-select v-model="form.journey" id="journey" :options="journey_options"
-          name="journey" @change="onInputChanged('journey')"/>
+          name="journey" @change="onInputChanged('journey')"/> -->
 
           <br>
           <label for="persona-select">Choose Personas: </label>
@@ -166,7 +170,9 @@
           <b-button variant="info"
             href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
           <br>
-          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          <div
+            v-for="uploadedFile in uploadedFiles"
+            v-bind:key="uploadedFile.id + uploadedFile.filename">
             {{uploadedFile.filename}}
             <b-button
                   variant="outline-primary"
@@ -195,19 +201,18 @@
       </div>
   </b-form>
 
-
   <hr>
 
   <playlist-add
               :style="{right:30+'px' , position: 'absolute'}"
-              :key="form.id"
+              :key="form.id + 'playlist'"
               class="right"
               :source='"insight"'
               :source_id="form.id"/>
 
   <h4>Comments</h4>
   <comment-view v-if='form.id != null'
-                :key='form.id'
+                :key="form.id + 'comments'"
                 v-bind:sourceTable="source"
                 v-bind:itemId='form.id'>
   </comment-view>
@@ -221,18 +226,35 @@ import axios from 'axios'
 import CommentView from '../CommentView.vue'
 import {EventBus} from "../../index.js";
 import store from  "../../store";
-
+import { Editor, EditorContent } from 'tiptap'
+import {
+  Blockquote,
+  CodeBlock,
+  HardBreak,
+  Heading,
+  OrderedList,
+  BulletList,
+  ListItem,
+  TodoItem,
+  TodoList,
+  Bold,
+  Code,
+  Italic,
+  Link,
+} from 'tiptap-extensions'
 
 export default {
   name: "insight-details",
-  components : {'comment-view': CommentView },
+  components : {
+    'comment-view': CommentView,
+    'editor-content': EditorContent
+  },
   data() {
     return {
       form: {
         id : null,
         title: '',
         description: '',
-        content: '',
         file: null,
         experience_vector: 'Neutral',
         magnitude: null,
@@ -243,7 +265,37 @@ export default {
         creator_id: null,
         revision: null,
         products: [],
-        personas: []
+        personas: [],
+        content: null,
+        editor: new Editor({
+          extensions: [
+            new Blockquote(),
+            new BulletList(),
+            new CodeBlock(),
+            new HardBreak(),
+            new Heading({ levels: [1, 2, 3] }),
+            new ListItem(),
+            new OrderedList(),
+            new TodoItem(),
+            new TodoList(),
+            new Bold(),
+            new Code(),
+            new Italic(),
+            new Link()
+          ],
+          content: `
+            <h2>
+              Markdown Shortcuts
+            </h2>
+            <p>
+              Start a new line and type <code>#</code> followed by a <code>space</code> and you will get an H1 headline.
+            </p>
+          `,
+          onUpdate: ({getHTML})=> {
+            this.edited_fields.push('content');
+            this.form.content = getHTML()
+          }
+        })
       },
       file : null,
       uploadedFiles: [],
@@ -284,6 +336,7 @@ export default {
             self.form.title= response.data[0].title;
             self.form.description= response.data[0].description;
             self.form.content = response.data[0].content;
+            self.form.editor.setContent(response.data[0].content);
             self.form.experience_vector= response.data[0].experience_vector;
             self.form.magnitude = response.data[0].magnitude;
             self.form.frequency= response.data[0].frequency;
@@ -306,7 +359,8 @@ export default {
 
         });
       },
-      methods: {
+
+    methods: {
 
       onInputChanged(field) {
         // add list of edited fields to array to reduce api calls on backend
@@ -436,6 +490,9 @@ export default {
             fileLink.click();
           })
       },
+    },
+    beforeDestroy() {
+      this.form.editor.destroy()
     },
   };
 
