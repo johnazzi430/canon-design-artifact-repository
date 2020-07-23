@@ -14,15 +14,17 @@
 
     <b-card-group columns>
       <b-card class="card" v-for="card in filterItems(cards)"
-              v-bind:key="card.name" v-bind:class="card.experience_vector">
+              v-bind:key="card.name"
+              v-bind:class="card.experience_vector"
+              v-on:click = 'OpenDetail(card.id)'>
         <b-card-text>
-          <span class="badge badge-pill badge-success"
+          <span>{{card.title}}</span>
+          <!-- <span class="badge badge-pill badge-success"
             v-bind:class="card.experience_vector">
-            {{card.experience_vector}}</span>
-                    <br>
-          <q style="text-align:center">{{card.title}}</q>
-          <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
+            {{card.experience_vector}}</span> -->
+          <!-- <span><b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
               variant="outline-secondary">Open insight</b-button>
+          </span> -->
         </b-card-text>
       </b-card>
     </b-card-group>
@@ -32,6 +34,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import {EventBus} from "../../index.js";
 
 
@@ -43,16 +46,15 @@ export default {
     columns: 4
   }
  },
-  beforeCreate() {
-    const self = this;
-    var get_url = `/api/insights`;
+  async mounted() {
+    const {data} = await api.insightTable()
+    this.cards = data
 
-    axios.get(get_url)
-    .then(response => {
-      self.cards = response.data
-    }
-    )
-    .catch(error => console.log(error))
+    let self = this
+    EventBus.$on('insight-data-changed', async function(){
+      const {data} = await api.insightTable()
+      self.cards = data
+    })
   },
   methods:{
     OpenDetail(id) {
@@ -90,6 +92,23 @@ export default {
   box-shadow:
     -8px -8px 8px 0 rgba(255,255,255,0.4),
     8px 8px 8px 0 rgba(0,0,0,0.05);
+
+  &:hover{
+    background: #E5E5E5;
+  }
+
+  &:active {
+    background: #D9D9D9;
+  }
+
+  &span{
+    width:100%;
+    display: block;
+  }
+}
+
+.card-text{
+  font-size: inherit;
 }
 
 .avatar {

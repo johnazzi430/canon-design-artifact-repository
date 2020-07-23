@@ -28,6 +28,8 @@
     "msal": "^1.2.1",
     "require-dir": "^1.2.0",
     "save": "^2.4.0",
+    "tiptap": "^1.29.1",
+    "tiptap-extensions": "^1.31.1",
     "utils": "^0.3.1",
     "vue": "^2.6.10",
     "vue-draggable": "^2.0.5",

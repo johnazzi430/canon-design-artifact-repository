@@ -22,8 +22,7 @@
         :modules="modules"
         rowSelection="single"
         @grid-ready="onGridReady"
-        @selection-changed="onSelectionChanged"
-        :getRowHeight="getRowHeight">
+        @selection-changed="onSelectionChanged">
   </ag-grid-vue>
 </div>
 </template>
@@ -40,7 +39,6 @@ export default {
   data() {
     return {
       columnDefs: null,
-      rowData: null,
       rowSelection: null,
       gridApi: null,
       gridOptions: null,
@@ -51,6 +49,7 @@ export default {
       alert_text: null,
     }
   },
+  props:['rowData'],
   components: {
     AgGridVue
   },
@@ -76,16 +75,15 @@ export default {
       {headerName: "Roles", field: "roles", filter: 'agTextColumnFilter' , width: 600, flex: 4, resizable: true , sortable: true , tooltipField: 'roles' , cellRenderer: roleBadge , cellClass: "cell-wrap-text",  minWidth: 200, maxWidth: 350},
     ];
 
-
-    fetch(`/api/persona`)
-    .then(result => result.json())
-    .then(rowData => this.rowData = rowData);
-
-    this.$nextTick(() => {
-        fetch(`/api/persona`)
-        .then(result => result.json())
-        .then(rowData => this.rowData = rowData);
-    });
+    // fetch(`/api/persona`)
+    // .then(result => result.json())
+    // .then(rowData => this.rowData = rowData);
+    //
+    // this.$nextTick(() => {
+    //     fetch(`/api/persona`)
+    //     .then(result => result.json())
+    //     .then(rowData => this.rowData = rowData);
+    // });
   },
   mounted() {
     this.gridApi = this.gridOptions.api;

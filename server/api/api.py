@@ -161,7 +161,7 @@ def persona_table_put_by_id(id):
                 upchange = upchange)
     db.session.add(persona_comments)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 
 ##-------------------------- FILE API
@@ -192,7 +192,7 @@ def personas_file_upload(id):
             filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
     db.session.add(file)
     db.session.commit()
-    return 'success', 201
+    return 'success'
 
 @api.route("/persona/files/<int:id>" , methods = ['DELETE'])
 @user_in_session
@@ -204,9 +204,9 @@ def persona_file_delete(id):
         db.session.delete(file)
         db.session.flush()
         db.session.commit()
-        return 'success', 201
+        return 'success'
     else:
-        return 'A file id must be selected' , 404
+        return 'A file id must be selected'
 
 @api.route("/persona/roles" , methods = ['GET'])
 def persona_get_roles():
@@ -237,9 +237,9 @@ def personas_avatar_download(id):
         response = make_response(persona.persona_picture)
         response.headers.set('Content-Type', 'image/jpeg')
         response.headers.set('Content-Disposition', 'inline')
-        return response , 201
+        return response
     except:
-        return "no avatar found" , 404
+        return "no avatar found"
 
 @api.route("/persona/avatar/<int:id>" , methods = ['PUT'])
 @user_in_session
@@ -248,7 +248,7 @@ def personas_avatar_upload(id):
     print(request.files)
     persona.persona_picture = request.files['file'].read()
     db.session.commit()
-    return 'success', 201
+    return 'success'
 
 
 
@@ -303,7 +303,7 @@ def product_post():
 
     db.session.add(product)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 
 @api.route("/product/<int:id>" , methods = ['PUT'])
@@ -336,7 +336,7 @@ def product_table_put_by_id(id):
                 upchange = upchange)
     db.session.add(product_comments)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 ##-------------------------- FILE API
 
@@ -367,7 +367,7 @@ def product_file_upload(id):
             filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
     db.session.add(file)
     db.session.commit()
-    return 'success', 201
+    return 'success'
 
 @api.route("/product/files/<int:id>" , methods = ['DELETE'])
 @user_in_session
@@ -379,23 +379,21 @@ def product_file_delete(id):
         db.session.delete(file)
         db.session.flush()
         db.session.commit()
-        return 'success', 201
+        return 'success'
     else:
-        return 'A file id must be selected' , 404
+        return 'A file id must be selected'
 
 
 ##-------------------------- INSIGHTS API
 
 ## GET ALL
 @api.route("/insights", methods = ['GET'])
-
 def insights_get():
     insights = Insight.query.order_by(Insight.id).filter_by(cust_id = get_cust_id()).filter(Insight.archived.is_(False)).all()
     return json.dumps(InsightSchema().dump(insights,many=True))
 
 ## GET BY ID
 @api.route("/insights/<int:id>" , methods = ['GET'])
-
 def insights_get_by_id(id):
     insight = Insight.query.filter(Insight.id == id )\
                 .options(joinedload('personas') ,joinedload('products') ) \
@@ -435,7 +433,7 @@ def insights_post():
 
     db.session.add(insight)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 
 @api.route("/insights/<int:id>" , methods = ['PUT'])
@@ -466,7 +464,10 @@ def insights_put(id):
         setattr(insight, key , upchange) #SET UPCHANGE
     setattr(insight, 'revision' ,insight.revision + 1)
     db.session.commit()
-    return request.json, 201
+    print( request.json)
+    return "success"
+
+#json.dumps(request.json)
 
 
 @api.route("/insights/files/<int:id>" , methods = ['GET'])
@@ -496,7 +497,7 @@ def insights_file_upload(id):
             filetype = request.files['file'].filename.rsplit('.', 1)[1].lower())
     db.session.add(file)
     db.session.commit()
-    return 'success', 201
+    return 'success'
 
 @api.route("/insights/files/<int:id>" , methods = ['DELETE'])
 @user_in_session
@@ -508,9 +509,9 @@ def insight_file_delete(id):
         db.session.delete(file)
         db.session.flush()
         db.session.commit()
-        return 'success', 201
+        return 'success'
     else:
-        return 'A file id must be selected' , 404
+        return 'A file id must be selected'
 
 
 
@@ -548,7 +549,7 @@ def persona_comments_post(id):
                 upchange = None)
     db.session.add(persona_comments)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 @api.route("/product/comments/<int:id>" , methods = ['POST'])
 @user_in_session
@@ -562,7 +563,7 @@ def product_comments_post(id):
                 upchange = None)
     db.session.add(product_comments)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 @api.route("/insights/comments/<int:id>" , methods = ['POST'])
 @user_in_session
@@ -573,7 +574,7 @@ def insight_comments_post(id):
                 creator_id = session['user'])
     db.session.add(insight_comments)
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 
 #### Playlist ---------------------------------------------
@@ -618,9 +619,9 @@ def user_playlist():
 @api.route("/playlist" , methods = ['POST'])
 @user_in_session
 def add_to_playlist():
-    if not request.args.get('source_table'):
+    if not request.json.get('source_table'):
         return "Missing source_table agrument", 404
-    if not request.args.get('source_id'):
+    if not request.json.get('source_id'):
         return "Missing source_id agrument", 404
     if not session['user']:
         return "Missing user_id agrument", 404
@@ -628,27 +629,27 @@ def add_to_playlist():
 
     playlist_item= Playlist(
                 user_id = session['user'],
-                source_id = request.args.get('source_id'),
-                source_table = request.args.get('source_table'),
+                source_id = request.json.get('source_id'),
+                source_table = request.json.get('source_table'),
                 order = None)
     db.session.add(playlist_item)
     db.session.commit()
     return "Added to user playlist", 201
 
-@api.route("/playlist" , methods = ['DELETE'])
+@api.route("/playlist/delete" , methods = ['POST'])
 @user_in_session
 def remove_from_playlist():
-    if not request.args.get('source_table'):
+    if not request.json.get('source_table'):
         return "Missing source_table agrument", 404
-    if not request.args.get('source_id'):
+    if not request.json.get('source_id'):
         return "Missing source_id agrument", 404
     if not session['user']:
         return "Missing user_id agrument", 404
 
     playlist_item = Playlist.query.filter(and_(
                 Playlist.user_id == session['user'],
-                Playlist.source_id == request.args.get('source_id'),
-                Playlist.source_table == request.args.get('source_table'))) \
+                Playlist.source_id == request.json.get('source_id'),
+                Playlist.source_table == request.json.get('source_table'))) \
             .first()
 
     db.session.delete(playlist_item)
@@ -813,7 +814,7 @@ def admin_change_user(user_id):
     for key in list(data.keys()):
         setattr(user, key , data[key]) #SET UPCHANGE
     db.session.commit()
-    return request.json, 201
+    return request.json
 
 ## Lets admins reset password
 @api.route('/users/<int:user_id>/password-reset', methods = ['PUT'])

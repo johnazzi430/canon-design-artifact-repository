@@ -2,7 +2,7 @@
 <template lang="html">
   <div class="container" :key="commentKey">
     <div class="wrapper" v-if="comments !== null">
-      <div v-for="comment in comments" v-bind:key="comment.id">
+      <div v-for="(comment, index) in comments" v-bind:key="index">
         <div class="" v-if="comment.action === null">
           <span> {{comment.user.username}} commented {{comment.create_date | formatDate}}
           </span>
@@ -25,7 +25,7 @@
       v-b-toggle="'collapse-add-comment'"
       variant="success">Add Comment</b-button>
     <b-collapse :id="'collapse-add-comment'">
-      <b-form-textarea v-model="form.comment"></b-form-textarea>
+      <b-form-textarea autofocus v-model="form.comment"></b-form-textarea>
       <b-button
         v-on:click="addComment()" variant="success">Submit</b-button>
     </b-collapse>
@@ -36,38 +36,31 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../api'
 import {EventBus} from "../index.js";
+import store from '../store'
 
 export default {
   data() {
     return {
       commentKey: 0,
-      comments : {},
+      comments : [],
+      addingcomment: false,
       form :{
         comment:''
       }
     }
   },
   props: ["sourceTable" , "itemId"],
-  beforeMount() {
-      var get_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
+  async mounted() {
+    const {data} = await api.getItemComments(this.sourceTable,this.itemId)
+    this.comments = data
 
-      axios
-      .get(get_url)
-      .then(response => {this.comments = response.data})
-      .catch(error => console.log(error))
-    },
-  mounted() {
-    const self = this
-
-    EventBus.$on('comments-added', function(){
-      var get_url = "/api/"+ self.sourceTable+"/comments/" +self.itemId
-
-      axios
-      .get(get_url)
-      .then(response => {self.comments = response.data})
-      .catch(error => console.log(error))
-    });
+    // let self = this
+    // EventBus.$on('comments-added', async function(){
+    //   const {data} =  await api.getItemComments(self.sourceTable,self.itemId)
+    //   self.comments = data
+    // });
   },
   methods:{
 
@@ -78,6 +71,7 @@ export default {
     },
 
      async addComment() {
+       this.addingcomment=true
 
         var None = null
         var comment_data = {
@@ -89,17 +83,14 @@ export default {
           upchange : None,
         };
 
-        var set_url = "/api/"+ this.sourceTable+"/comments/" +this.itemId
-
-        const data = await axios({
-            method: 'post',
-            url: set_url,
-            data: comment_data })
+        await api.addComment(this.sourceTable,this.itemId,comment_data)
 
         EventBus.$emit('comments-added', comment_data );
-
+        comment_data.user = store.state.user
+        this.comments.push(comment_data)
+        this.addingcomment = false
+        this.commentKey = +1
     },
-
   }
 };
 

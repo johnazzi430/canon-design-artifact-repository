@@ -38,10 +38,10 @@
       <!-- MAIN -->
       <div id = "main" class ="main">
         <div id="product-panel"  v-if="view === 'table'" v-bind:key="view">
-            <product-data v-bind:key = "dataKey"></product-data>
+            <product-data :rowData="products" v-bind:key = "dataKey"></product-data>
         </div>
         <div v-if="view === 'card'" v-bind:key="view">
-          <product-card v-bind:key = "dataKey"></product-card>
+          <product-card :cards="products" v-bind:key = "dataKey"></product-card>
         </div>
       </div>
     <!-- RIGHT SIDEPANEL -->
@@ -60,6 +60,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import Table from './Table.vue';
 import ViewDetail from './ViewDetail.vue';
 import CardView from './CardView.vue';
@@ -75,6 +76,7 @@ export default {
   },
   data() {
     return {
+     products: [],
      detailKey: 0,
      dataKey: 0,
      view:'card',
@@ -85,6 +87,16 @@ export default {
     $route(to, from) {
       EventBus.$emit('product-selection-changed',this.selectedRow = this.$route.params.id )
     }
+  },
+  async beforeMount() {
+    const {data} = await api.productTable()
+    this.products = data
+
+    let self = this
+    EventBus.$on('persona-data-changed', async function(){
+      const {data} = await api.productTable()
+      self.products = data
+    })
   },
   methods: {
 

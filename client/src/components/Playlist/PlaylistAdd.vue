@@ -19,7 +19,9 @@
 
 <script>
 /*eslint-disable */
-import axios from 'axios'
+
+import api from '../../api'
+import store from '../../store'
 import {EventBus} from "../../index.js";
 
 export default {
@@ -30,65 +32,48 @@ export default {
   },
   props : ["source","source_id"],
   methods:{
-    addToPlaylist(){
-      var self = this;
-      axios({
-           method: 'post',
-           url: '/api/playlist',
-           params: {
-              source_table : self.source,
-              source_id : self.source_id
-            }
-           })
+    async addToPlaylist(){
+      const params = {
+                    source_table : this.source,
+                    source_id : this.source_id,
+                  }
+      await api.addToPlaylist(params)
       this.isOnPlaylist = true;
 
-      self.$store.commit({
+      store.dispatch('getPlaylist')
+
+      store.commit({
         type: 'alert',
         show : 2,           //seconds to auto dismiss
         variant : "info",
-        content : self.source + " added to playlist"
+        content : this.source + " added to playlist"
       })
 
       console.log('added to playlist')
     },
-    removeFromPlaylist(){
-      var self = this;
-      axios({
-           method: 'Delete',
-           url: '/api/playlist',
-           params: {
-              source_table : self.source,
-              source_id : self.source_id
-            }
-           })
+    async removeFromPlaylist(){
+      const params = {
+                    source_table: this.source,
+                    source_id: this.source_id,
+                  }
+      await api.removeFromPlaylist(params)
       this.isOnPlaylist = false;
+      store.dispatch('getPlaylist')
 
-      self.$store.commit({
+      store.commit({
         type: 'alert',
         show : 2,           //seconds to auto dismiss
         variant : "info",
-        content : self.source + " removed from playlist"
+        content : this.source + " removed from playlist"
       })
 
       console.log('removed from playlist')
     }
   },
   beforeMount() {
-
-      const self = this;
-      var get_url = `/api/playlist`;
-      var resp
-
-      axios.get(get_url)      // CHECKS TO SEE IF ON USERS PLAYLIST
-      .then(response => {
-        self.resp = response.data
-        self.resp.forEach((item) => {
-          if( item.source_table == self.source && item.source_id == self.source_id) {
-            self.isOnPlaylist = true;
-          }
-        })
-      })
-      .catch(error => console.log(error))
+      if(store.getters.isItemOnPlaylist(this.source,this.source_id)){
+        this.isOnPlaylist = true;
+      }
   },
 };
 </script>

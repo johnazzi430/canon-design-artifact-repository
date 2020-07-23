@@ -60,7 +60,7 @@ Clear Playlist</b-button> -->
 
 <script type="text/javascript">
 /*eslint-disable */
-import axios from 'axios'
+import api from '../../api'
 import {EventBus} from "../../index.js";
 import draggable from 'vuedraggable';
 import PlaylistAdd from './PlaylistAdd.vue'
@@ -77,6 +77,7 @@ export default {
       {
       },
     ],
+    isLoading: false,
     search : '',
     refresh_key: 0,
     options:{
@@ -93,41 +94,32 @@ export default {
       }
     }
   },
-  beforeMount() {
-    const self = this;
-    var get_url = '/api/playlist?details=True';
-
-    axios.get(get_url)
-    .then(response => {
-      self.cards = response.data
-    })
-    .catch(error => console.log(error))
+  async mounted() {
+    this.isLoading = true;
+    const {data} = await api.getPlaylistDetails()
+    this.isLoading = false;
+    this.cards = data;
   },
   computed:{
   },
   methods:{
-    removeFromPlaylist: async function(source,id) {
-      await axios({
-           method: 'delete',
-           url: '/api/playlist',
-           params: {
-              source_table : source,
-              source_id : id
-            }
-           })
+    removeFromPlaylist(source,id){
+      const params = {
+                    source_table : source,
+                    source_id : id
+                  }
+      api.removeFromPlaylist(params)
+      this.refresh_key += 1;
     },
 
     clearPlaylist: async function() {
       var card;
       for (card in this.cards) {
-        await axios({
-             method: 'delete',
-             url: '/api/playlist',
-             params: {
-                source_table : this.cards[card].source,
-                source_id : this.cards[card].id
-              }
-             })
+        const params= {
+           source_table : this.cards[card].source,
+           source_id : this.cards[card].id
+         }
+        api.removeFromPlaylist(params)
       }
       this.refresh_key += 1;
       this.cards = [];

@@ -8,7 +8,7 @@ import PlaylistAdd from './components/Playlist/PlaylistAdd.vue'
 import Axios from 'axios';
 import moment from 'moment'
 import router from './router';
-import store from './store';
+import store from './store/index';
 
 // CSS
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
@@ -55,5 +55,3 @@ Vue.filter('formatDate', function(value) {
     return moment.utc(value).fromNow()
   }
 })
-
-router.start(App, '#Entry');

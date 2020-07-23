@@ -189,6 +189,8 @@
 import axios from 'axios'
 import CommentView from '../CommentView.vue'
 import {EventBus} from "../../index.js";
+import store from  "../../store";
+import api from '../../api'
 
 export default {
   name: "product-details",
@@ -214,53 +216,42 @@ export default {
       errors: {},
       editing: false,
       source: 'product',
-      persona_options : [],
       edited_fields: [],
       product_life_options: ['POC','MVP','G2M','Maturing','Declining']
       }
     },
+    computed: {
+      persona_options(){
+        return store.state.personas
+      },
+    },
     beforeMount() {
       const self = this;
 
-      // SET OPTIONS
-      axios.get("/api/personas")
-        .then(response => {
-          self.persona_options = response.data;
-        })
-        .catch(error => console.log(error))
-
       // GET ON DATA CHANGE
-      EventBus.$on('product-selection-changed', function(selection){
+      EventBus.$on('product-selection-changed', async function(selection){
 
-        var get_url = "/api/product/";
-        get_url += selection;
+        const {data} = await api.productTableById(selection);
 
-        axios.get(get_url)
-        .then(response => {
-            self.form.id = selection;
-            self.form.name = response.data[0].name;
-            self.form.description= response.data[0].description;
-            self.form.metrics= response.data[0].metrics;
-            self.form.goals= response.data[0].goals;
-            self.form.features = response.data[0].features;
-            self.form.owner = response.data[0].owner;
-            self.form.product_homepage = response.data[0].product_homepage;
-            self.form.product_life = response.data[0].product_life;
-            self.form.revision = response.data[0].revision;
-            self.form.personas = response.data[0].personas;
-            self.editing = false;
-            self.edited_fields.length = 0 ;
-          }
-        )
-        .catch(error => console.log(error))
+        self.form.id = data[0].id;
+        self.form.name = data[0].name;
+        self.form.description= data[0].description;
+        self.form.metrics= data[0].metrics;
+        self.form.goals= data[0].goals;
+        self.form.features = data[0].features;
+        self.form.owner = data[0].owner;
+        self.form.product_homepage = data[0].product_homepage;
+        self.form.product_life = data[0].product_life;
+        self.form.revision = data[0].revision;
+        self.form.personas = data[0].personas;
+        self.editing = false;
+        self.edited_fields.length = 0 ;
+
 
         //GET FILES
-        axios({
-            method: 'get',
-            url: '/api/product/files/' + selection,
-          }).then(function(response){
-            self.uploadedFiles = response.data;
-          })
+        var response
+        response = await api.productFilesById(selection);
+        self.uploadedFiles = response.data;
 
         });
 
@@ -274,13 +265,8 @@ export default {
         async onEdit() {
           var key;
           for (key of this.edited_fields) {
-             await axios({
-                  method: 'put',
-                  url: '/api/product/' + this.form.id ,
-                  data: {
-                     [key] : this.form[key]
-                   }
-                  })
+            const data = {[key] : this.form[key]}
+            await api.productTablePutById(this.form.id,data)
                 };
 
          EventBus.$emit('product-changed','item-updated');
@@ -295,14 +281,8 @@ export default {
 
        async onAdd(evt) {
          evt.preventDefault()
-         await axios({
-             method: 'post',
-             url: '/api/product',
-             data: this.form, })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
+         const data = this.form
+         await api.productPost(data)
 
          EventBus.$emit('product-changed','item-updated');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -342,36 +322,11 @@ export default {
       },
 
       submitFiles(){
-              let formData = new FormData();
-
-              document.getElementById('file-upload').innerHTML = '<b-spinner label="Loading..."></b-spinner>';
-
-              formData.append('file', this.file);
-              formData.append('filename', 'blank');
-
-              axios({
-                method: 'post',
-                url: '/api/product/files/' + this.form.id,
-                data : formData,
-                headers: {
-                      'Content-Type': 'multipart/form-data'
-                }
-              }).then(function(response){
-                document.getElementById('file-upload').innerHTML = '<i class="fa fa-check"></i>';
-                console.log('file uploaded')
-              })
-              .catch(function(error){
-                document.getElementById('file-upload').innerHTML = '<i class="fa fa-times nav-icon"></i>';
-                console.log('upload error')
-              });
+        api.putProductFilesById(this.form.id,this.file)
       },
 
       deleteFile(file_id){
-        const self = this;
-        axios({
-          method: 'delete',
-          url: '/api/product/files/'+this.form.id+'?file_id='+ file_id
-        })
+        api.deleteProductFilesById(this.form.id)
         // need to add action to update view
       },
 
