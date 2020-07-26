@@ -19,7 +19,10 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in SearchItems(cards)" v-bind:key="card.id">
+      <b-card class="card"
+              v-for="card in SearchItems(cards)"
+              v-bind:key="card.id"
+              v-on:click = 'OpenDetail(card.id)'>
         <div>
           <div>
             <div v-if="card.avatar == true">
@@ -39,11 +42,9 @@
           <p class="well">
             {{card.quote}}
           </p>
-          <b-button v-b-toggle="'collapse-'+card.id"
+          <b-button v-b-toggle="'collapse-'+card.id" @click.stop event=""
             variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
-          <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
-              variant="outline-secondary">Open Persona</b-button>
           <b-collapse :id="'collapse-'+card.id" class="mt-2">
               <label for="function">Job Function</label>
               <p class="text-wrap"> {{card.job_function}} </p>
@@ -63,29 +64,19 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import {EventBus} from "../../index.js";
 
 
 
 export default {
   data() {return {
-    cards : [],
     search : '',
     filter : ''
   }
  },
-  beforeMount() {
-    const self = this;
-    var get_url = `/api/persona`;
-
-    axios.get(get_url)
-    .then(response => {
-      self.cards = response.data
-    }
-    )
-    .catch(error => console.log(error))
-  },
-  methods:{
+ props: ['cards'],
+ methods:{
     OpenDetail(id) {
       EventBus.$emit('persona-selection-changed' ,this.selectedRow = id)
       this.$router.push('/persona/' + id )
@@ -131,6 +122,14 @@ export default {
   box-shadow:
     -8px -8px 8px 0 rgba(255,255,255,0.4),
     8px 8px 8px 0 rgba(0,0,0,0.05);
+
+  &:hover{
+    background: #E5E5E5;
+  }
+
+  &:active {
+    background: #D9D9D9;
+  }
 }
 
 </style>

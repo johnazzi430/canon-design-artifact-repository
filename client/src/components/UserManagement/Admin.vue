@@ -32,6 +32,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import {AgGridVue} from "@ag-grid-community/vue";
 import {AllCommunityModules} from '@ag-grid-community/all-modules';
 import {EventBus} from "../../index.js";
@@ -65,15 +66,13 @@ export default {
     },
 
     async onCellValueChanged(params) {
-      // var colId = params.column.getId();
-      console.log( params.data.username,params.data.role)
-      await axios({
-         method: 'put',
-         url: '/api/users/' + params.data.user_id,
-         data: {
-           'role': params.data.role
-         }
-      })
+
+      if ( params.newValue === '') {
+        return
+      }
+
+      const data = { [params.column.colId] : params.newValue}
+      await api.editUserInfo(params.data.user_id,data)
     },
 
     onSelectionChanged() {
@@ -81,21 +80,18 @@ export default {
     },
 
     resetPasswordforUser(params){
-      console.log(params[0].user_id)
-      axios({
-         method: 'put',
-         url: '/api/users/' + params[0].user_id + '/password-reset',
-       })
+      console.log(params)
+       api.resetUserPassword(params[0].user_id)
        this.$store.commit({
          type: 'alert',
          show : 5,           //seconds to auto dismiss
          variant : "success",
-         content : params[0].username + " password updated"
+         content : params.data.username + " password updated"
        })
      },
 
   },
-  beforeMount() {
+  async beforeMount() {
     this.columnDefs = [
       {headerName: "User ID", field: "user_id", width: 75},
       {headerName: "Username", field: "username", filter: 'agTextColumnFilter', width: 200},
@@ -117,9 +113,10 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 100;
-    fetch('/api/users')
-    .then(result => result.json())
-    .then(rowData => this.rowData = rowData);
+
+    const {data} = await api.getUsers()
+    this.rowData = data
+
   },
   mounted() {
     const self = this

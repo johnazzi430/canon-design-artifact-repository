@@ -48,9 +48,6 @@
 
 
 export default {
-  data() {
-
-  },
   methods: {
     changeView(view) { this.selection = view},
   }

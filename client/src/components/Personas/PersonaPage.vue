@@ -41,10 +41,10 @@
       <!-- MAIN -->
     <div id = "main" class ="main">
       <div id="persona-panel"  v-if="view === 'table'" v-bind:key="view">
-          <persona-data v-bind:key = "dataKey"></persona-data>
+          <persona-data :rowData="personas" v-bind:key = "dataKey"></persona-data>
       </div>
       <div v-if="view === 'card'" v-bind:key="view">
-        <persona-card v-bind:key = "dataKey">></persona-card>
+        <persona-card :cards="personas" v-bind:key = "dataKey">></persona-card>
       </div>
     </div>
 
@@ -64,6 +64,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import Table from './Table.vue';
 import ViewDetail from './ViewDetail.vue';
 import CardView from './CardView.vue';
@@ -71,7 +72,7 @@ import {EventBus} from "../../index.js";
 
 
 export default {
-  name: 'persona-panel',
+  name: 'persona-page',
   components: {
     'persona-data': Table,
     'persona-detail': ViewDetail,
@@ -79,6 +80,7 @@ export default {
   },
   data() {
     return {
+    personas: [],
     detailKey: 0,
     dataKey: 0,
     view:'card',
@@ -90,6 +92,16 @@ export default {
       document.getElementById("right-sidepanel").style.width = "80%";
       EventBus.$emit('persona-selection-changed',this.selectedRow = this.$route.params.id )
     },
+  },
+  async beforeMount() {
+    const {data} = await api.personaTable()
+    this.personas = data
+
+    let self = this
+    EventBus.$on('persona-data-changed', async function(){
+      const {data} = await api.personaTable()
+      self.personas = data
+    })
   },
   methods: {
 

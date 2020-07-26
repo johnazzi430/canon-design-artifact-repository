@@ -35,7 +35,6 @@ export default {
   data() {
     return {
       columnDefs: null,
-      rowData: null,
       rowSelection: null,
       gridApi: null,
       gridOptions: null,
@@ -44,6 +43,7 @@ export default {
       defaultColDef: null
     }
   },
+  props:['rowData'],
   components: {
     AgGridVue
   },
@@ -96,9 +96,6 @@ export default {
     this.gridOptions = {};
     this.rowSelection = "single";
     this.gridOptions.rowHeight = 100;
-    fetch('/api/product')
-    .then(result => result.json())
-    .then(rowData => this.rowData = rowData);
   },
   mounted() {
     const self = this

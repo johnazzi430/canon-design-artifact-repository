@@ -21,17 +21,18 @@
     <br>
 
     <b-card-group columns>
-      <b-card class="card" v-for="card in filterItems(cards)" v-bind:key="card.name">
+      <b-card class="card"
+              v-for="card in filterItems(cards)"
+              v-bind:key="card.name"
+              v-on:click = 'OpenDetail(card.id)'>
         <b-card-text>
           <h5 style="text-align:center">{{card.name}}</h5>
           <p class="well">
             {{card.description}}
           </p>
-          <b-button v-b-toggle="'collapse-'+card.id"
+          <b-button v-b-toggle="'collapse-'+card.id" @click.stop
             variant="outline-secondary">More Detail</b-button>
                <!-- class="stretched-link " -->
-          <b-button href="javascript:void(0)" v-on:click = 'OpenDetail(card.id)'
-              variant="outline-secondary">Open Product</b-button>
           <b-collapse :id="'collapse-'+card.id" class="mt-2">
               <label>Product Goals</label>
               <p class="text-wrap"> {{card.goals}} </p>
@@ -54,23 +55,14 @@ import axios from 'axios'
 import {EventBus} from "../../index.js";
 
 export default {
-  data() {return {
+  data() {
+    return {
     cards : [],
     search : ''
   }
  },
-  beforeMount() {
-    const self = this;
-    var get_url = "/api/product";
-
-    axios.get(get_url)
-    .then(response => {
-      self.cards = response.data
-    }
-    )
-    .catch(error => console.log(error))
-  },
-  methods:{
+ props: ['cards'],
+ methods: {
     OpenDetail(id) {
       EventBus.$emit('product-selection-changed' ,this.selectedRow = id)
     },
@@ -97,7 +89,7 @@ export default {
 
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
 
 .card{
   border: 0px;
@@ -107,6 +99,15 @@ export default {
   box-shadow:
     -8px -8px 8px 0 rgba(255,255,255,0.5),
     8px 8px 8px 0 rgba(0,0,0,0.05);
+
+  &:hover{
+      background: #E5E5E5;
+    }
+
+  &:active {
+      background: #D9D9D9;
+    }
+
 }
 
 </style>

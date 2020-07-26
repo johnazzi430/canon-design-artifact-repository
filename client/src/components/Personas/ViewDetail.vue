@@ -60,7 +60,7 @@
         </div>
         <br>
         <label>Associated Products:</label><br>
-        <div style="display:inline-block;" v-for="product in form.products" v-bind:key="product.id">
+        <div style="display:inline-block;" v-for="(product,index) in form.products" v-bind:key="index+'products-show'">
           <b-button :to='"/product/" +product.id'
                     pill variant="info"
                     size="sm">
@@ -69,7 +69,7 @@
         </div>
         <br>
         <label>Associated Roles:</label><br>
-        <div style="display:inline-block;" v-for="role in form.roles" v-bind:key="role.id">
+        <div style="display:inline-block;" v-for="(role,index) in form.roles" v-bind:key="index+'role-show'">
           <b-badge pill variant="success">{{role.name}}</b-badge>
         </div>
         <br>
@@ -83,7 +83,7 @@
         </b-form-group>
         <br>
         <label>Files:</label>
-        <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+        <div v-for="(uploadedFile,index) in uploadedFiles" v-bind:key="index+'file-show'">
           {{uploadedFile.filename}}
           <b-button
             variant="outline-primary"
@@ -99,7 +99,7 @@
       </div>
       <b-button
           href="javascript:void(0)"
-          v-if="this.$store.getters.isLoggedIn"
+          v-if="this.$store.getters.isLoggedIn && this.form.archived === false"
           v-on:click="editing = true">
           Edit
         </b-button>
@@ -248,7 +248,7 @@
           <b-button variant="info"
             href="javascript:void(0)" v-on:click='submitFiles()'>Upload</b-button>
           <br>
-          <div v-for="uploadedFile in uploadedFiles" v-bind:key="uploadedFile.id">
+          <div v-for="(uploadedFile,index) in uploadedFiles" v-bind:key="index+'file-edit'">
             {{uploadedFile.filename}}
             <b-button
                   variant="outline-primary"
@@ -280,13 +280,13 @@
 
       <playlist-add :style="{right:30+'px' , position: 'absolute'}"
                     class="right"
-                    :key='form.id'
+                    :key='form.id+"playlist"'
                     :source='"persona"'
                     :source_id="form.id"/>
 
       <h4>Comments</h4>
       <comment-view v-if='form.id != null'
-                    :key='form.id'
+                    :key='form.id+"comments"'
                     v-bind:sourceTable="source"
                     v-bind:itemId='form.id'>
       </comment-view>
@@ -298,6 +298,7 @@
 <script>
 /*eslint-disable */
 import axios from 'axios'
+import api from '../../api'
 import CommentView from '../CommentView.vue'
 import {EventBus} from "../../index.js";
 import store from  "../../store";
@@ -335,85 +336,64 @@ export default {
       file: null,
       editing: false,
       source: 'persona',
-      product_options: [],
-      role_options: [],
       edited_fields: [],
       persona_maturity_options: [ 'proto','secondary','validated']
       }
     },
-    beforeMount() {
+    computed: {
+      role_options(){
+        return store.state.persona_roles
+      },
+
+      product_options(){
+        return store.state.products
+      },
+    },
+    mounted() {
       const self = this;
 
-      // SET OPTIONS
-      axios.get("/api/persona/roles")
-        .then(response => {
-          self.role_options = response.data;
-        })
-        .catch(error => console.log(error))
-
-      axios.get("/api/products")
-        .then(response => {
-          self.product_options = response.data;
-        })
-        .catch(error => console.log(error))
-
-
       // UPDATE DATA ON CHANGES
-      EventBus.$on('persona-selection-changed', function(selection){
-          var get_url = "/api/persona/";
-          get_url += selection;
-
-           axios.get(get_url)
-          .then(response => {
-              self.form.id = selection;
-              self.form.name = response.data[0].name;
-              self.form.title= response.data[0].title;
-              self.form.external= response.data[0].external;
-              self.form.market_size= response.data[0].market_size;
-              self.form.quote = response.data[0].quote;
-              self.form.job_function = response.data[0].job_function;
-              self.form.needs = response.data[0].needs;
-              self.form.wants = response.data[0].wants;
-              self.form.pain_point= response.data[0].pain_point;
-              self.form.buss_val= response.data[0].buss_val;
-              self.form.revision= response.data[0].revision;
-              self.form.products = response.data[0].products;
-              self.form.roles = response.data[0].roles;
-              self.form.avatar = response.data[0].avatar;
-              self.form.persona_maturity = response.data[0].persona_maturity;
-              self.editing = false;
-              self.edited_fields.length = 0 ;
-            }
-          )
-          .catch(error => console.log(error))
+      EventBus.$on('persona-selection-changed', async function(selection){
+          const { data } = await api.personaTableById(selection)
+          self.form.id = data[0].id;
+          self.form.name = data[0].name;
+          self.form.title= data[0].title;
+          self.form.external= data[0].external;
+          self.form.market_size= data[0].market_size;
+          self.form.quote = data[0].quote;
+          self.form.job_function = data[0].job_function;
+          self.form.needs = data[0].needs;
+          self.form.wants = data[0].wants;
+          self.form.pain_point= data[0].pain_point;
+          self.form.buss_val= data[0].buss_val;
+          self.form.revision= data[0].revision;
+          self.form.products = data[0].products;
+          self.form.roles = data[0].roles;
+          self.form.avatar = data[0].avatar;
+          self.form.persona_maturity = data[0].persona_maturity;
+          self.form.archived = data[0].archived;
+          self.editing = false;
+          self.edited_fields.length = 0 ;
 
           //GET FILES
-          axios({
-            method: 'get',
-            url: '/api/persona/files/' + selection,
-          }).then(function(response){
-            self.uploadedFiles = response.data;
-          })
+          var response
+          response = await api.personaFilesById(selection)
+          self.uploadedFiles = response.data;
 
         });
       },
-      methods: {
+    methods: {
 
       onInputChanged(field) {
         this.edited_fields.indexOf(field) === -1 ? this.edited_fields.push(field) :
         console.log(this.edited_fields)
       },
 
-       async onEdit() {
+      async onEdit() {
          var key;
          for (key of this.edited_fields) {
-             await axios({
-                 method: 'put',
-                 url: '/api/persona/' + this.form.id ,
-                 data: {
-                    [key] : this.form[key]
-                    }
-                 })
+           const data = {[key] : this.form[key]}
+           await api.personaTablePutById(this.form.id,data)
            };
 
         EventBus.$emit('persona-changed','item-updated');
@@ -426,15 +406,9 @@ export default {
         })
        },
 
-       async onAdd() {
-         await axios({
-             method: 'post',
-             url: '/api/persona',
-             data: this.form, })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
+      async onAdd() {
+         const data = this.form
+         await api.personaPost(data)
 
          EventBus.$emit('persona-changed','item-added');
          document.getElementById("right-sidepanel").style.width = "0px";
@@ -447,25 +421,12 @@ export default {
        },
 
        onReset() {
-         // Reset our form values
          this.editing = false;
        },
 
        async onArchive() {
-         var get_url = '/api/persona/';
-         get_url += this.form.id ;
-
-
-         console.log(get_url)
-         await axios({
-             method: 'PUT',
-             url: get_url,
-             data: { 'archived': true},
-            })
-         .then(function (response) {
-             console.log(response);})
-         .catch(function (error) {
-             console.log(error);})
+         const data = {'archived': true}
+         await api.personaTablePutById(this.form.id,data)
 
          console.log('delete')
          EventBus.$emit('persona-changed' , "archived" )
@@ -480,29 +441,11 @@ export default {
       },
 
       submitFiles(){
-              let formData = new FormData();
-              var mime = require('mime-types')
-
-              formData.append('file', this.file);
-              formData.append('filename', 'blank');
-
-              axios({
-                method: 'post',
-                url: '/api/persona/files/' + this.form.id,
-                data : formData,
-                headers: {
-                      'Content-Type': 'multipart/form-data'
-                }
-              }).then(function(response){})
-              .catch(function(error){});
+        api.putPersonaFilesById(this.form.id,this.file)
       },
 
       deleteFile(file_id){
-        const self = this;
-        axios({
-          method: 'delete',
-          url: '/api/persona/files/'+this.form.id+'?file_id='+ file_id
-        })
+        api.deletePersonaFilesById(this.form.id)
         // need to add action to update view
       },
 
@@ -511,19 +454,7 @@ export default {
          if (image) {
            console.log('Picture loaded.')
            this.form.avatar = this.$refs.pictureInput.file
-
-           let formData = new FormData();
-           formData.append('file', this.$refs.pictureInput.file);
-
-           axios({
-             method: 'PUT',
-             url: '/api/persona/avatar/' + this.form.id,
-             data : formData,
-             headers: {
-                   'Content-Type': 'multipart/form-data'
-             }
-           })
-
+           api.putPersonaAvatar(this.$refs.pictureInput.file)
          } else {
            console.log('FileReader API not supported: use the <form>, Luke!')
          }
