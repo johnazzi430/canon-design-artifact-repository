@@ -83,6 +83,7 @@
     "> 1%",
     "last 2 versions"
   ],
+  "postinstall": "npm run build",
   "description": "## Project setup ``` npm install ```",
   "main": "babel.config.js",
   "author": "",

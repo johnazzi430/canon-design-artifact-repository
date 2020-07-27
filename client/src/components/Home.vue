@@ -1,7 +1,9 @@
 <template lang="html">
   <div class="">
 
-    <h1>Democratically Driven Design</h1>
+    <div class="containe" align="center">
+        <h1>Democratically Driven Design</h1>
+    </div>
 
     <div class="container purple-gradient" align="center">
       <button type="button" class="btn btn-outline-primary">
