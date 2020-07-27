@@ -1,5 +1,8 @@
 <template lang="html">
   <div class="">
+
+    <h1>Democratically Driven Design</h1>
+
     <div class="container purple-gradient" align="center">
       <button type="button" class="btn btn-outline-primary">
         <router-link to="/insight">
