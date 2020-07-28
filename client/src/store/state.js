@@ -1,17 +1,16 @@
 
-
 const rootState = {
   status: '',
   token: localStorage.getItem('token') || '',
   user: {
     username: '',
-    role: null,
+    role: null
   },
   alert: [],
   playlist: [],
   personas: [],
   products: [],
-  persona_roles: [],
-};
+  persona_roles: []
+}
 
-export default rootState;
+export default rootState

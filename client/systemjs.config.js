@@ -1,14 +1,14 @@
 (function (global) {
   // simplified version of Object.assign for es3
-  function assign() {
-    const result = {};
+  function assign () {
+    const result = {}
     for (let i = 0, len = arguments.length; i < len; i++) {
-      const arg = arguments[i];
+      const arg = arguments[i]
       for (const prop in arg) {
-        result[prop] = arg[prop];
+        result[prop] = arg[prop]
       }
     }
-    return result;
+    return result
   }
 
   System.config({
@@ -18,8 +18,8 @@
             Object.assign(
               {
                 // paths serve as alias
-                'npm:': 'https://unpkg.com/',
-              }, systemJsPaths,
+                'npm:': 'https://unpkg.com/'
+              }, systemJsPaths
             ),
     map: assign(
       {
@@ -37,38 +37,38 @@
         'vue-class-component': 'npm:vue-class-component@6.3.2/dist/vue-class-component.min.js',
         'vue-property-decorator': 'npm:vue-property-decorator@7.2.0/lib/vue-property-decorator.umd.js',
 
-        app: `${appLocation}app`,
+        app: `${appLocation}app`
       },
-      systemJsMap,
+      systemJsMap
     ), // systemJsMap comes from index.html
 
     packages: {
       vue: {
-        defaultExtension: 'js',
+        defaultExtension: 'js'
       },
       'vue-class-component': {
-        defaultExtension: 'js',
+        defaultExtension: 'js'
       },
       'vue-property-decorator': {
-        defaultExtension: 'js',
+        defaultExtension: 'js'
       },
       app: {
-        defaultExtension: 'js',
+        defaultExtension: 'js'
       },
       '@ag-grid-community/vue': {
         main: './main.js',
-        defaultExtension: 'js',
-      },
+        defaultExtension: 'js'
+      }
     },
     meta: {
       '*.js': {
         babelOptions: {
           stage1: true,
           stage2: true,
-          es2015: true,
-        },
+          es2015: true
+        }
       },
-      '*.css': { loader: 'css' },
-    },
-  });
-}(this));
+      '*.css': { loader: 'css' }
+    }
+  })
+}(this))
