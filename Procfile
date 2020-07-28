@@ -1,3 +1,2 @@
-web: npm --prefix client/ install
-web: npm --prefix client/ run build
+release: deploy.sh
 web: gunicorn application:app
