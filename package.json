@@ -10,6 +10,7 @@
     "postinstall": "npm --prefix client/ run build"
    },
   "dependencies" : {
+    "vue": "^2.6.10",
     "@vue/cli-service": "^4.0.0",
     "@vue/cli-plugin-babel": "^4.0.0",
     "@vue/cli-plugin-eslint": "^4.0.0",
