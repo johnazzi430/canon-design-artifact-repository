@@ -12,9 +12,14 @@ module.exports = {
   // And set the CDN origin to `yourdomain.com/static`
   // Whitenoise will serve once to CDN which will then cache
   // and distribute
+  lintOnSave: process.env.NODE_ENV !== 'production',
   devServer: {
     // public: '192.168.86.100',
     // port: '8080',
+    overlay: {
+      warnings: true,
+      errors: false
+    },
     proxy: {
       '/api*': {
         // Forward frontend dev server request for /api to flask` dev server
