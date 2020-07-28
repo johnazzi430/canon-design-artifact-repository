@@ -29,7 +29,6 @@ def test_login(app,client):
 
 def test_user_not_in_session(app,client):
     response = client.get('/api/users?session=True')
-    print(json.loads(response.data))
     assert response.status_code == 200
 
 def test_logout(app,client):
