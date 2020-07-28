@@ -1,5 +1,5 @@
 {
-  "name": "utc-persona-management",
+  "name": "canonical-artifact-repo
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -83,7 +83,6 @@
     "> 1%",
     "last 2 versions"
   ],
-  "postinstall": "npm run build",
   "description": "## Project setup ``` npm install ```",
   "main": "babel.config.js",
   "author": "",
