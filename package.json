@@ -7,7 +7,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "postinstall": "npm --prefix client/ run build",
+    "postinstall": "npm --prefix client/ run build"
    },
   "description": "## Project setup ``` npm install ```",
   "main": "babel.config.js",
