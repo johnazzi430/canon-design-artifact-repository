@@ -35,6 +35,6 @@ jobs:
       run: |
         python -m pytest tests
     - name: Build static files
-    run: |
-    npm --prefix client/ install
-    npm --prefix client/ run build
+      run: |
+        npm --prefix client/ install
+        npm --prefix client/ run build
