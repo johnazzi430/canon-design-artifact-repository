@@ -1,3 +1,5 @@
+![.github/workflows/python-app.yml](https://github.com/johnazzi430/canonitcal-design-artifact-repository/workflows/.github/workflows/python-app.yml/badge.svg?branch=master) [![Heroku App Status](http://heroku-shields.herokuapp.com/canonical-design-repository)](https://canonical-design-repository.herokuapp.com)
+
 
 Go try it!
 https://canon-artifact-repository.herokuapp.com/
