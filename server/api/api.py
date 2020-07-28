@@ -245,7 +245,6 @@ def personas_avatar_download(id):
 @user_in_session
 def personas_avatar_upload(id):
     persona = Persona.query.filter(Persona.id == id).first()
-    print(request.files)
     persona.persona_picture = request.files['file'].read()
     db.session.commit()
     return 'success'
@@ -464,7 +463,6 @@ def insights_put(id):
         setattr(insight, key , upchange) #SET UPCHANGE
     setattr(insight, 'revision' ,insight.revision + 1)
     db.session.commit()
-    print( request.json)
     return "success"
 
 #json.dumps(request.json)
@@ -693,12 +691,6 @@ def remove_from_playlist():
 from werkzeug.security import generate_password_hash , check_password_hash
 
 
-@api.route('/test', methods = ['GET'])
-@user_in_session
-def protected():
-    foo = "foo"
-    return 'did it work?'
-
 @api.route('/login', methods = ['POST'])
 def authenticate_user():
     username = request.json.get('username')
@@ -727,7 +719,6 @@ def AD_authenticate_user():
         pass
 
     session['user'] = user.user_id
-    print(session['user'])
     token = jwt.encode({ 'userName': username, "exp" : datetime.now() + timedelta(minutes=30)},current_app.config['SECRET_KEY'])
     return jsonify( {"token" : token.decode('UTF-8') , "user" : user.username }) , 200
 
@@ -784,7 +775,6 @@ def get_user_data():
         # GET current user info
         try:
             user_id = session['user']
-            print(user_id)
             user = User.query.filter_by(user_id = user_id).all()
             return json.dumps(UserSchema(only=("username","user_id","role","cust_id")).dump(user,many=True))
         except:
