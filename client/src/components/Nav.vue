@@ -8,7 +8,7 @@
           style="padding-left:30px; border-radius: 0px">
         <b-navbar-toggle target="navbar-main"/>
         <b-navbar-brand to="/">
-                      Canon
+                      Canonical.Design
                       <h6 class='subscript'>Product Artifact Repository</h6>
         </b-navbar-brand>
         <b-collapse is-nav id="navbar-main">
