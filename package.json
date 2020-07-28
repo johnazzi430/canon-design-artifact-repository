@@ -10,7 +10,11 @@
     "postinstall": "npm --prefix client/ run build"
    },
   "dependencies" : {
-    "@vue/cli-service": "^4.0.0"
+    "@vue/cli-service": "^4.0.0",
+    "@vue/cli-plugin-babel": "^4.0.0",
+    "@vue/cli-plugin-eslint": "^4.0.0",
+    "@vue/cli-service": "^4.0.0",
+    "@vue/eslint-config-airbnb": "^4.0.0"
   },
   "description": "## Project setup ``` npm install ```",
   "main": "babel.config.js",
