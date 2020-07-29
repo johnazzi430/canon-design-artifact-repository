@@ -1,41 +1,9 @@
-import axios from 'axios'
-import api from '../api'
+
+import axios from 'axios';
+import api from '../api';
 
 const actions = {
-  ADlogin ({ commit }, user) {
-    return new Promise((resolve, reject) => {
-      user.username = user.userName
-
-      commit('AUTH_REQUEST')
-      axios({
-        method: 'post',
-        url: '/api/AD-login',
-        data: user,
-        header: {
-          'Content-Type': 'application/json'
-        }
-      })
-        .then(function (resp) {
-          var token = resp.data.token
-
-          localStorage.setItem('token', token)
-          axios.defaults.headers.common.Authorization = token
-          commit({
-            type: 'AUTH_SUCCESS',
-            token: token,
-            user: user
-          })
-          resolve(resp)
-        })
-        .catch(err => {
-          commit('AUTH_ERROR')
-          localStorage.removeItem('token')
-          reject(err)
-        })
-    })
-  },
-
-  login ({ commit }, user) {
+  login({commit}, user){
     return new Promise((resolve, reject) => {
       commit('AUTH_REQUEST')
       axios({

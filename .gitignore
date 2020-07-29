@@ -16,3 +16,6 @@ __pycache__
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 *.pyc
+server/api/__pycache__/models.cpython-38.pyc
+server/api/__pycache__/api.cpython-38.pyc
+*.pyc
